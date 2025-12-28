@@ -19,7 +19,7 @@ importers:
         version: 8.5.12
       '@vitest/coverage-v8':
         specifier: ^1.6.1
-        version: 1.6.1(vitest@1.6.1(@types/node@22.7.3)(@vitest/ui@1.6.1)(sass@1.79.3))
+        version: 1.6.1(vitest@1.6.1)
       '@vitest/ui':
         specifier: ^1.6.1
         version: 1.6.1(vitest@1.6.1)
@@ -38,6 +38,34 @@ importers:
       ws:
         specifier: ^8.18.3
         version: 8.18.3
+
+  adapters/adapter-qq:
+    dependencies:
+      '@types/koa':
+        specifier: ^2.13.4
+        version: 2.15.0
+      '@types/node':
+        specifier: ^22.7.3
+        version: 22.7.3
+      '@types/ws':
+        specifier: ^8.5.3
+        version: 8.5.12
+      koa:
+        specifier: latest
+        version: 3.1.1
+      onebots:
+        specifier: workspace:*
+        version: link:../../packages/onebots
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
 
   adapters/adapter-wechat:
     dependencies:
@@ -224,22 +252,6 @@ importers:
       koa-static:
         specifier: ^5.0.0
         version: 5.0.0
-    optionalDependencies:
-      '@onebots/adapter-wechat':
-        specifier: workspace:*
-        version: link:../../adapters/adapter-wechat
-      '@onebots/protocol-milky-v1':
-        specifier: workspace:*
-        version: link:../../protocols/protocol-milky-v1
-      '@onebots/protocol-onebot-v11':
-        specifier: workspace:*
-        version: link:../../protocols/protocol-onebot-v11
-      '@onebots/protocol-onebot-v12':
-        specifier: workspace:*
-        version: link:../../protocols/protocol-onebot-v12
-      '@onebots/protocol-satori-v1':
-        specifier: workspace:*
-        version: link:../../protocols/protocol-satori
     devDependencies:
       '@types/koa-static':
         specifier: ^4.0.4
@@ -256,6 +268,22 @@ importers:
       typescript:
         specifier: latest
         version: 5.9.3
+    optionalDependencies:
+      '@onebots/adapter-wechat':
+        specifier: workspace:*
+        version: link:../../adapters/adapter-wechat
+      '@onebots/protocol-milky-v1':
+        specifier: workspace:*
+        version: link:../../protocols/protocol-milky-v1
+      '@onebots/protocol-onebot-v11':
+        specifier: workspace:*
+        version: link:../../protocols/protocol-onebot-v11
+      '@onebots/protocol-onebot-v12':
+        specifier: workspace:*
+        version: link:../../protocols/protocol-onebot-v12
+      '@onebots/protocol-satori-v1':
+        specifier: workspace:*
+        version: link:../../protocols/protocol-satori
 
   protocols/protocol-milky-v1:
     dependencies:
@@ -4452,7 +4480,7 @@ snapshots:
       vite: 5.4.21(@types/node@22.7.3)(sass@1.79.3)
       vue: 3.5.25(typescript@5.9.3)
 
-  '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@22.7.3)(@vitest/ui@1.6.1)(sass@1.79.3))':
+  '@vitest/coverage-v8@1.6.1(vitest@1.6.1)':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3

@@ -1,21 +1,17 @@
-# QQ 适配器
+# @onebots/adapter-qq
 
-QQ 适配器支持通过 QQ 官方 API 接入 OneBots 服务。
+QQ官方机器人适配器，支持QQ频道和群聊机器人的消息收发和管理。
 
-## 状态
+## 特性
 
-✅ 已完成
-
-## 功能支持
-
-- ✅ QQ 频道消息（公域/私域）
-- ✅ QQ 群消息
-- ✅ 单聊消息 (C2C)
-- ✅ 频道私信 (DMS)
-- ✅ 频道管理
-- ✅ 成员管理
-- ✅ 消息表态
-- ✅ 互动按钮
+- ✨ 支持QQ频道消息（公域/私域）
+- ✨ 支持QQ群消息
+- ✨ 支持单聊消息 (C2C)
+- ✨ 支持频道私信 (DMS)
+- ✨ 支持频道管理
+- ✨ 支持成员管理
+- ✨ 支持消息表态
+- ✨ 支持互动按钮
 
 ## 安装
 
@@ -88,9 +84,9 @@ qq.my_bot:
 
 ### 成员管理
 - `getGuildMemberInfo` - 获取频道成员信息
-- `kickGuildMember` - 踢出频道成员
-- `muteGuildMember` - 禁言频道成员
-- `muteGuild` - 全员禁言
+- `kickGuildMember` - 踢出频道成员（扩展方法）
+- `muteGuildMember` - 禁言频道成员（扩展方法）
+- `muteGuild` - 全员禁言（扩展方法）
 
 ### 系统相关
 - `getVersion` - 获取版本信息
@@ -113,14 +109,8 @@ qq.my_bot:
 - `reaction_add` / `reaction_remove` - 消息表态
 - `interaction` - 互动事件
 
-## 替代方案
-
-如需使用第三方QQ协议实现，可参考：
-
-- [icqq](https://github.com/icqqjs/icqq) - QQ 协议实现
-- [NapCat](https://github.com/NapNeko/NapCatQQ) - OneBot V11/V12 协议实现
-
 ## 相关链接
 
-- [QQ 开放平台](https://q.qq.com/)
-- [QQ 机器人文档](https://bot.q.qq.com/wiki/)
+- [QQ开放平台](https://q.qq.com/)
+- [QQ机器人文档](https://bot.q.qq.com/wiki/)
+- [OneBots文档](https://docs.onebots.org)
