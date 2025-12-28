@@ -4,26 +4,23 @@
  */
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
-import type {
-    QQConfig,
-    QQIntent,
+import {
     IntentBits,
-    WSPayload,
-    OpCode,
-    GatewayResponse,
-    ReadyEvent,
-    QQUser,
-    QQGuild,
-    QQChannel,
-    QQMember,
-    QQMessage,
-    SendMessageParams,
-    SendGroupMessageParams,
-    MessageSendResult,
-    DMS,
-    MediaUploadParams,
-    MediaUploadResult,
-    QQApiResponse,
+    type QQConfig,
+    type QQIntent,
+    type WSPayload,
+    type GatewayResponse,
+    type ReadyEvent,
+    type QQUser,
+    type QQGuild,
+    type QQChannel,
+    type QQMember,
+    type SendMessageParams,
+    type SendGroupMessageParams,
+    type MessageSendResult,
+    type DMS,
+    type MediaUploadParams,
+    type MediaUploadResult,
 } from './types.js';
 
 export class QQBot extends EventEmitter {
@@ -197,24 +194,10 @@ export class QQBot extends EventEmitter {
      * 计算intent值
      */
     private calculateIntents(): number {
-        const IntentBitsMap: Record<string, number> = {
-            'GUILDS': 1 << 0,
-            'GUILD_MEMBERS': 1 << 1,
-            'GUILD_MESSAGES': 1 << 9,
-            'GUILD_MESSAGE_REACTIONS': 1 << 10,
-            'DIRECT_MESSAGE': 1 << 12,
-            'OPEN_FORUMS_EVENT': 1 << 18,
-            'INTERACTION': 1 << 26,
-            'MESSAGE_AUDIT': 1 << 27,
-            'GROUP_AT_MESSAGE_CREATE': 1 << 25,
-            'C2C_MESSAGE_CREATE': 1 << 25,
-            'PUBLIC_GUILD_MESSAGES': 1 << 30,
-        };
-        
         let intents = 0;
         for (const intent of (this.config.intents || [])) {
-            if (IntentBitsMap[intent]) {
-                intents |= IntentBitsMap[intent];
+            if (IntentBits[intent]) {
+                intents |= IntentBits[intent];
             }
         }
         return intents;

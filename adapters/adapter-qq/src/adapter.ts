@@ -876,11 +876,3 @@ AdapterRegistry.register('qq', QQAdapter, {
     homepage: 'https://bot.q.qq.com/wiki',
     author: '凉菜',
 });
-
-declare module '@/adapter.js' {
-    namespace Adapter {
-        interface Configs {
-            qq: QQConfig;
-        }
-    }
-}
