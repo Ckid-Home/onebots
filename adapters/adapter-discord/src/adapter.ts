@@ -128,26 +128,9 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         return messages.map(msg => this.convertMessageToInfo(msg));
     }
 
-    /**
-     * 编辑消息
-     */
-    async updateMessage(uin: string, params: Adapter.UpdateMessageParams): Promise<void> {
-        const account = this.getAccount(uin);
-        if (!account) throw new Error(`Account ${uin} not found`);
-
-        const bot = account.client;
-        const messageId = params.message_id.string;
-
-        // 需要从消息段中提取文本内容
-        const content = params.message
-            .filter(seg => seg.type === 'text')
-            .map(seg => seg.data.text || '')
-            .join('');
-
-        // 需要获取频道 ID，这里假设从消息 ID 关联的记录中获取
-        // 实际实现中可能需要存储消息与频道的关联
-        throw new Error('编辑消息需要提供频道 ID，请使用包含 scene_id 的参数');
-    }
+    // Note: updateMessage is not implemented as Discord requires a channel ID
+    // which is not provided in the standard UpdateMessageParams.
+    // The base class will throw "updateMessage not implemented" error.
 
     // ============================================
     // 用户相关方法
@@ -927,7 +910,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
                     id: this.createId(user.id),
                     name: user.username || 'Unknown',
                 },
-                message_id: reaction.message.id,
+                message_id: this.createId(reaction.message.id),
                 emoji: reaction.emoji.name || reaction.emoji.id,
             };
 
@@ -950,7 +933,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
                     id: this.createId(user.id),
                     name: user.username || 'Unknown',
                 },
-                message_id: reaction.message.id,
+                message_id: this.createId(reaction.message.id),
                 emoji: reaction.emoji.name || reaction.emoji.id,
             };
 
