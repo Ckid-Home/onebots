@@ -1,4 +1,4 @@
-import { Protocol,Account,Adapter } from "onebots";
+import { Protocol,ProtocolRegistry,Account,Adapter } from "onebots";
 import type { CommonEvent, CommonTypes,Dict } from "onebots";
 import { Milky } from "./types.js";
 import { MilkyConfig } from "./config.js";
@@ -10,7 +10,7 @@ import { WebSocket } from "ws";
  * Milky is a QQ bot protocol similar to OneBot but with different message formats
  * Reference: https://milky.ntqqrev.org/
  */
-export default class MilkyV1 extends Protocol<"v1", MilkyConfig.Config> {
+export class MilkyV1 extends Protocol<"v1", MilkyConfig.Config> {
     public readonly name = "milky";
     public readonly version = "v1" as const;
 
@@ -642,6 +642,6 @@ export default class MilkyV1 extends Protocol<"v1", MilkyConfig.Config> {
         }, interval);
     }
 }
-
+ProtocolRegistry.register("milky", "v1", MilkyV1);
 export * from "./types.js";
 export * from "./config.js";

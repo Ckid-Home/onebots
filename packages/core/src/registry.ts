@@ -100,11 +100,6 @@ export class ProtocolRegistry {
      */
     static create(name: string, version: string, adapter: Adapter, account: Account, config: any): Protocol {
         const factory = this.get(name, version);
-        console.log({
-            name,
-            version,
-            account:account.account_id
-        })
         if (!factory) {
             throw new Error(`Protocol ${name}/${version} not registered`);
         }

@@ -1,4 +1,4 @@
-import { Protocol } from "onebots";
+import { Protocol,ProtocolRegistry } from "onebots";
 import { Account } from "onebots";
 import { Adapter } from "onebots";
 import { CommonEvent,CommonTypes } from "onebots";
@@ -10,7 +10,7 @@ import { SatoriConfig } from "./config.js";
  * Satori is a cross-platform chatbot protocol
  * Reference: https://github.com/satorijs/satori
  */
-export default class SatoriV1 extends Protocol<"v1", SatoriConfig.Config> {
+export class SatoriV1 extends Protocol<"v1", SatoriConfig.Config> {
     public readonly name = "satori";
     public readonly version = "v1" as const;
     private eventId = 0;
@@ -835,6 +835,6 @@ export default class SatoriV1 extends Protocol<"v1", SatoriConfig.Config> {
         this.logger.info(`Satori webhook configured to POST events to ${config.url}`);
     }
 }
-
+ProtocolRegistry.register('satori', 'v1', SatoriV1);
 export * from "./types.js";
 export * from "./config.js";

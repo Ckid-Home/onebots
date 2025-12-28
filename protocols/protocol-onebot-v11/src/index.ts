@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { Protocol } from "onebots";
+import { Protocol,ProtocolRegistry } from "onebots";
 import { Account } from "onebots";
 import { Adapter } from "onebots";
 import crypto from "crypto";
@@ -12,7 +12,7 @@ import { OneBotV11Config } from "./config.js";
  * Implements the OneBot 11 standard
  * Reference: https://github.com/botuniverse/onebot-11
  */
-export default class OneBotV11Protocol extends Protocol<"v11",OneBotV11Config.Config> {
+export class OneBotV11Protocol extends Protocol<"v11",OneBotV11Config.Config> {
     public readonly name = "onebot";
     public readonly version = "v11" as const;
     
@@ -937,7 +937,7 @@ export default class OneBotV11Protocol extends Protocol<"v11",OneBotV11Config.Co
         connect();
     }
 }
-
+ProtocolRegistry.register("onebot", "v11", OneBotV11Protocol);
 export { CQCode } from "./cqcode.js";
 export * from "./types.js";
 export * from "./utils.js";

@@ -1,4 +1,4 @@
-import { Protocol } from "onebots";
+import { Protocol,ProtocolRegistry } from "onebots";
 import { Account } from "onebots";
 import { Adapter } from "onebots";
 import { CommonEvent,CommonTypes } from "onebots";
@@ -11,7 +11,7 @@ import { OneBotV12Config } from "./config.js";
  * Implements the OneBot 12 standard
  * Reference: https://12.onebot.dev
  */
-export default class OneBotV12Protocol extends Protocol<"v12", OneBotV12Config.Config> {
+export class OneBotV12Protocol extends Protocol<"v12", OneBotV12Config.Config> {
     public readonly name = "onebot";
     public readonly version = "v12" as const;
     private eventIdCounter = 0;
@@ -843,6 +843,8 @@ export default class OneBotV12Protocol extends Protocol<"v12", OneBotV12Config.C
         connect();
     }
 }
+
+ProtocolRegistry.register('onebot', 'v12', OneBotV12Protocol);
 
 export * from "./types.js";
 export * from "./config.js";
