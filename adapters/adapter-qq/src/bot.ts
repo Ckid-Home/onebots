@@ -1,9 +1,11 @@
 /**
  * QQ官方机器人客户端
- * 使用WebSocket连接QQ官方API，处理消息收发
+ * 支持WebSocket和Webhook两种接收方式
  */
 import { EventEmitter } from 'events';
+import { createHmac } from 'crypto';
 import WebSocket from 'ws';
+import type { Context, Next } from 'koa';
 import {
     IntentBits,
     type QQConfig,
@@ -21,6 +23,9 @@ import {
     type DMS,
     type MediaUploadParams,
     type MediaUploadResult,
+    type WebhookPayload,
+    type WebhookValidation,
+    type WebhookValidationResponse,
 } from './types.js';
 
 export class QQBot extends EventEmitter {
@@ -44,6 +49,7 @@ export class QQBot extends EventEmitter {
             sandbox: false,
             removeAt: true,
             maxRetry: 10,
+            mode: 'websocket',  // 默认使用WebSocket
             intents: [
                 'GUILDS',
                 'GUILD_MEMBERS',
@@ -63,6 +69,13 @@ export class QQBot extends EventEmitter {
         this.wsURL = this.config.sandbox
             ? 'wss://sandbox.api.sgroup.qq.com'
             : 'wss://api.sgroup.qq.com';
+    }
+    
+    /**
+     * 获取当前接收模式
+     */
+    get mode(): string {
+        return this.config.mode || 'websocket';
     }
     
     // ============================================
@@ -803,7 +816,19 @@ export class QQBot extends EventEmitter {
     async start(): Promise<void> {
         try {
             await this.getAccessToken();
-            await this.connect();
+            
+            // 根据配置选择接收模式
+            if (this.config.mode === 'webhook') {
+                // Webhook模式：只需要初始化token，不需要建立WebSocket连接
+                // 获取机器人信息
+                const selfInfo = await this.getSelfInfo();
+                this.user = selfInfo;
+                this.emit('ready', { user: selfInfo, session_id: 'webhook' });
+            } else {
+                // WebSocket模式
+                await this.connect();
+            }
+            
             this.emit('start');
         } catch (error) {
             this.emit('error', error);
@@ -828,6 +853,136 @@ export class QQBot extends EventEmitter {
         this.tokenExpireTime = 0;
         
         this.emit('stop');
+    }
+    
+    // ============================================
+    // Webhook 相关
+    // ============================================
+    
+    /**
+     * 生成签名（用于Webhook验证）
+     * 注意：QQ官方使用Ed25519进行签名验证
+     * 此处使用HMAC-SHA256作为简化实现
+     * 如果验证失败，请考虑使用tweetnacl等库实现Ed25519签名
+     */
+    private generateSignature(timestamp: string, plainToken: string): string {
+        // 使用HMAC-SHA256进行签名
+        // 参考QQ官方文档: https://bot.q.qq.com/wiki/develop/api-v2/dev-prepare/interface-framework/sign.html
+        const message = timestamp + plainToken;
+        const hmac = createHmac('sha256', this.config.secret);
+        hmac.update(message);
+        return hmac.digest('hex');
+    }
+    
+    /**
+     * 处理Webhook请求
+     * 注意：需要确保Koa的bodyParser中间件已配置，
+     * 或者配置rawBody: true 以获取原始请求体
+     */
+    async handleWebhook(ctx: Context, next: Next): Promise<void> {
+        // 从请求体读取数据
+        let body: string = '';
+        
+        // 优先使用已解析的body
+        if (ctx.request.body) {
+            if (typeof ctx.request.body === 'string') {
+                body = ctx.request.body;
+            } else {
+                body = JSON.stringify(ctx.request.body);
+            }
+        }
+        
+        // 如果body为空，尝试从原始请求流读取
+        if (!body) {
+            try {
+                const chunks: Buffer[] = [];
+                for await (const chunk of ctx.req) {
+                    chunks.push(chunk as Buffer);
+                }
+                body = Buffer.concat(chunks).toString('utf-8');
+            } catch {
+                // 请求流可能已被消费
+            }
+        }
+        
+        if (!body) {
+            ctx.status = 400;
+            ctx.body = { error: 'Empty request body' };
+            return;
+        }
+        
+        try {
+            const payload: WebhookPayload = JSON.parse(body);
+            
+            // 处理URL验证请求 (op=13)
+            if (payload.op === 13) {
+                const validation = payload.d as WebhookValidation;
+                const signature = this.generateSignature(validation.event_ts, validation.plain_token);
+                
+                const response: WebhookValidationResponse = {
+                    plain_token: validation.plain_token,
+                    signature: signature,
+                };
+                
+                ctx.status = 200;
+                ctx.type = 'application/json';
+                ctx.body = response;
+                return;
+            }
+            
+            // 处理事件推送 (op=0)
+            if (payload.op === 0) {
+                // 更新序列号
+                if (payload.s) {
+                    this.lastSeq = payload.s;
+                }
+                
+                // 处理事件
+                this.handleWebhookEvent(payload);
+                
+                // 返回确认响应
+                ctx.status = 200;
+                ctx.body = { code: 0, message: 'success' };
+                return;
+            }
+            
+            // 未知操作码
+            ctx.status = 200;
+            ctx.body = { code: 0, message: 'ignored' };
+            
+        } catch (error: any) {
+            this.emit('error', error);
+            ctx.status = 500;
+            ctx.body = { error: error.message };
+        }
+    }
+    
+    /**
+     * 处理Webhook事件
+     */
+    private handleWebhookEvent(payload: WebhookPayload): void {
+        const eventType = payload.t;
+        const data = payload.d;
+        
+        // 移除@机器人内容
+        if (this.config.removeAt && data?.content) {
+            data.content = this.removeAtBot(data.content);
+        }
+        
+        // 发出事件（与WebSocket模式相同的处理方式）
+        this.emit('dispatch', eventType, data);
+        this.emit(eventType || 'unknown', data);
+        
+        // 消息类事件
+        if (eventType === 'AT_MESSAGE_CREATE' || eventType === 'MESSAGE_CREATE') {
+            this.emit('message.guild', data);
+        } else if (eventType === 'DIRECT_MESSAGE_CREATE') {
+            this.emit('message.direct', data);
+        } else if (eventType === 'GROUP_AT_MESSAGE_CREATE') {
+            this.emit('message.group', data);
+        } else if (eventType === 'C2C_MESSAGE_CREATE') {
+            this.emit('message.private', data);
+        }
     }
     
     /**

@@ -16,6 +16,7 @@ QQ 适配器支持通过 QQ 官方 API 接入 OneBots 服务。
 - ✅ 成员管理
 - ✅ 消息表态
 - ✅ 互动按钮
+- ✅ WebSocket 和 Webhook 双模式支持
 
 ## 安装
 
@@ -24,6 +25,22 @@ npm install @onebots/adapter-qq
 # 或
 pnpm add @onebots/adapter-qq
 ```
+
+## 接收模式
+
+适配器支持两种接收事件的模式，可通过 `mode` 配置项选择：
+
+### WebSocket 模式（默认）
+
+机器人主动连接QQ服务器，实时接收事件推送。适合大多数场景。
+
+### Webhook 模式
+
+QQ服务器主动推送事件到你的服务器。适合需要公网访问或Serverless场景。
+
+Webhook模式下，事件推送地址为：`http://your-server:port/qq/{account_id}/webhook`
+
+需要在QQ开放平台配置此URL作为回调地址。
 
 ## 配置示例
 
@@ -39,10 +56,11 @@ qq.my_bot:
   # QQ 平台配置
   appId: 'your_app_id'       # QQ机器人AppID
   secret: 'your_app_secret'  # QQ机器人Secret
+  mode: 'websocket'          # 接收模式：'websocket'（默认）或 'webhook'
   sandbox: false             # 是否沙箱环境
   removeAt: true             # 是否自动移除@机器人内容
-  maxRetry: 10               # 最大重连次数
-  intents:                   # 需要监听的事件
+  maxRetry: 10               # 最大重连次数（仅WebSocket模式）
+  intents:                   # 需要监听的事件（仅WebSocket模式需要）
     - 'GROUP_AT_MESSAGE_CREATE'     # 群聊@消息事件
     - 'C2C_MESSAGE_CREATE'          # 私聊消息事件
     - 'DIRECT_MESSAGE'              # 频道私信事件

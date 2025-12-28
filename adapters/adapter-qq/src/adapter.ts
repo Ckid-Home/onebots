@@ -9,7 +9,6 @@ import { QQBot } from "./bot.js";
 import { CommonEvent } from "onebots";
 import type {
     QQConfig,
-    QQMessage,
     QQMessageEvent,
     QQGroupMessageEvent,
     QQC2CMessageEvent,
@@ -20,6 +19,7 @@ import type {
     QQReactionEvent,
     QQInteractionEvent,
     SendMessageParams,
+    ReceiverMode,
 } from "./types.js";
 
 export class QQAdapter extends Adapter<QQBot, "qq"> {
@@ -471,14 +471,22 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
             intents: config.intents,
             removeAt: config.removeAt ?? true,
             maxRetry: config.maxRetry ?? 10,
+            mode: config.mode ?? 'websocket',  // 默认使用WebSocket模式
         };
 
         const bot = new QQBot(qqConfig);
         const account = new Account<'qq', QQBot>(this, bot, config);
 
+        // 如果是Webhook模式，注册Webhook路由
+        if (qqConfig.mode === 'webhook') {
+            this.app.router.all(`${account.path}/webhook`, bot.handleWebhook.bind(bot));
+            this.logger.info(`QQ机器人 ${config.account_id} Webhook路径: ${account.path}/webhook`);
+        }
+
         // 监听Bot事件
         bot.on('ready', (data) => {
-            this.logger.info(`QQ机器人 ${config.account_id} 已连接`);
+            const modeText = qqConfig.mode === 'webhook' ? '(Webhook模式)' : '(WebSocket模式)';
+            this.logger.info(`QQ机器人 ${config.account_id} 已连接 ${modeText}`);
             account.status = AccountStatus.Online;
             account.nickname = data.user?.username || 'QQ机器人';
             account.avatar = data.user?.avatar || this.icon;

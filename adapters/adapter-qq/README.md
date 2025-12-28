@@ -12,6 +12,7 @@ QQ官方机器人适配器，支持QQ频道和群聊机器人的消息收发和�
 - ✨ 支持成员管理
 - ✨ 支持消息表态
 - ✨ 支持互动按钮
+- ✨ 支持 WebSocket 和 Webhook 两种接收模式
 
 ## 安装
 
@@ -21,7 +22,37 @@ npm install @onebots/adapter-qq
 pnpm add @onebots/adapter-qq
 ```
 
+## 接收模式
+
+适配器支持两种接收事件的模式：
+
+### WebSocket 模式（默认）
+
+机器人主动连接QQ服务器，实时接收事件推送。适合大多数场景。
+
+```yaml
+qq.my_bot:
+  mode: 'websocket'  # 或省略，默认就是 websocket
+  # ... 其他配置
+```
+
+### Webhook 模式
+
+QQ服务器主动推送事件到你的服务器。适合需要公网访问或Serverless场景。
+
+```yaml
+qq.my_bot:
+  mode: 'webhook'
+  # ... 其他配置
+```
+
+Webhook模式下，事件推送地址为：`http://your-server:port/qq/{account_id}/webhook`
+
+需要在QQ开放平台配置此URL作为回调地址。
+
 ## 配置示例
+
+### WebSocket 模式配置
 
 ```yaml
 qq.my_bot:
@@ -35,6 +66,7 @@ qq.my_bot:
   # QQ 平台配置
   appId: 'your_app_id'       # QQ机器人AppID
   secret: 'your_app_secret'  # QQ机器人Secret
+  mode: 'websocket'          # 接收模式：websocket 或 webhook
   sandbox: false             # 是否沙箱环境
   removeAt: true             # 是否自动移除@机器人内容
   maxRetry: 10               # 最大重连次数
@@ -47,6 +79,24 @@ qq.my_bot:
     - 'GUILD_MESSAGE_REACTIONS'     # 频道消息表态事件
     - 'INTERACTION'                 # 互动事件
     - 'PUBLIC_GUILD_MESSAGES'       # 公域机器人频道消息事件
+```
+
+### Webhook 模式配置
+
+```yaml
+qq.my_bot:
+  # OneBot V11 协议配置
+  onebot.v11:
+    use_http: true
+    use_ws: true
+    access_token: 'your_token'
+  
+  # QQ 平台配置
+  appId: 'your_app_id'
+  secret: 'your_app_secret'
+  mode: 'webhook'            # 使用Webhook接收模式
+  sandbox: false
+  removeAt: true
 ```
 
 ## 支持的 Intent

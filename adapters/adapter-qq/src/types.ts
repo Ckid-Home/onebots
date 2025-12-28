@@ -7,6 +7,8 @@
 // 配置类型
 // ============================================
 
+export type ReceiverMode = 'websocket' | 'webhook';
+
 export interface QQConfig {
     account_id: string;
     appId: string;
@@ -17,6 +19,8 @@ export interface QQConfig {
     removeAt?: boolean;
     maxRetry?: number;
     logLevel?: string;
+    // 接收模式配置
+    mode?: ReceiverMode;          // 'websocket' 或 'webhook'，默认 'websocket'
 }
 
 // ============================================
@@ -464,4 +468,26 @@ export interface MediaUploadResult {
     file_info?: string;
     ttl?: number;
     id?: string;
+}
+
+// ============================================
+// Webhook 相关类型
+// ============================================
+
+export interface WebhookPayload {
+    op: number;           // 操作码
+    d?: any;              // 事件数据
+    id?: string;          // 事件ID
+    t?: string;           // 事件类型
+    s?: number;           // 序列号
+}
+
+export interface WebhookValidation {
+    plain_token: string;
+    event_ts: string;
+}
+
+export interface WebhookValidationResponse {
+    plain_token: string;
+    signature: string;
 }
