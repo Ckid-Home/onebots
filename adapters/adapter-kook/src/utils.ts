@@ -108,35 +108,35 @@ export function textToKMarkdown(text: string): string {
  * 构建 @用户 的 KMarkdown
  */
 export function mentionUser(userId: string): string {
-    return `(met)${userId}(met)`;
+    return `(met)${userId}(/met)`;
 }
 
 /**
  * 构建 @全体成员 的 KMarkdown
  */
 export function mentionAll(): string {
-    return '(met)all(met)';
+    return '(met)all(/met)';
 }
 
 /**
  * 构建 @在线成员 的 KMarkdown
  */
 export function mentionHere(): string {
-    return '(met)here(met)';
+    return '(met)here(/met)';
 }
 
 /**
  * 构建 @角色 的 KMarkdown
  */
 export function mentionRole(roleId: number): string {
-    return `(rol)${roleId}(rol)`;
+    return `(rol)${roleId}(/rol)`;
 }
 
 /**
  * 构建 #频道 的 KMarkdown
  */
 export function mentionChannel(channelId: string): string {
-    return `(chn)${channelId}(chn)`;
+    return `(chn)${channelId}(/chn)`;
 }
 
 /**
