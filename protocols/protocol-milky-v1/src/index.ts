@@ -416,7 +416,7 @@ export default class MilkyV1 extends Protocol<"v1", MilkyConfig.Config> {
             }
 
             const action = ctx.params.action;
-            const params = ctx.request.body;
+            const params = (ctx.request as any).body;
 
             try {
                 const result = await this.apply(action, params);

@@ -3,7 +3,7 @@ import { WebSocketServer, WebSocket, ServerOptions } from "ws";
 import { IncomingMessage, Server } from "http";
 
 export class WsServer<
-    T extends typeof WebSocket.WebSocket = typeof WebSocket.WebSocket,
+    T extends typeof WebSocket = typeof WebSocket,
     U extends typeof IncomingMessage = typeof IncomingMessage,
 > extends WebSocketServer<T, U> {
     constructor(options?: WsServer.Options<T, U>) {
@@ -13,7 +13,7 @@ export class WsServer<
 }
 export namespace WsServer {
     export interface Options<
-        T extends typeof WebSocket.WebSocket = typeof WebSocket.WebSocket,
+        T extends typeof WebSocket = typeof WebSocket,
         U extends typeof IncomingMessage = typeof IncomingMessage,
     > extends ServerOptions<T, U> {
         path: string;

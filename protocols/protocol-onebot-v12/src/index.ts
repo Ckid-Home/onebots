@@ -625,7 +625,7 @@ export default class OneBotV12Protocol extends Protocol<"v12", OneBotV12Config.C
             }
 
             const action = ctx.params.action;
-            const params = ctx.request.body;
+            const params = (ctx.request as any).body;
 
             try {
                 const result = await this.apply(action, params);

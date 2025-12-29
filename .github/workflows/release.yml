@@ -6,6 +6,10 @@ on:
     branches:
       - master
 
+permissions:
+  id-token: write
+  contents: read
+
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
@@ -67,8 +71,6 @@ jobs:
 
       - name: Publish to npm
         run: pnpm publish -r --no-git-checks --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create git tags
         run: |
