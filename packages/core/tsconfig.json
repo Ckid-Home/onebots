@@ -2,7 +2,6 @@
     "compilerOptions": {
         "outDir": "./lib",
         "rootDir": "./src",
-        "baseUrl": ".",
         "target": "esnext",
         "module": "nodenext",
         "declaration": true,
@@ -13,7 +12,7 @@
         "experimentalDecorators": true,
         "composite": true,
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["./src/*"]
         },
         "skipLibCheck": true
     },

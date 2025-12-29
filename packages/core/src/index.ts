@@ -1,4 +1,3 @@
-export type {} from 'koa-bodyparser'
 export * from "./account.js";
 export * from "./adapter.js";
 export * from "./base-app.js";
