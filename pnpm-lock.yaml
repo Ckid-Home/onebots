@@ -142,6 +142,15 @@ importers:
 
   development:
     dependencies:
+      '@onebots/adapter-discord':
+        specifier: workspace:*
+        version: link:../adapters/adapter-discord
+      '@onebots/adapter-kook':
+        specifier: workspace:*
+        version: link:../adapters/adapter-kook
+      '@onebots/adapter-qq':
+        specifier: workspace:*
+        version: link:../adapters/adapter-qq
       '@onebots/adapter-wechat':
         specifier: workspace:*
         version: link:../adapters/adapter-wechat

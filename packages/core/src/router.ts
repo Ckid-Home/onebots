@@ -1,7 +1,14 @@
 import KoaRouter from "@koa/router";
 import { WebSocketServer, WebSocket, ServerOptions } from "ws";
 import { IncomingMessage, Server } from "http";
-export type {RouterContext} from "@koa/router";
+import type {RouterContext as KoaRouterContext} from "@koa/router";
+import type { Request } from 'koa';
+
+export type RouterContext = KoaRouterContext & {
+    request: Request & {
+        body: any;
+    };
+};
 export type {Next} from "koa";
 export class WsServer<
     T extends typeof WebSocket = typeof WebSocket,

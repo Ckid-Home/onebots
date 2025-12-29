@@ -5,12 +5,6 @@ import { createRequire } from "module";
 import koaStatic from "koa-static";
 import { copyFileSync, existsSync, writeFileSync, mkdirSync, readFileSync } from "fs";
 import type { WsServer, Dict } from "@onebots/core";
-import type {} from '@onebots/core/types'
-declare module 'koa' {
-    interface ContextDelegatedRequest{
-        body: any;
-    }
-}
 import * as pty from "@karinjs/node-pty";
 
 const require = createRequire(import.meta.url);
@@ -444,8 +438,8 @@ export class App extends BaseApp {
             ctx.body = this.accounts.map(bot => bot.info);
         });
 
-        apiRouter.post("/add", ctx => {
-            const config = ctx.request.body as any;
+        apiRouter.post("/add", (ctx: RouterContext) => {
+            const config = ctx.request.body;
             try {
                 this.addAccount(config);
                 ctx.body = { success: true, message: '添加成功' };
@@ -455,8 +449,8 @@ export class App extends BaseApp {
             }
         });
 
-        apiRouter.post("/edit", ctx => {
-            const config = ctx.request.body as any;
+        apiRouter.post("/edit", (ctx: RouterContext) => {
+            const config = ctx.request.body;
             try {
                 this.updateAccount(config);
                 ctx.body = { success: true, message: '修改成功' };
