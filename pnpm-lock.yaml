@@ -43,17 +43,26 @@ importers:
         specifier: ^8.18.3
         version: 8.18.3
 
-  adapters/adapter-discord:
+  adapters/adapter-qq:
     dependencies:
+      '@types/koa':
+        specifier: ^2.13.4
+        version: 2.15.0
       '@types/node':
         specifier: ^22.7.3
         version: 22.7.3
-      discord.js:
-        specifier: ^14.16.3
-        version: 14.25.1
+      '@types/ws':
+        specifier: ^8.5.3
+        version: 8.5.12
+      koa:
+        specifier: latest
+        version: 3.1.1
       onebots:
         specifier: workspace:*
         version: link:../../packages/onebots
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
     devDependencies:
       tsc-alias:
         specifier: latest
