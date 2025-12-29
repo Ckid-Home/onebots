@@ -1,8 +1,11 @@
+import type { ScalarOrArrayFiles } from 'koa-body';
+import type { Request } from 'koa';
+// 导入 koa-body 的类型定义，它会自动扩展 Request 接口
+import 'koa-body';
 export type Dict<T = any,K extends string|symbol=string> = Record<K,T>;
 export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal" | "mark" | "off";
 export type Dispose = () => any;
 export type MayBeArray<T extends any> = T | T[];
-
 export namespace CommonTypes {
     export type Id = {
         string: string
