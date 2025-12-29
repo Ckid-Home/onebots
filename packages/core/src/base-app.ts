@@ -7,7 +7,7 @@ import log4js from "log4js";
 import type { Logger } from "log4js";
 import { createServer, Server } from "http";
 import yaml from "js-yaml";
-import KoaBodyParser from "koa-bodyparser";
+import KoaBody from "koa-body";
 import basicAuth from "koa-basic-auth";
 const { configure,connectLogger,getLogger } = log4js;
 import { Class, deepClone, deepMerge, readLine } from "@/utils.js";
@@ -36,7 +36,6 @@ export interface KoaOptions {
     maxIpsCount?: number;
 }
 
-type AdapterClass = Class<Adapter>;
 
 export class BaseApp extends Koa {
     public config: Required<BaseApp.Config>;
@@ -89,12 +88,7 @@ export class BaseApp extends Koa {
         this.logger.level = this.config.log_level;
         this.httpServer = createServer(this.callback());
         this.router = new Router(this.httpServer, { prefix: this.config.path });
-        this.use(KoaBodyParser({
-            enableTypes: ['json', 'form', 'text'],
-            extendTypes: {
-                text: ['text/plain']
-            }
-        }))
+        this.use(KoaBody())
             .use(this.router.routes())
             .use(this.router.allowedMethods())
             .use(async (ctx, next) => {
@@ -105,7 +99,7 @@ export class BaseApp extends Koa {
                     pass: this.config.password,
                 })(ctx, next);
             });
-
+        this.logger.info(`username: ${this.config.username}, password: ${this.config.password}`);
         this.initAdapters();
     }
     getLogger(patform: string) {

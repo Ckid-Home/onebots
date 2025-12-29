@@ -1,10 +1,16 @@
-import { BaseApp, yaml, AdapterRegistry, ProtocolRegistry, configure, Protocol, Adapter, readLine } from "@onebots/core";
+import { BaseApp, yaml, AdapterRegistry,RouterContext,Next, ProtocolRegistry, configure, Protocol, Adapter, readLine } from "@onebots/core";
 import * as path from "path";
 import * as fs from "fs";
 import { createRequire } from "module";
 import koaStatic from "koa-static";
 import { copyFileSync, existsSync, writeFileSync, mkdirSync, readFileSync } from "fs";
 import type { WsServer, Dict } from "@onebots/core";
+import type {} from '@onebots/core/types'
+declare module 'koa' {
+    interface ContextDelegatedRequest{
+        body: any;
+    }
+}
 import * as pty from "@karinjs/node-pty";
 
 const require = createRequire(import.meta.url);
@@ -293,7 +299,7 @@ export class App extends BaseApp {
         const apiRouter = this.router.prefix('/api');
 
         // 管理端点
-        apiRouter.get("/adapters", ctx => {
+        apiRouter.get("/adapters", (ctx: RouterContext) => {
             ctx.body = [...this.adapters.values()].map(adapter => adapter.info);
         });
 
@@ -422,9 +428,8 @@ export class App extends BaseApp {
             ctx.body = fs.readFileSync(BaseApp.configPath, "utf8");
         });
 
-        apiRouter.post("/config", ctx => {
+        apiRouter.post("/config", (ctx: RouterContext) => {
             try {
-                // koa-bodyparser 会把 text/plain 解析为字符串
                 const configContent = ctx.request.body as string;
                 fs.writeFileSync(BaseApp.configPath, configContent, "utf8");
                 ctx.body = { success: true, message: "配置已保存" };
