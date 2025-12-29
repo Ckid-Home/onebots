@@ -94,7 +94,7 @@ export class App extends BaseApp {
                         this.terminalClients.forEach(c => {
                             try {
                                 c.send(JSON.stringify({ type: 'output', data: '\r\n\x1b[33m[服务即将重启]\x1b[0m' }));
-                            } catch (e) {}
+                            } catch (e) { }
                         });
                         setTimeout(() => process.exit(100), 500);
                     }
@@ -507,52 +507,38 @@ export namespace App {
             [key]: config
         }
     }
-    export async function registerAdapter(platform: string)
-    export async function registerAdapter(platform: string, factory: Adapter.Factory)
-    export async function registerAdapter(platform: string, factory?: Adapter.Factory) {
-        if (!factory) factory = await loadAdapterFactory(platform);
-        AdapterRegistry.register(platform, factory);
+    async function safeImport(name: string) {
+        try {
+            return await import(name);
+        } catch { }
     }
-    export async function registerProtocol(name: string, version?: string)
-    export async function registerProtocol(name: string, factory: Protocol.Factory, version?: string,)
-    export async function registerProtocol(name: string, ...args: [Protocol.Factory, string?] | [string?]) {
-        let factory: Protocol.Factory | undefined = typeof args[0] === "string" ? undefined : args[0];
-        let version: string = typeof args[0] === "string" ? args[0] : args[1];
-        if (!factory) factory = await loadProtocolFactory(name, version);
-        ProtocolRegistry.register(name, version, factory);
-    }
-    export async function loadAdapterFactory(platform: string): Promise<Adapter.Factory> {
-        const maybeNames = [
-            `@onebots/adapter-${platform}`,
-            `onebots-adapter-${platform}`,
-            platform
-        ];
-        const errors: string[] = [];
-        for (const name of maybeNames) {
-            try {
-                const entry = require.resolve(name);
-                const mod = await import(entry);
-                if (mod.default) return mod.default;
-            } catch (e) { errors.push(e.toString()); }
+    export async function loadAdapterFactory(platform: string,maybeNames=[
+        `@onebots/adapter-${platform}`,
+        `onebots-adapter-${platform}`,
+        platform
+    ]):Promise<boolean>{
+        if(!maybeNames.length) return false;
+        const modName=maybeNames.shift()!;
+        try{
+            await import(modName);
+            return true;
+        }catch{
+            return loadAdapterFactory(platform,maybeNames);
         }
-        throw new Error(errors.join("\n"))
     }
-    export async function loadProtocolFactory(name: string, version?: string): Promise<Protocol.Factory> {
-        const fullName = [name, version].filter(Boolean).join("-");
-        const maybeNames = [
-            `@onebots/protocol-${fullName}`,
-            `onebots-protocol-${fullName}`,
-            `${fullName}`
-        ];
-        const errors: string[] = [];
-        for (const modName of maybeNames) {
-            try {
-                const entry = require.resolve(modName);
-                const mod = await import(entry);
-                if (mod.default) return mod.default;
-            } catch (e) { errors.push(e.toString()); }
+    export async function loadProtocolFactory(name: string, maybeNames=[
+        `@onebots/protocol-${name}`,
+        `onebots-protocol-${name}`,
+        `${name}`
+        ]):Promise<boolean>{
+        if(!maybeNames.length) return false;
+        const modName=maybeNames.shift()!;
+        try{
+            await import(modName);
+            return true;
+        }catch{
+            return loadProtocolFactory(name,maybeNames);
         }
-        throw new Error(errors.join("\n"));
     }
 }
 export function createOnebots(
