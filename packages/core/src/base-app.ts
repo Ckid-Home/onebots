@@ -99,7 +99,7 @@ export class BaseApp extends Koa {
                     pass: this.config.password,
                 })(ctx, next);
             });
-
+        this.logger.info(`username: ${this.config.username}, password: ${this.config.password}`);
         this.initAdapters();
     }
     getLogger(patform: string) {
