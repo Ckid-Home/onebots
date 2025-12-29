@@ -1,7 +1,7 @@
 {
-  "name": "@onebots/adapter-qq",
+  "name": "@imhelper/adapter-qq",
   "version": "1.0.0",
-  "description": "OneBots QQ官方机器人适配器",
+  "description": "IMHelper QQ官方机器人适配器",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -10,7 +10,7 @@
     "clean": "rm -rf lib *.tsbuildinfo"
   },
   "keywords": [
-    "onebots",
+    "imhelper",
     "qq",
     "adapter",
     "qq-bot",
@@ -31,13 +31,12 @@
     "typescript": "latest"
   },
   "peerDependencies": {
-    "onebots": "workspace:*"
+    "imhelper": "workspace:*"
   },
   "dependencies": {
-    "@types/koa": "^2.13.4",
+    "@noble/curves": "^1.5.0",
     "@types/node": "^22.7.3",
     "@types/ws": "^8.5.3",
-    "koa": "latest",
     "ws": "^8.18.3"
   }
 }

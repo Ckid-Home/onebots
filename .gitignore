@@ -4,7 +4,7 @@
 # Runtime data
 **/data
 **/config.yaml
-onebots.log
+imhelper.log
 **/tsconfig.tsbuildinfo
 # Dependencies
 node_modules

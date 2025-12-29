@@ -1,16 +1,17 @@
 {
-  "name": "onebots-monorepo",
-  "version": "0.4.96",
-  "description": "多平台多协议的机器人应用启动器",
+  "name": "imhelper-monorepo",
+  "version": "0.5.0",
+  "description": "IMHelper - 统一的消息助手，支持多种IM平台和协议",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "pnpm build:packages && pnpm build:rest",
     "build:packages": "pnpm --filter='./packages/*' --workspace-concurrency=1 build",
-    "build:rest": "pnpm --filter='./protocols/*' --filter='./adapters/*' --filter=@onebots/docs --filter=onebots-dev build",
+    "build:rest": "pnpm --filter='./protocols/*/*' --filter='./adapters/*' --filter=@imhelper/docs --filter=imhelper-dev build",
     "clean": "pnpm -r clean",
-    "dev": "pnpm --filter=onebots-dev dev",
-    "dev:client": "pnpm -r --filter=@onebots/client dev",
+    "dev": "pnpm --filter=imhelper-dev dev",
+    "test:ws": "pnpm --filter=imhelper-dev test:ws",
+    "dev:client": "pnpm -r --filter=@imhelper/web dev",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -30,7 +31,7 @@
   "packageManager": "pnpm@9.0.2",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/liucl-cn/onebots.git"
+    "url": "git+https://github.com/liucl-cn/imhelper.git"
   },
   "keywords": [
     "onebot",
@@ -43,16 +44,16 @@
   "author": "凉菜",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lc-cn/onebots/issues"
+    "url": "https://github.com/lc-cn/imhelper/issues"
   },
   "workspaces": [
     "packages/*",
     "adapters/*",
-    "protocols/*",
+    "protocols/*/*",
     "docs",
     "development"
   ],
-  "homepage": "https://github.com/lc-cn/onebots#readme",
+  "homepage": "https://github.com/lc-cn/imhelper#readme",
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
     "@types/koa-static": "^4.0.4",

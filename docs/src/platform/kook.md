@@ -1,6 +1,6 @@
 # Kook 适配器
 
-Kook（原开黑啦）适配器（计划中）将支持通过 Kook Bot API 接入 OneBots 服务。
+Kook（原开黑啦）适配器（计划中）将支持通过 Kook Bot API 接入 imhelper 服务。
 
 ## 状态
 

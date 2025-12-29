@@ -15,7 +15,7 @@ Satori 协议的特点：
 ## 安装
 
 ```bash
-npm install @onebots/protocol-satori-v1
+npm install @imhelper/protocol-satori-1-v1
 ```
 
 ## 配置
@@ -152,7 +152,7 @@ Satori 协议已在以下平台得到验证：
 - Telegram  
 - QQ（通过各种实现）
 - Kook
-- 微信（通过 OneBots）
+- 微信（通过 imhelper）
 
 ## 在 Koishi 中使用
 
@@ -185,4 +185,4 @@ plugins:
 
 - [Satori 协议规范](https://satori.js.org/)
 - [Koishi 文档](https://koishi.chat/)
-- [@onebots/protocol-satori README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-satori)
+- [@imhelper/protocol-satori-1 README](https://github.com/lc-cn/imhelper/tree/master/packages/protocol-satori)

@@ -2,11 +2,11 @@
  * QQ官方机器人适配器
  * 继承Adapter基类，实现QQ官方机器人的消息收发和管理功能
  */
-import { Account, AdapterRegistry, AccountStatus } from "onebots";
-import { Adapter } from "onebots";
-import { BaseApp } from "onebots";
+import { Account, AdapterRegistry, AccountStatus } from "imhelper";
+import { Adapter } from "imhelper";
+import { BaseApp } from "imhelper";
 import { QQBot } from "./bot.js";
-import { CommonEvent } from "onebots";
+import { CommonEvent } from "imhelper";
 import type {
     QQConfig,
     QQMessageEvent,
@@ -357,9 +357,9 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
      */
     async getVersion(uin: string): Promise<Adapter.VersionInfo> {
         return {
-            app_name: "onebots-qq-adapter",
+            app_name: "imhelper-qq-adapter",
             app_version: "1.0.0",
-            impl: "onebots",
+            impl: "imhelper",
             version: "1.0.0",
             onebot_version: "12",
         };
@@ -610,6 +610,14 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
      * 处理频道消息
      */
     private handleGuildMessage(account: Account<'qq', QQBot>, message: QQMessageEvent, accountId: string): void {
+        // 打印消息接收日志
+        const content = message.content || '';
+        const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        this.logger.info(
+            `[QQ] 收到频道消息 | 消息ID: ${message.id} | 频道: ${message.channel_id} | ` +
+            `发送者: ${message.author.username}(${message.author.id}) | 内容: ${contentPreview}`
+        );
+
         const messageSegments = this.parseMessageContent(message.content || '', message.attachments);
 
         const commonEvent: CommonEvent.Message = {
@@ -640,6 +648,14 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
      * 处理频道私信
      */
     private handleDirectMessage(account: Account<'qq', QQBot>, message: QQDirectMessageEvent, accountId: string): void {
+        // 打印消息接收日志
+        const content = message.content || '';
+        const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        this.logger.info(
+            `[QQ] 收到频道私信 | 消息ID: ${message.id} | ` +
+            `发送者: ${message.author?.username || ''}(${message.author?.id || ''}) | 内容: ${contentPreview}`
+        );
+
         const messageSegments = this.parseMessageContent(message.content || '', message.attachments);
 
         const commonEvent: CommonEvent.Message = {
@@ -666,6 +682,14 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
      * 处理群消息
      */
     private handleGroupMessage(account: Account<'qq', QQBot>, message: QQGroupMessageEvent, accountId: string): void {
+        // 打印消息接收日志
+        const content = message.content || '';
+        const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        this.logger.info(
+            `[QQ] 收到群消息 | 消息ID: ${message.id} | 群: ${message.group_openid} | ` +
+            `发送者: ${message.author.member_openid || message.author.id} | 内容: ${contentPreview}`
+        );
+
         const messageSegments = this.parseMessageContent(message.content || '', message.attachments);
 
         const commonEvent: CommonEvent.Message = {
@@ -695,6 +719,14 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
      * 处理私聊消息 (C2C)
      */
     private handleC2CMessage(account: Account<'qq', QQBot>, message: QQC2CMessageEvent, accountId: string): void {
+        // 打印消息接收日志
+        const content = message.content || '';
+        const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        this.logger.info(
+            `[QQ] 收到私聊消息 | 消息ID: ${message.id} | ` +
+            `发送者: ${message.author.user_openid || message.author.id} | 内容: ${contentPreview}`
+        );
+
         const messageSegments = this.parseMessageContent(message.content || '', message.attachments);
 
         const commonEvent: CommonEvent.Message = {
@@ -867,7 +899,7 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
 }
 
 // 声明模块扩展
-declare module "onebots" {
+declare module "imhelper" {
     export namespace Adapter {
         export interface Configs {
             qq: QQConfig;

@@ -1,10 +1,10 @@
-# @onebots/adapter-wechat
+# @imhelper/adapter-wechat
 
-OneBots 微信公众号适配器 - 支持微信公众号平台的机器人适配器
+imhelper 微信公众号适配器 - 支持微信公众号平台的机器人适配器
 
 ## 简介
 
-`@onebots/adapter-wechat` 是 OneBots 框架的官方微信公众号适配器，用于连接微信公众号平台，将微信的消息和事件转换为 OneBots 的通用格式。
+`@imhelper/adapter-wechat` 是 imhelper 框架的官方微信公众号适配器，用于连接微信公众号平台，将微信的消息和事件转换为 imhelper 的通用格式。
 
 ## 特性
 
@@ -17,9 +17,9 @@ OneBots 微信公众号适配器 - 支持微信公众号平台的机器人适配
 ## 安装
 
 ```bash
-npm install @onebots/adapter-wechat
+npm install @imhelper/adapter-wechat
 # 或
-pnpm add @onebots/adapter-wechat
+pnpm add @imhelper/adapter-wechat
 ```
 
 ## 使用方法
@@ -28,22 +28,22 @@ pnpm add @onebots/adapter-wechat
 
 ### 1. 命令行注册（推荐）
 
-使用 `onebots` 命令行工具时，通过 `-r` 参数注册适配器：
+使用 `imhelper` 命令行工具时，通过 `-r` 参数注册适配器：
 
 ```bash
 # 注册微信适配器
-onebots -r wechat
+imhelper -r wechat
 
 # 同时注册多个适配器
-onebots -r wechat -r qq -r kook
+imhelper -r wechat -r qq -r kook
 
 # 注册适配器并指定配置文件
-onebots -r wechat -c config.yaml
+imhelper -r wechat -c config.yaml
 ```
 
 适配器会自动从以下位置加载：
-- `@onebots/adapter-wechat` (官方包)
-- `onebots-adapter-wechat` (社区包)
+- `@imhelper/adapter-wechat` (官方包)
+- `imhelper-adapter-wechat` (社区包)
 - `wechat` (直接包名)
 
 ### 2. 配置文件方式
@@ -66,8 +66,8 @@ accounts:
 ### 3. 代码方式
 
 ```typescript
-import { App } from 'onebots';
-import { WeChatAdapter } from '@onebots/adapter-wechat';
+import { App } from 'imhelper';
+import { WeChatAdapter } from '@imhelper/adapter-wechat';
 
 // 注册适配器
 await App.registerAdapter('wechat', WeChatAdapter);
@@ -172,7 +172,7 @@ await adapter.deleteMenu();
 
 ## 消息格式转换
 
-适配器会自动将微信消息格式转换为 OneBots 通用格式：
+适配器会自动将微信消息格式转换为 imhelper 通用格式：
 
 ### 接收消息示例
 
@@ -188,7 +188,7 @@ await adapter.deleteMenu();
 </xml>
 ```
 
-OneBots 通用格式：
+imhelper 通用格式：
 ```json
 {
   "type": "message",
@@ -213,7 +213,7 @@ pnpm build
 ## 相关链接
 
 - [微信公众平台开发文档](https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html)
-- [OneBots 文档](../../docs)
+- [imhelper 文档](../../docs)
 
 ## 许可证
 

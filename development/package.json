@@ -1,25 +1,28 @@
 {
-  "name": "onebots-dev",
+  "name": "imhelper-dev",
   "private": true,
   "version": "1.1.1",
-  "description": "OneBots dev module",
+  "description": "IMHelper dev module",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "onebots -r qq -r kook -r discord -r wechat -p milky-v1 -p satori-v1 -p onebot-v12 -p onebot-v11 -c config.yaml"
+    "dev": "imhelper -r qq -r kook -r discord -r wechat -p milky-v1 -p satori-v1 -p onebot-v12 -p onebot-v11 -c config.yaml",
+    "test:ws": "node test-ws.js"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "onebots": "workspace:*",
-    "@onebots/protocol-onebot-v11": "workspace:*",
-    "@onebots/protocol-onebot-v12": "workspace:*",
-    "@onebots/protocol-milky-v1": "workspace:*",
-    "@onebots/protocol-satori-v1": "workspace:*",
-    "@onebots/adapter-qq": "workspace:*",
-    "@onebots/adapter-kook": "workspace:*",
-    "@onebots/adapter-discord": "workspace:*",
-    "@onebots/adapter-wechat": "workspace:*"
+    "imhelper": "workspace:*",
+    "@imhelper/protocol-onebot-11": "workspace:*",
+    "@imhelper/protocol-onebot-12": "workspace:*",
+    "@imhelper/protocol-milky-v1": "workspace:*",
+    "@imhelper/protocol-satori-1": "workspace:*",
+    "@imhelper/adapter-qq": "workspace:*",
+    "@imhelper/adapter-kook": "workspace:*",
+    "@imhelper/adapter-discord": "workspace:*",
+    "@imhelper/adapter-wechat": "workspace:*",
+    "js-yaml": "^4.1.0",
+    "ws": "^8.18.3"
   }
 }

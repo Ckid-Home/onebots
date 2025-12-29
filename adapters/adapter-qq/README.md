@@ -1,4 +1,4 @@
-# @onebots/adapter-qq
+# @imhelper/adapter-qq
 
 QQ官方机器人适配器，支持QQ频道和群聊机器人的消息收发和管理。
 
@@ -17,9 +17,9 @@ QQ官方机器人适配器，支持QQ频道和群聊机器人的消息收发和�
 ## 安装
 
 ```bash
-npm install @onebots/adapter-qq
+npm install @imhelper/adapter-qq
 # 或
-pnpm add @onebots/adapter-qq
+pnpm add @imhelper/adapter-qq
 ```
 
 ## 接收模式
@@ -163,4 +163,4 @@ qq.my_bot:
 
 - [QQ开放平台](https://q.qq.com/)
 - [QQ机器人文档](https://bot.q.qq.com/wiki/)
-- [OneBots文档](https://docs.onebots.org)
+- [OneBots文档](https://docs.imhelper.org)

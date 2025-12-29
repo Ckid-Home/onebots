@@ -1,10 +1,10 @@
-# @onebots/adapter-kook
+# @imhelper/adapter-kook
 
-OneBots KOOK (开黑了) 适配器
+imhelper KOOK (开黑了) 适配器
 
 ## 简介
 
-这是一个用于 OneBots 框架的 KOOK（原开黑了）平台适配器。KOOK 是一个面向游戏玩家的即时通讯平台，类似于 Discord。
+这是一个用于 imhelper 框架的 KOOK（原开黑了）平台适配器。KOOK 是一个面向游戏玩家的即时通讯平台，类似于 Discord。
 
 ## 功能特性
 
@@ -23,9 +23,9 @@ OneBots KOOK (开黑了) 适配器
 ## 安装
 
 ```bash
-npm install @onebots/adapter-kook
+npm install @imhelper/adapter-kook
 # 或
-pnpm add @onebots/adapter-kook
+pnpm add @imhelper/adapter-kook
 ```
 
 ## 配置

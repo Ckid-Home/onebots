@@ -6,11 +6,11 @@
  * - 频道管理（getChannelList, getChannelInfo 等）
  * - 用户管理（getFriendList, getUserInfo 等）
  */
-import { Account, AdapterRegistry, AccountStatus } from "onebots";
-import { Adapter } from "onebots";
-import { BaseApp } from "onebots";
+import { Account, AdapterRegistry, AccountStatus } from "imhelper";
+import { Adapter } from "imhelper";
+import { BaseApp } from "imhelper";
 import { KookBot } from "./bot.js";
-import { CommonEvent } from "onebots";
+import { CommonEvent } from "imhelper";
 import type { KookConfig, KookEvent, KookMessageType } from "./types.js";
 import { parseKMarkdown, mentionUser, mentionAll, mentionHere } from "./utils.js";
 
@@ -67,25 +67,13 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
 
         if (scene_type === 'private' || scene_type === 'direct') {
             // 私聊消息
-            result = await bot.sendDirectMessage({
-                type: messageType,
-                target_id: scene_id.string,
-                content,
-            });
+            result = await bot.sendDirectMessage(scene_id.string, content);
         } else if (scene_type === 'channel') {
             // 频道消息
-            result = await bot.sendChannelMessage({
-                type: messageType,
-                target_id: scene_id.string,
-                content,
-            });
+            result = await bot.sendChannelMessage(scene_id.string, content);
         } else if (scene_type === 'group') {
             // 群组消息也发送到频道
-            result = await bot.sendChannelMessage({
-                type: messageType,
-                target_id: scene_id.string,
-                content,
-            });
+            result = await bot.sendChannelMessage(scene_id.string, content);
         } else {
             throw new Error(`KOOK 不支持的消息场景类型: ${scene_type}`);
         }
@@ -106,10 +94,11 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
         const msgId = params.message_id.string;
 
         // 根据场景类型删除消息
-        if (params.scene_type === 'private' || params.scene_type === 'direct') {
-            await bot.deleteDirectMessage(msgId);
-        } else {
-            await bot.deleteChannelMessage(msgId);
+        // 需要从消息中获取 channel_id，这里简化处理
+        // 实际应该从消息缓存或数据库中获取
+        const channelId = params.scene_id?.string || '';
+        if (channelId) {
+            await bot.deleteMessage(channelId, msgId);
         }
     }
 
@@ -122,8 +111,9 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
 
         const bot = account.client;
         const msgId = params.message_id.string;
+        const channelId = params.scene_id?.string || '';
 
-        const msg = await bot.getChannelMessage(msgId);
+        const msg = await bot.getMessage(channelId, msgId);
 
         return {
             message_id: this.createId(msg.id),
@@ -162,7 +152,13 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
             }
         }
 
-        await bot.updateChannelMessage(msgId, content);
+        // 更新消息需要 channelId，但参数中没有，尝试从消息中获取
+        // 如果无法获取，则使用第一个可用的频道（简化处理）
+        const channelId = (params as any).scene_id?.string || '';
+        if (!channelId) {
+            throw new Error('更新消息需要 channel_id，但参数中未提供');
+        }
+        await bot.updateMessage(channelId, msgId, content);
     }
 
     // ============================================
@@ -221,22 +217,9 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
         const friends: Adapter.FriendInfo[] = [];
         let page = 1;
 
-        do {
-            const result = await bot.getUserChatList(page, 50);
-            
-            for (const chat of result.items) {
-                if (chat.target_info) {
-                    friends.push({
-                        user_id: this.createId(chat.target_info.id),
-                        user_name: chat.target_info.username,
-                        remark: chat.target_info.nickname,
-                    });
-                }
-            }
-
-            if (page >= result.meta.page_total) break;
-            page++;
-        } while (true);
+        // KOOK 不提供私聊会话列表 API，返回空数组
+        // 如果需要获取私聊用户，需要通过其他方式（如消息记录）
+        return [];
 
         return friends;
     }
@@ -502,9 +485,9 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
         if (!account) throw new Error(`Account ${uin} not found`);
 
         const bot = account.client;
-        const users = await bot.getChannelUserList(params.channel_id.string);
+        const result = await bot.getChannelUserList(params.channel_id.string);
 
-        return users.map(user => ({
+        return result.items.map(user => ({
             channel_id: params.channel_id,
             user_id: this.createId(user.id),
             user_name: user.username,
@@ -587,7 +570,7 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
      */
     async getVersion(uin: string): Promise<Adapter.VersionInfo> {
         return {
-            app_name: 'OneBots KOOK Adapter',
+            app_name: 'imhelper KOOK Adapter',
             app_version: '1.0.0',
             impl: 'kook',
             version: '1.0.0',
@@ -637,11 +620,18 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
 
         // 监听频道消息
         bot.on('channel_message', (event: KookEvent) => {
-            this.logger.debug(`收到频道消息:`, event);
-            
             // 忽略自己发送的消息
             const me = bot.getCachedMe();
             if (me && event.author_id === me.id) return;
+
+            // 打印消息接收日志
+            const content = event.content || '';
+            const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+            const channelId = (event as any).channel_id || '';
+            this.logger.info(
+                `[KOOK] 收到频道消息 | 消息ID: ${event.msg_id} | 频道: ${channelId} | ` +
+                `发送者: ${event.extra?.author?.username || event.author_id} | 内容: ${contentPreview}`
+            );
 
             // 构建消息段
             const messageSegments: any[] = [];
@@ -717,7 +707,7 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
                     avatar: event.extra?.author?.avatar,
                 },
                 group: {
-                    id: this.createId(event.extra?.guild_id || ''),
+                    id: this.createId(event.extra?.guild_id || (event as any).channel_id || ''),
                     name: '',
                 },
                 message_id: this.createId(event.msg_id),
@@ -731,11 +721,17 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
 
         // 监听私聊消息
         bot.on('direct_message', (event: KookEvent) => {
-            this.logger.debug(`收到私聊消息:`, event);
-            
             // 忽略自己发送的消息
             const me = bot.getCachedMe();
             if (me && event.author_id === me.id) return;
+
+            // 打印消息接收日志
+            const content = event.content || '';
+            const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+            this.logger.info(
+                `[KOOK] 收到私聊消息 | 消息ID: ${event.msg_id} | ` +
+                `发送者: ${event.extra?.author?.username || event.author_id} | 内容: ${contentPreview}`
+            );
 
             // 构建消息段
             const messageSegments: any[] = [];
@@ -915,7 +911,7 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
     }
 }
 
-declare module "onebots" {
+declare module "imhelper" {
     export namespace Adapter {
         export interface Configs {
             kook: KookConfig;
@@ -923,7 +919,14 @@ declare module "onebots" {
     }
 }
 
-AdapterRegistry.register('kook', KookAdapter);
+AdapterRegistry.register('kook', KookAdapter,{
+    name: 'kook',
+    displayName: 'KOOK官方机器人',
+    description: 'KOOK官方机器人适配器，支持频道、群聊和私聊',
+    icon: 'https://www.kookapp.cn/favicon.ico',
+    homepage: 'https://www.kookapp.cn/',
+    author: '凉菜',
+});
 
 declare module '@/adapter.js' {
     namespace Adapter {

@@ -2,6 +2,11 @@ import { defineConfig } from 'vitest/config';
 import * as path from 'path';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    }
+  },
   test: {
     // 测试环境
     environment: 'node',
@@ -54,10 +59,5 @@ export default defineConfig({
       ACCOUNT_ID: process.env.ACCOUNT_ID || 'dingl4hqvwwxewpk6tcn',
       ACCESS_TOKEN: process.env.ACCESS_TOKEN || '',
     },
-    
-    // 别名设置
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    }
   }
 });

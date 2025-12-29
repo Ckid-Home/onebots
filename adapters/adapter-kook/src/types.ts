@@ -10,6 +10,7 @@ export interface KookConfig {
     verifyToken?: string;    // Webhook 验证 Token
     encryptKey?: string;     // 消息加密 Key
     mode?: 'webhook' | 'websocket'; // 连接模式，默认 websocket
+    maxRetry?: number;       // 最大重连次数，默认 10
 }
 
 // 用户类型

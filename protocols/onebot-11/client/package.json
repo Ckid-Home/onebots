@@ -1,0 +1,39 @@
+{
+  "name": "@imhelper/client-onebot-11",
+  "version": "1.0.0",
+  "description": "OneBot V11 协议客户端 SDK",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "rm -f *.tsbuildinfo && tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "clean": "rm -rf lib *.tsbuildinfo"
+  },
+  "keywords": [
+    "imhelper",
+    "onebot",
+    "v11",
+    "client",
+    "sdk"
+  ],
+  "author": "凉菜",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "files": [
+    "/lib/**/*.js",
+    "/lib/**/*.d.ts"
+  ],
+  "dependencies": {
+    "@imhelper/client": "workspace:*",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "tsc-alias": "latest",
+    "typescript": "latest"
+  }
+}
+

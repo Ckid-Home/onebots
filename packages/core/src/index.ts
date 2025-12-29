@@ -10,3 +10,9 @@ export * from "./protocol.js";
 export * from "./registry.js";
 export * from "./registry.js";
 export * from "./db.js";
+// 新增模块
+export * from "./errors.js";
+export * from "./logger.js";
+export * from "./config-validator.js";
+export * from "./di-container.js";
+export * from "./lifecycle.js";

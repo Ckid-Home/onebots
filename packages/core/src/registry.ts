@@ -30,7 +30,6 @@ export class ProtocolRegistry {
 
         const versions = this.protocols.get(name)!;
         versions.set(version, factory);
-
         // Store or update metadata
         if (!this.metadata.has(name)) {
             this.metadata.set(name, {
@@ -166,7 +165,6 @@ export class AdapterRegistry {
         metadata?: Partial<Adapter.Metadata>,
     ): void {
         this.adapters.set(name, factory);
-
         // Store or update metadata
         if (!this.metadata.has(name)) {
             this.metadata.set(name, {

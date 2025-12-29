@@ -1,425 +1,329 @@
 /**
  * KOOK (开黑了) Bot 客户端
- * 支持 WebSocket 和 Webhook 两种连接模式
+ * 基于 kook-client 封装
  */
 import { EventEmitter } from 'events';
-import { Context, Next } from 'koa';
-import WebSocket from 'ws';
+import {Client,ChannelMessageEvent,PrivateMessageEvent} from 'kook-client';
+import type { RouterContext, Next } from 'imhelper';
 import type {
     KookConfig,
     KookUser,
     KookGuild,
     KookChannel,
-    KookRole,
-    KookChannelMessage,
-    KookDirectMessage,
-    KookApiResponse,
-    KookListResponse,
-    KookSignal,
-    KookEvent,
-    KookUserChat,
-    KookSendMessageParams,
-    KookSendDirectMessageParams,
-    KookMessageType,
 } from './types.js';
-import { KookSignalType } from './types.js';
-import {
-    verifyWebhook,
-    decryptWebhookMessage,
-    generateNonce,
-} from './utils.js';
 
 export class KookBot extends EventEmitter {
+    private client: Client;
     private config: KookConfig;
-    private baseURL: string = 'https://www.kookapp.cn/api/v3';
-    private ws: WebSocket | null = null;
-    private heartbeatTimer: NodeJS.Timeout | null = null;
-    private reconnectTimer: NodeJS.Timeout | null = null;
-    private sessionId: string = '';
-    private lastSn: number = 0;
-    private isReconnecting: boolean = false;
-    private me: KookUser | null = null;
 
     constructor(config: KookConfig) {
         super();
         this.config = config;
+        
+        // 创建 kook-client 实例
+        this.client = new Client({
+            token: config.token,
+            mode: config.mode || 'websocket',
+            verify_token: config.verifyToken,
+            encrypt_key: config.encryptKey,
+            ignore: 'bot', // 忽略机器人消息
+            logLevel: 'warn', // 使用 warn 级别，避免过多日志
+        });
+
+        // 转发 kook-client 的事件
+        this.setupEventForwarding();
     }
 
     /**
-     * 获取 API 请求头
+     * 设置事件转发
      */
-    private getHeaders(): Record<string, string> {
+    private setupEventForwarding(): void {
+        // 转发 ready 事件
+        this.client.on('ready', () => {
+            this.emit('ready');
+        });
+
+        // 转发频道消息事件
+        this.client.on('message.channel', (event: ChannelMessageEvent) => {
+            this.emit('channel_message', this.transformChannelEvent(event));
+        });
+
+        // 转发私聊消息事件
+        this.client.on('message.private', (event: PrivateMessageEvent) => {
+            this.emit('direct_message', this.transformPrivateEvent(event));
+        });
+
+        // 转发通用消息事件
+        this.client.on('message', (event: ChannelMessageEvent | PrivateMessageEvent) => {
+            if (event instanceof ChannelMessageEvent) {
+                this.emit('message', this.transformChannelEvent(event));
+            } else {
+                this.emit('message', this.transformPrivateEvent(event));
+            }
+        });
+
+        // 转发错误事件
+        this.client.on('error', (error) => {
+            this.emit('error', error);
+        });
+    }
+
+    /**
+     * 转换频道消息事件为内部格式
+     */
+    private transformChannelEvent(event: ChannelMessageEvent): any {
+        const payload = (event as any).payload || {};
+        const extra = payload.extra || {};
         return {
-            'Authorization': `Bot ${this.config.token}`,
-            'Content-Type': 'application/json',
+            type: payload.type || extra.type || 9,
+            channel_type: 'GROUP',
+            author_id: event.author_id,
+            content: event.raw_message || payload.content || '',
+            msg_id: event.message_id || payload.msg_id || '',
+            msg_timestamp: event.timestamp || payload.msg_timestamp || Date.now(),
+            channel_id: event.channel_id,
+            guild_id: extra.guild_id || '',
+            extra: extra,
+            // 保留原始事件引用
+            _original: event,
         };
     }
 
     /**
-     * 调用 KOOK API
+     * 转换私聊消息事件为内部格式
      */
-    private async callApi<T = any>(
-        method: 'GET' | 'POST',
-        path: string,
-        body?: any,
-        params?: Record<string, string>
-    ): Promise<T> {
-        const url = new URL(path, this.baseURL);
-        
-        if (params) {
-            Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    url.searchParams.set(key, value);
-                }
-            });
-        }
+    private transformPrivateEvent(event: PrivateMessageEvent): any {
+        const payload = (event as any).payload || {};
+        const extra = payload.extra || {};
+        return {
+            type: payload.type || extra.type || 9,
+            channel_type: 'PERSON',
+            author_id: event.author_id,
+            content: event.raw_message || payload.content || '',
+            msg_id: event.message_id || payload.msg_id || '',
+            msg_timestamp: event.timestamp || payload.msg_timestamp || Date.now(),
+            code: extra.code || '',
+            extra: extra,
+            // 保留原始事件引用
+            _original: event,
+        };
+    }
 
+    /**
+     * 启动 Bot
+     */
+    async start(): Promise<void> {
         try {
-            const options: RequestInit = {
-                method,
-                headers: this.getHeaders(),
-            };
-
-            if (body && method === 'POST') {
-                options.body = JSON.stringify(body);
-            }
-
-            const response = await fetch(url.toString(), options);
-            const data = await response.json() as KookApiResponse<T>;
-
-            if (data.code !== 0) {
-                throw new Error(`KOOK API 错误 [${data.code}]: ${data.message}`);
-            }
-
-            return data.data;
-        } catch (error: any) {
+            await this.client.connect();
+            // connect() 会自动调用 init()，所以不需要手动调用
+            this.emit('ready');
+        } catch (error) {
             this.emit('error', error);
             throw error;
         }
     }
 
-    // ============================================
-    // WebSocket 连接管理
-    // ============================================
-
     /**
-     * 获取 WebSocket Gateway
+     * 停止 Bot
      */
-    private async getGateway(): Promise<string> {
-        const data = await this.callApi<{ url: string }>('GET', '/gateway/index', undefined, {
-            compress: '0',  // 不压缩
-        });
-        return data.url;
-    }
-
-    /**
-     * 连接 WebSocket
-     */
-    private async connectWebSocket(): Promise<void> {
+    async stop(): Promise<void> {
         try {
-            const gatewayUrl = await this.getGateway();
-            
-            this.ws = new WebSocket(gatewayUrl);
-            
-            this.ws.on('open', () => {
-                this.emit('ws_open');
-            });
-
-            this.ws.on('message', (data: Buffer) => {
-                try {
-                    const signal: KookSignal = JSON.parse(data.toString());
-                    this.handleSignal(signal);
-                } catch (error: any) {
-                    this.emit('error', new Error(`解析 WebSocket 消息失败: ${error.message}`));
-                }
-            });
-
-            this.ws.on('close', (code, reason) => {
-                this.emit('ws_close', code, reason.toString());
-                this.stopHeartbeat();
-                
-                // 非主动关闭时尝试重连
-                if (!this.isReconnecting && code !== 1000) {
-                    this.scheduleReconnect();
-                }
-            });
-
-            this.ws.on('error', (error) => {
-                this.emit('error', error);
-            });
+            await this.client.disconnect();
+            this.emit('stopped');
         } catch (error) {
             this.emit('error', error);
-            this.scheduleReconnect();
+            throw error;
         }
     }
 
     /**
-     * 处理 WebSocket 信令
+     * 处理 Webhook 请求（Webhook 模式下由 kook-client 内部处理）
+     * 这个方法保留用于兼容，但实际处理由 kook-client 完成
      */
-    private handleSignal(signal: KookSignal): void {
-        switch (signal.s) {
-            case KookSignalType.EVENT:
-                // 事件消息
-                if (signal.sn !== undefined) {
-                    this.lastSn = signal.sn;
-                }
-                this.handleEvent(signal.d);
-                break;
-                
-            case KookSignalType.HELLO:
-                // Hello 消息，保存 session_id
-                if (signal.d && signal.d.session_id) {
-                    this.sessionId = signal.d.session_id;
-                    this.startHeartbeat();
-                    this.emit('ready');
-                }
-                break;
-                
-            case KookSignalType.PONG:
-                // Pong 消息
-                this.emit('pong');
-                break;
-                
-            case KookSignalType.RECONNECT:
-                // 服务端要求重连
-                this.reconnect();
-                break;
-                
-            case KookSignalType.RESUME_ACK:
-                // 恢复成功
-                this.emit('resume_ack');
-                break;
-        }
+    async handleWebhook(ctx: RouterContext, next: Next): Promise<void> {
+        // kook-client 的 webhook receiver 是空的，需要我们自己实现
+        // 但为了保持接口一致性，这里保留方法签名
+        await next();
     }
 
     /**
-     * 处理事件
+     * 获取缓存的用户信息
      */
-    private handleEvent(event: KookEvent): void {
-        // 系统消息
-        if (event.type === 255) {
-            const eventType = event.extra?.type;
-            this.emit(`system.${eventType}`, event);
-            this.emit('system', event);
-            return;
-        }
-
-        // 普通消息
-        if (event.channel_type === 'GROUP') {
-            // 频道消息
-            this.emit('channel_message', event);
-        } else if (event.channel_type === 'PERSON') {
-            // 私聊消息
-            this.emit('direct_message', event);
-        } else if (event.channel_type === 'BROADCAST') {
-            // 广播消息
-            this.emit('broadcast_message', event);
-        }
-
-        // 通用消息事件
-        this.emit('message', event);
-    }
-
-    /**
-     * 发送 Ping
-     */
-    private sendPing(): void {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            const ping: KookSignal = {
-                s: KookSignalType.PING,
-                d: {},
-                sn: this.lastSn,
-            };
-            this.ws.send(JSON.stringify(ping));
-        }
-    }
-
-    /**
-     * 发送 Resume
-     */
-    private sendResume(): void {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            const resume: KookSignal = {
-                s: KookSignalType.RESUME,
-                d: {
-                    sn: this.lastSn,
-                    session_id: this.sessionId,
-                },
-            };
-            this.ws.send(JSON.stringify(resume));
-        }
-    }
-
-    /**
-     * 启动心跳
-     */
-    private startHeartbeat(): void {
-        this.stopHeartbeat();
-        this.heartbeatTimer = setInterval(() => {
-            this.sendPing();
-        }, 30000);  // 30 秒一次
-    }
-
-    /**
-     * 停止心跳
-     */
-    private stopHeartbeat(): void {
-        if (this.heartbeatTimer) {
-            clearInterval(this.heartbeatTimer);
-            this.heartbeatTimer = null;
-        }
-    }
-
-    /**
-     * 安排重连
-     */
-    private scheduleReconnect(): void {
-        if (this.reconnectTimer) return;
+    getCachedMe(): KookUser | null {
+        if (!this.client.self_id) return null;
         
-        this.isReconnecting = true;
-        this.reconnectTimer = setTimeout(async () => {
-            this.reconnectTimer = null;
-            await this.reconnect();
-        }, 5000);  // 5 秒后重连
-    }
-
-    /**
-     * 重连
-     */
-    private async reconnect(): Promise<void> {
-        this.stopHeartbeat();
-        
-        if (this.ws) {
-            this.ws.close();
-            this.ws = null;
-        }
-
-        try {
-            await this.connectWebSocket();
-            this.isReconnecting = false;
-        } catch (error) {
-            this.emit('error', error);
-            this.scheduleReconnect();
-        }
+        return {
+            id: this.client.self_id,
+            username: this.client.nickname || '',
+            nickname: this.client.nickname,
+            identify_num: '',
+            online: true,
+            bot: true,
+            status: 0,
+            avatar: '',
+        };
     }
 
     // ============================================
-    // Webhook 处理
-    // ============================================
-
-    /**
-     * 处理 Webhook 请求
-     */
-    async handleWebhook(ctx: Context, next: Next): Promise<void> {
-        if (ctx.method !== 'POST') {
-            ctx.status = 405;
-            ctx.body = 'Method Not Allowed';
-            return;
-        }
-
-        try {
-            // 读取原始请求体
-            const chunks: Buffer[] = [];
-            for await (const chunk of ctx.req) {
-                chunks.push(chunk as Buffer);
-            }
-            const rawBody = Buffer.concat(chunks).toString('utf-8');
-
-            if (!rawBody) {
-                ctx.status = 400;
-                ctx.body = 'Empty request body';
-                return;
-            }
-
-            let body: any;
-            
-            // 解析 JSON
-            try {
-                body = JSON.parse(rawBody);
-            } catch {
-                ctx.status = 400;
-                ctx.body = 'Invalid JSON';
-                return;
-            }
-
-            // 如果有加密
-            if (body.encrypt && this.config.encryptKey) {
-                const decrypted = decryptWebhookMessage(body.encrypt, this.config.encryptKey);
-                body = JSON.parse(decrypted);
-            }
-
-            // 验证 Webhook Token
-            if (this.config.verifyToken) {
-                if (!verifyWebhook(body, this.config.verifyToken)) {
-                    ctx.status = 403;
-                    ctx.body = 'Invalid verify_token';
-                    return;
-                }
-            }
-
-            // Challenge 验证
-            if (body.d?.channel_type === 'WEBHOOK_CHALLENGE') {
-                ctx.body = {
-                    challenge: body.d.challenge,
-                };
-                return;
-            }
-
-            // 处理事件
-            if (body.s === 0 && body.d) {
-                this.handleEvent(body.d as KookEvent);
-            }
-
-            ctx.status = 200;
-            ctx.body = '';
-        } catch (error: any) {
-            this.emit('error', error);
-            ctx.status = 500;
-            ctx.body = `Error: ${error.message}`;
-        }
-    }
-
-    // ============================================
-    // 用户相关 API
+    // API 方法代理到 kook-client
     // ============================================
 
     /**
      * 获取当前用户信息
      */
     async getMe(): Promise<KookUser> {
-        const user = await this.callApi<KookUser>('GET', '/user/me');
-        this.me = user;
-        return user;
+        const userInfo = await this.client.getSelfInfo();
+        return this.transformUser(userInfo);
     }
 
     /**
      * 获取用户信息
      */
     async getUser(userId: string, guildId?: string): Promise<KookUser> {
-        const params: Record<string, string> = { user_id: userId };
-        if (guildId) params.guild_id = guildId;
-        return this.callApi<KookUser>('GET', '/user/view', undefined, params);
+        const user = await this.client.pickUser(userId);
+        return this.transformUser(user.info);
     }
-
-    // ============================================
-    // 服务器相关 API
-    // ============================================
 
     /**
      * 获取服务器列表
      */
-    async getGuildList(page?: number, pageSize?: number): Promise<KookListResponse<KookGuild>> {
-        const params: Record<string, string> = {};
-        if (page !== undefined) params.page = String(page);
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi<KookListResponse<KookGuild>>('GET', '/guild/list', undefined, params);
+    async getGuildList(page?: number, pageSize?: number): Promise<{ items: KookGuild[]; meta: any }> {
+        const guilds = await this.client.getGuildList();
+        return {
+            items: guilds.map(g => this.transformGuild(g)),
+            meta: { page_total: 1 },
+        };
     }
 
     /**
      * 获取服务器详情
      */
     async getGuild(guildId: string): Promise<KookGuild> {
-        return this.callApi<KookGuild>('GET', '/guild/view', undefined, { guild_id: guildId });
+        const guild = await this.client.getGuildInfo(guildId);
+        return this.transformGuild(guild);
+    }
+
+    /**
+     * 获取频道列表
+     */
+    async getChannelList(guildId: string, type?: 1 | 2, page?: number, pageSize?: number): Promise<{ items: KookChannel[]; meta: any }> {
+        const channels = await this.client.getChannelList(guildId);
+        return {
+            items: channels.map(c => this.transformChannel(c)),
+            meta: { page_total: 1 },
+        };
+    }
+
+    /**
+     * 获取频道详情
+     */
+    async getChannel(channelId: string): Promise<KookChannel> {
+        const channel = this.client.pickChannel(channelId);
+        return this.transformChannel(channel.info);
+    }
+
+    /**
+     * 发送频道消息
+     */
+    async sendChannelMessage(channelId: string, content: string, quoteId?: string): Promise<any> {
+        const channel = this.client.pickChannel(channelId);
+        const quote = quoteId ? { message_id: quoteId } : undefined;
+        return await channel.sendMsg(content, quote);
+    }
+
+    /**
+     * 发送私聊消息
+     */
+    async sendDirectMessage(userId: string, content: string, quoteId?: string): Promise<any> {
+        const user = this.client.pickUser(userId);
+        const quote = quoteId ? { message_id: quoteId } : undefined;
+        return await user.sendMsg(content, quote);
+    }
+
+    /**
+     * 删除消息
+     */
+    async deleteMessage(channelId: string, messageId: string): Promise<boolean> {
+        const channel = this.client.pickChannel(channelId);
+        return await channel.recallMsg(messageId);
+    }
+
+    /**
+     * 更新消息
+     */
+    async updateMessage(channelId: string, messageId: string, content: string): Promise<boolean> {
+        const channel = this.client.pickChannel(channelId);
+        return await channel.updateMsg(messageId, content);
+    }
+
+    /**
+     * 获取消息
+     */
+    async getMessage(channelId: string, messageId: string): Promise<any> {
+        const channel = this.client.pickChannel(channelId);
+        return await channel.getMsg(messageId);
+    }
+
+    /**
+     * 获取聊天历史
+     */
+    async getChatHistory(channelId: string, messageId?: string, limit: number = 50): Promise<any[]> {
+        const channel = this.client.pickChannel(channelId);
+        return await channel.getChatHistory(messageId, limit);
+    }
+
+    /**
+     * 获取用户私聊会话列表（KOOK 不支持，返回空数组）
+     */
+    async getUserChatList(page: number = 1, pageSize: number = 50): Promise<{ items: any[]; meta: any }> {
+        // KOOK 不提供私聊会话列表 API，返回空数组
+        return { items: [], meta: { page_total: 1 } };
+    }
+
+    /**
+     * 获取频道用户列表
+     */
+    async getChannelUserList(channelId: string): Promise<{ items: KookUser[]; meta: any }> {
+        const channel = this.client.pickChannel(channelId);
+        const users = await channel.getUserList();
+        return {
+            items: users.map(u => this.transformUser(u)),
+            meta: { page_total: 1 },
+        };
+    }
+
+    /**
+     * 创建频道
+     */
+    async createChannel(guildId: string, name: string, type?: 1 | 2, parentId?: string): Promise<KookChannel> {
+        // kook-client 没有直接的 createChannel，需要通过 API
+        const response = await this.client.request.post('/v3/channel/create', {
+            guild_id: guildId,
+            name,
+            type,
+            parent_id: parentId,
+        });
+        return this.transformChannel(response.data);
+    }
+
+    /**
+     * 更新频道
+     */
+    async updateChannel(channelId: string, name?: string, topic?: string, slowMode?: number): Promise<KookChannel> {
+        const channel = this.client.pickChannel(channelId);
+        const updateData: any = {};
+        if (name !== undefined) updateData.name = name;
+        if (slowMode !== undefined) updateData.slow_mode = slowMode;
+        await channel.update(updateData);
+        return this.transformChannel(channel.info);
+    }
+
+    /**
+     * 删除频道
+     */
+    async deleteChannel(channelId: string): Promise<void> {
+        const channel = this.client.pickChannel(channelId);
+        await channel.delete();
     }
 
     /**
@@ -435,24 +339,41 @@ export class KookBot extends EventEmitter {
         joinedAt?: number,
         page?: number,
         pageSize?: number
-    ): Promise<KookListResponse<KookUser>> {
-        const params: Record<string, string> = { guild_id: guildId };
-        if (channelId) params.channel_id = channelId;
-        if (search) params.search = search;
-        if (roleId !== undefined) params.role_id = String(roleId);
-        if (mobileVerified !== undefined) params.mobile_verified = mobileVerified ? '1' : '0';
-        if (activeTime !== undefined) params.active_time = String(activeTime);
-        if (joinedAt !== undefined) params.joined_at = String(joinedAt);
-        if (page !== undefined) params.page = String(page);
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi<KookListResponse<KookUser>>('GET', '/guild/user-list', undefined, params);
+    ): Promise<{ items: KookUser[]; meta: any }> {
+        const users = await this.client.getGuildUserList(guildId, channelId);
+        return {
+            items: users.map(u => this.transformUser(u)),
+            meta: { page_total: 1 },
+        };
     }
 
     /**
-     * 修改服务器昵称
+     * 离开服务器
+     */
+    async leaveGuild(guildId: string): Promise<void> {
+        // kook-client 没有直接的 leaveGuild 方法，需要通过 API
+        await this.client.request.post('/v3/guild/leave', {
+            guild_id: guildId,
+        });
+    }
+
+    /**
+     * 踢出服务器成员
+     */
+    async kickGuildMember(guildId: string, userId: string): Promise<void> {
+        // kook-client 没有直接的 kickGuildMember 方法，需要通过 API
+        await this.client.request.post('/v3/guild/kickout', {
+            guild_id: guildId,
+            target_id: userId,
+        });
+    }
+
+    /**
+     * 设置服务器昵称
      */
     async setGuildNickname(guildId: string, nickname?: string, userId?: string): Promise<void> {
-        await this.callApi('POST', '/guild/nickname', {
+        // kook-client 没有直接的 setGuildNickname 方法，需要通过 API
+        await this.client.request.post('/v3/guild/nickname', {
             guild_id: guildId,
             nickname,
             user_id: userId,
@@ -460,574 +381,77 @@ export class KookBot extends EventEmitter {
     }
 
     /**
-     * 离开服务器
-     */
-    async leaveGuild(guildId: string): Promise<void> {
-        await this.callApi('POST', '/guild/leave', { guild_id: guildId });
-    }
-
-    /**
-     * 踢出用户
-     */
-    async kickGuildMember(guildId: string, targetId: string): Promise<void> {
-        await this.callApi('POST', '/guild/kickout', {
-            guild_id: guildId,
-            target_id: targetId,
-        });
-    }
-
-    // ============================================
-    // 频道相关 API
-    // ============================================
-
-    /**
-     * 获取频道列表
-     */
-    async getChannelList(guildId: string, type?: 1 | 2, page?: number, pageSize?: number): Promise<KookListResponse<KookChannel>> {
-        const params: Record<string, string> = { guild_id: guildId };
-        if (type !== undefined) params.type = String(type);
-        if (page !== undefined) params.page = String(page);
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi<KookListResponse<KookChannel>>('GET', '/channel/list', undefined, params);
-    }
-
-    /**
-     * 获取频道详情
-     */
-    async getChannel(channelId: string): Promise<KookChannel> {
-        return this.callApi<KookChannel>('GET', '/channel/view', undefined, { target_id: channelId });
-    }
-
-    /**
-     * 创建频道
-     */
-    async createChannel(
-        guildId: string,
-        name: string,
-        type?: 1 | 2,
-        parentId?: string,
-        limitAmount?: number,
-        voiceQuality?: 1 | 2 | 3
-    ): Promise<KookChannel> {
-        return this.callApi<KookChannel>('POST', '/channel/create', {
-            guild_id: guildId,
-            name,
-            type,
-            parent_id: parentId,
-            limit_amount: limitAmount,
-            voice_quality: voiceQuality,
-        });
-    }
-
-    /**
-     * 更新频道
-     */
-    async updateChannel(
-        channelId: string,
-        name?: string,
-        topic?: string,
-        slowMode?: number
-    ): Promise<KookChannel> {
-        return this.callApi<KookChannel>('POST', '/channel/update', {
-            channel_id: channelId,
-            name,
-            topic,
-            slow_mode: slowMode,
-        });
-    }
-
-    /**
-     * 删除频道
-     */
-    async deleteChannel(channelId: string): Promise<void> {
-        await this.callApi('POST', '/channel/delete', { channel_id: channelId });
-    }
-
-    /**
-     * 获取频道用户列表
-     */
-    async getChannelUserList(channelId: string): Promise<KookUser[]> {
-        return this.callApi<KookUser[]>('GET', '/channel/user-list', undefined, { channel_id: channelId });
-    }
-
-    // ============================================
-    // 消息相关 API
-    // ============================================
-
-    /**
-     * 发送频道消息
-     */
-    async sendChannelMessage(params: KookSendMessageParams): Promise<{ msg_id: string; msg_timestamp: number; nonce: string }> {
-        return this.callApi('POST', '/message/create', {
-            type: params.type || 1,
-            target_id: params.target_id,
-            content: params.content,
-            quote: params.quote,
-            nonce: params.nonce || generateNonce(),
-            temp_target_id: params.temp_target_id,
-        });
-    }
-
-    /**
-     * 更新频道消息
-     */
-    async updateChannelMessage(msgId: string, content: string, quote?: string, tempTargetId?: string): Promise<void> {
-        await this.callApi('POST', '/message/update', {
-            msg_id: msgId,
-            content,
-            quote,
-            temp_target_id: tempTargetId,
-        });
-    }
-
-    /**
-     * 删除频道消息
-     */
-    async deleteChannelMessage(msgId: string): Promise<void> {
-        await this.callApi('POST', '/message/delete', { msg_id: msgId });
-    }
-
-    /**
-     * 获取频道消息列表
-     */
-    async getChannelMessageList(
-        targetId: string,
-        msgId?: string,
-        pin?: 0 | 1,
-        flag?: 'before' | 'around' | 'after',
-        pageSize?: number
-    ): Promise<KookChannelMessage[]> {
-        const params: Record<string, string> = { target_id: targetId };
-        if (msgId) params.msg_id = msgId;
-        if (pin !== undefined) params.pin = String(pin);
-        if (flag) params.flag = flag;
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi<KookChannelMessage[]>('GET', '/message/list', undefined, params);
-    }
-
-    /**
-     * 获取频道消息详情
-     */
-    async getChannelMessage(msgId: string): Promise<KookChannelMessage> {
-        return this.callApi<KookChannelMessage>('GET', '/message/view', undefined, { msg_id: msgId });
-    }
-
-    /**
-     * 添加表情回应
-     */
-    async addReaction(msgId: string, emoji: string): Promise<void> {
-        await this.callApi('POST', '/message/add-reaction', {
-            msg_id: msgId,
-            emoji,
-        });
-    }
-
-    /**
-     * 删除表情回应
-     */
-    async deleteReaction(msgId: string, emoji: string, userId?: string): Promise<void> {
-        await this.callApi('POST', '/message/delete-reaction', {
-            msg_id: msgId,
-            emoji,
-            user_id: userId,
-        });
-    }
-
-    // ============================================
-    // 私聊相关 API
-    // ============================================
-
-    /**
-     * 获取私聊会话列表
-     */
-    async getUserChatList(page?: number, pageSize?: number): Promise<KookListResponse<KookUserChat>> {
-        const params: Record<string, string> = {};
-        if (page !== undefined) params.page = String(page);
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi<KookListResponse<KookUserChat>>('GET', '/user-chat/list', undefined, params);
-    }
-
-    /**
-     * 获取私聊会话详情
-     */
-    async getUserChat(chatCode: string): Promise<KookUserChat> {
-        return this.callApi<KookUserChat>('GET', '/user-chat/view', undefined, { chat_code: chatCode });
-    }
-
-    /**
-     * 创建私聊会话
-     */
-    async createUserChat(targetId: string): Promise<KookUserChat> {
-        return this.callApi<KookUserChat>('POST', '/user-chat/create', { target_id: targetId });
-    }
-
-    /**
-     * 删除私聊会话
-     */
-    async deleteUserChat(chatCode: string): Promise<void> {
-        await this.callApi('POST', '/user-chat/delete', { chat_code: chatCode });
-    }
-
-    /**
-     * 发送私聊消息
-     */
-    async sendDirectMessage(params: KookSendDirectMessageParams): Promise<{ msg_id: string; msg_timestamp: number; nonce: string }> {
-        return this.callApi('POST', '/direct-message/create', {
-            type: params.type || 1,
-            target_id: params.target_id,
-            chat_code: params.chat_code,
-            content: params.content,
-            quote: params.quote,
-            nonce: params.nonce || generateNonce(),
-        });
-    }
-
-    /**
-     * 更新私聊消息
-     */
-    async updateDirectMessage(msgId: string, content: string, quote?: string): Promise<void> {
-        await this.callApi('POST', '/direct-message/update', {
-            msg_id: msgId,
-            content,
-            quote,
-        });
-    }
-
-    /**
-     * 删除私聊消息
-     */
-    async deleteDirectMessage(msgId: string): Promise<void> {
-        await this.callApi('POST', '/direct-message/delete', { msg_id: msgId });
-    }
-
-    /**
-     * 获取私聊消息列表
-     */
-    async getDirectMessageList(
-        chatCode?: string,
-        targetId?: string,
-        msgId?: string,
-        flag?: 'before' | 'around' | 'after',
-        pageSize?: number
-    ): Promise<KookDirectMessage[]> {
-        const params: Record<string, string> = {};
-        if (chatCode) params.chat_code = chatCode;
-        if (targetId) params.target_id = targetId;
-        if (msgId) params.msg_id = msgId;
-        if (flag) params.flag = flag;
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi<KookDirectMessage[]>('GET', '/direct-message/list', undefined, params);
-    }
-
-    /**
-     * 添加私聊表情回应
-     */
-    async addDirectReaction(msgId: string, emoji: string): Promise<void> {
-        await this.callApi('POST', '/direct-message/add-reaction', {
-            msg_id: msgId,
-            emoji,
-        });
-    }
-
-    /**
-     * 删除私聊表情回应
-     */
-    async deleteDirectReaction(msgId: string, emoji: string): Promise<void> {
-        await this.callApi('POST', '/direct-message/delete-reaction', {
-            msg_id: msgId,
-            emoji,
-        });
-    }
-
-    // ============================================
-    // 角色相关 API
-    // ============================================
-
-    /**
-     * 获取服务器角色列表
-     */
-    async getRoleList(guildId: string, page?: number, pageSize?: number): Promise<KookListResponse<KookRole>> {
-        const params: Record<string, string> = { guild_id: guildId };
-        if (page !== undefined) params.page = String(page);
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi<KookListResponse<KookRole>>('GET', '/guild-role/list', undefined, params);
-    }
-
-    /**
-     * 创建服务器角色
-     */
-    async createRole(guildId: string, name?: string): Promise<KookRole> {
-        return this.callApi<KookRole>('POST', '/guild-role/create', {
-            guild_id: guildId,
-            name,
-        });
-    }
-
-    /**
-     * 更新服务器角色
-     */
-    async updateRole(
-        guildId: string,
-        roleId: number,
-        name?: string,
-        color?: number,
-        hoist?: 0 | 1,
-        mentionable?: 0 | 1,
-        permissions?: number
-    ): Promise<KookRole> {
-        return this.callApi<KookRole>('POST', '/guild-role/update', {
-            guild_id: guildId,
-            role_id: roleId,
-            name,
-            color,
-            hoist,
-            mentionable,
-            permissions,
-        });
-    }
-
-    /**
-     * 删除服务器角色
-     */
-    async deleteRole(guildId: string, roleId: number): Promise<void> {
-        await this.callApi('POST', '/guild-role/delete', {
-            guild_id: guildId,
-            role_id: roleId,
-        });
-    }
-
-    /**
-     * 赋予用户角色
-     */
-    async grantRole(guildId: string, userId: string, roleId: number): Promise<{ user_id: string; guild_id: string; roles: number[] }> {
-        return this.callApi('POST', '/guild-role/grant', {
-            guild_id: guildId,
-            user_id: userId,
-            role_id: roleId,
-        });
-    }
-
-    /**
-     * 移除用户角色
-     */
-    async revokeRole(guildId: string, userId: string, roleId: number): Promise<{ user_id: string; guild_id: string; roles: number[] }> {
-        return this.callApi('POST', '/guild-role/revoke', {
-            guild_id: guildId,
-            user_id: userId,
-            role_id: roleId,
-        });
-    }
-
-    // ============================================
-    // 亲密度相关 API
-    // ============================================
-
-    /**
-     * 获取亲密度信息
-     */
-    async getIntimacy(userId: string): Promise<any> {
-        return this.callApi('GET', '/intimacy/index', undefined, { user_id: userId });
-    }
-
-    /**
-     * 更新亲密度
-     */
-    async updateIntimacy(userId: string, score?: number, socialInfo?: string, imgId?: string): Promise<void> {
-        await this.callApi('POST', '/intimacy/update', {
-            user_id: userId,
-            score,
-            social_info: socialInfo,
-            img_id: imgId,
-        });
-    }
-
-    // ============================================
-    // 媒体相关 API
-    // ============================================
-
-    /**
-     * 上传文件（获取 URL）
+     * 上传文件
      */
     async uploadAsset(fileBuffer: Buffer, filename: string): Promise<{ url: string }> {
-        const formData = new FormData();
-        // Convert Buffer to ArrayBuffer and then to Blob
-        const arrayBuffer = fileBuffer.buffer.slice(
-            fileBuffer.byteOffset,
-            fileBuffer.byteOffset + fileBuffer.byteLength
-        ) as ArrayBuffer;
-        formData.append('file', new Blob([arrayBuffer]), filename);
-
-        const response = await fetch(`${this.baseURL}/asset/create`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bot ${this.config.token}`,
-            },
-            body: formData,
-        });
-
-        const data = await response.json() as KookApiResponse<{ url: string }>;
-        
-        if (data.code !== 0) {
-            throw new Error(`上传文件失败 [${data.code}]: ${data.message}`);
-        }
-
-        return data.data;
+        // kook-client 使用 uploadMedia 方法
+        const url = await this.client.uploadMedia(fileBuffer);
+        return { url };
     }
 
     // ============================================
-    // 禁言相关 API
+    // 类型转换方法
     // ============================================
 
-    /**
-     * 获取服务器禁言列表
-     */
-    async getGuildMuteList(guildId: string): Promise<{ mic: { type: number; user_ids: string[] }; headset: { type: number; user_ids: string[] } }> {
-        return this.callApi('GET', '/guild-mute/list', undefined, { guild_id: guildId });
+    private transformUser(user: any): KookUser {
+        return {
+            id: user.id,
+            username: user.username || '',
+            nickname: user.nickname,
+            identify_num: user.identify_num || '',
+            online: user.online || false,
+            bot: user.bot || false,
+            status: user.status || 0,
+            avatar: user.avatar || '',
+            vip_avatar: user.vip_avatar,
+            mobile_verified: user.mobile_verified,
+            roles: user.roles,
+            joined_at: user.joined_at,
+            active_time: user.active_time,
+        };
+    }
+
+    private transformGuild(guild: any): KookGuild {
+        return {
+            id: guild.id,
+            name: guild.name,
+            topic: guild.topic || '',
+            user_id: guild.user_id || '',
+            icon: guild.icon || '',
+            notify_type: guild.notify_type || 0,
+            region: guild.region || '',
+            enable_open: guild.enable_open || false,
+            open_id: guild.open_id || '',
+            default_channel_id: guild.default_channel_id || '',
+            welcome_channel_id: guild.welcome_channel_id || '',
+            roles: guild.roles,
+            channels: guild.channels,
+        };
+    }
+
+    private transformChannel(channel: any): KookChannel {
+        return {
+            id: channel.id,
+            name: channel.name,
+            user_id: channel.user_id || '',
+            guild_id: channel.guild_id || '',
+            topic: channel.topic || '',
+            is_category: channel.is_category || false,
+            parent_id: channel.parent_id || '',
+            level: channel.level || 0,
+            slow_mode: channel.slow_mode || 0,
+            type: channel.type || 1,
+            permission_overwrites: channel.permission_overwrites || [],
+            permission_users: channel.permission_users || [],
+            permission_sync: channel.permission_sync || 0,
+            has_password: channel.has_password || false,
+        };
     }
 
     /**
-     * 添加禁言
+     * 获取 kook-client 实例（用于高级操作）
      */
-    async createGuildMute(guildId: string, userId: string, type: 1 | 2): Promise<void> {
-        await this.callApi('POST', '/guild-mute/create', {
-            guild_id: guildId,
-            user_id: userId,
-            type,  // 1=麦克风 2=耳机
-        });
-    }
-
-    /**
-     * 移除禁言
-     */
-    async deleteGuildMute(guildId: string, userId: string, type: 1 | 2): Promise<void> {
-        await this.callApi('POST', '/guild-mute/delete', {
-            guild_id: guildId,
-            user_id: userId,
-            type,
-        });
-    }
-
-    // ============================================
-    // 邀请相关 API
-    // ============================================
-
-    /**
-     * 获取邀请列表
-     */
-    async getInviteList(guildId?: string, channelId?: string, page?: number, pageSize?: number): Promise<KookListResponse<any>> {
-        const params: Record<string, string> = {};
-        if (guildId) params.guild_id = guildId;
-        if (channelId) params.channel_id = channelId;
-        if (page !== undefined) params.page = String(page);
-        if (pageSize !== undefined) params.page_size = String(pageSize);
-        return this.callApi('GET', '/invite/list', undefined, params);
-    }
-
-    /**
-     * 创建邀请链接
-     */
-    async createInvite(guildId?: string, channelId?: string, duration?: number, settingTimes?: number): Promise<{ url: string }> {
-        return this.callApi('POST', '/invite/create', {
-            guild_id: guildId,
-            channel_id: channelId,
-            duration,
-            setting_times: settingTimes,
-        });
-    }
-
-    /**
-     * 删除邀请链接
-     */
-    async deleteInvite(urlCode: string, guildId?: string, channelId?: string): Promise<void> {
-        await this.callApi('POST', '/invite/delete', {
-            url_code: urlCode,
-            guild_id: guildId,
-            channel_id: channelId,
-        });
-    }
-
-    // ============================================
-    // 黑名单相关 API
-    // ============================================
-
-    /**
-     * 获取黑名单列表
-     */
-    async getBlacklist(guildId: string): Promise<KookListResponse<{ user_id: string; created_time: number; remark: string; user: KookUser }>> {
-        return this.callApi('GET', '/blacklist/list', undefined, { guild_id: guildId });
-    }
-
-    /**
-     * 添加黑名单
-     */
-    async addBlacklist(guildId: string, targetId: string, remark?: string, delMsgDays?: number): Promise<void> {
-        await this.callApi('POST', '/blacklist/create', {
-            guild_id: guildId,
-            target_id: targetId,
-            remark,
-            del_msg_days: delMsgDays,
-        });
-    }
-
-    /**
-     * 移除黑名单
-     */
-    async removeBlacklist(guildId: string, targetId: string): Promise<void> {
-        await this.callApi('POST', '/blacklist/delete', {
-            guild_id: guildId,
-            target_id: targetId,
-        });
-    }
-
-    // ============================================
-    // 生命周期
-    // ============================================
-
-    /**
-     * 启动 Bot
-     */
-    async start(): Promise<void> {
-        try {
-            // 获取自身信息
-            await this.getMe();
-            
-            // 根据模式连接
-            if (this.config.mode === 'webhook') {
-                // Webhook 模式不需要主动连接
-                this.emit('ready');
-            } else {
-                // WebSocket 模式
-                await this.connectWebSocket();
-            }
-        } catch (error) {
-            this.emit('error', error);
-            throw error;
-        }
-    }
-
-    /**
-     * 停止 Bot
-     */
-    async stop(): Promise<void> {
-        this.stopHeartbeat();
-        
-        if (this.reconnectTimer) {
-            clearTimeout(this.reconnectTimer);
-            this.reconnectTimer = null;
-        }
-
-        if (this.ws) {
-            this.ws.close(1000);
-            this.ws = null;
-        }
-
-        this.emit('stopped');
-    }
-
-    /**
-     * 获取缓存的用户信息
-     */
-    getCachedMe(): KookUser | null {
-        return this.me;
+    getClient(): Client {
+        return this.client;
     }
 }

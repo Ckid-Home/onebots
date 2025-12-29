@@ -1,7 +1,7 @@
 {
-  "name": "@onebots/core",
+  "name": "@imhelper/core",
   "version": "0.5.0",
-  "description": "多平台多协议的机器人应用启动器核心包",
+  "description": "IMHelper 核心抽象层，提供适配器、协议、账号等基础接口和类型",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

@@ -139,7 +139,12 @@ export namespace Protocol {
         return typeof factory === "function" && /^class\s/.test(Function.prototype.toString.call(factory));
     }
 
-    export function createFilter(filters: Filters) {
+    export function createFilter(filters?: Filters) {
+        // 如果没有 filters，返回始终为 true 的过滤器
+        if (!filters || Object.keys(filters).length === 0) {
+            return () => true;
+        }
+        
         const isLogicKey = (key: string) => {
             return [
                 "$and",

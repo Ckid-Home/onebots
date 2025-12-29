@@ -1,16 +1,16 @@
-# @onebots/adapter-discord
+# @imhelper/adapter-discord
 
-OneBots Discord 适配器，基于 discord.js 实现。
+imhelper Discord 适配器，基于 discord.js 实现。
 
 ## 安装
 
 ```bash
-npm install @onebots/adapter-discord discord.js
+npm install @imhelper/adapter-discord discord.js
 ```
 
 ## 配置
 
-在 OneBots 配置文件中添加 Discord 账号配置：
+在 imhelper 配置文件中添加 Discord 账号配置：
 
 ```yaml
 discord.your_bot_id:
@@ -34,7 +34,7 @@ discord.your_bot_id:
     presence:  # 可选，机器人状态
       status: online  # online, idle, dnd, invisible
       activities:
-        - name: '正在运行 OneBots'
+        - name: '正在运行 imhelper'
           type: 0  # 0: Playing, 1: Streaming, 2: Listening, 3: Watching, 5: Competing
 ```
 

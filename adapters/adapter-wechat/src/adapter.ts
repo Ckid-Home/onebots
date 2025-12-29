@@ -5,11 +5,11 @@
  * - 粉丝管理（getFriendList, getFriendInfo等，对应微信的关注用户）
  * - 标签管理（getGroupList, getGroupInfo等，对应微信的用户标签）
  */
-import { Account,AdapterRegistry, AccountStatus } from "onebots";
-import { Adapter } from "onebots";
-import { BaseApp } from "onebots";
+import { Account,AdapterRegistry, AccountStatus } from "imhelper";
+import { Adapter } from "imhelper";
+import { BaseApp } from "imhelper";
 import { WechatBot } from "./bot.js";
-import { CommonEvent } from "onebots";
+import { CommonEvent } from "imhelper";
 import type { WechatConfig } from "./types.js";
 
 export class WechatAdapter extends Adapter<WechatBot, "wechat"> {
@@ -336,7 +336,13 @@ export class WechatAdapter extends Adapter<WechatBot, "wechat"> {
 
         // 监听消息事件
         bot.on('message', (message: any) => {
-            this.logger.debug(`收到消息:`, message);
+            // 打印消息接收日志
+            const content = message.Content || message.MediaId || '';
+            const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+            this.logger.info(
+                `[WECHAT] 收到消息 | 消息ID: ${message.MsgId || 'N/A'} | 类型: ${message.MsgType} | ` +
+                `发送者: ${message.FromUserName} | 内容: ${contentPreview}`
+            );
             
             // 构建消息段
             const messageSegments: any[] = [];
@@ -556,14 +562,21 @@ export class WechatAdapter extends Adapter<WechatBot, "wechat"> {
     }
 }
 
-declare module "onebots" {
+declare module "imhelper" {
     export namespace Adapter {
         export interface Configs {
             wechat: WechatConfig;
         }
     }
 }
-AdapterRegistry.register('wechat', WechatAdapter);
+AdapterRegistry.register('wechat', WechatAdapter,{
+    name: 'wechat',
+    displayName: '微信公众号',
+    description: '微信公众号适配器，支持私聊和群聊',
+    icon: 'https://res.wx.qq.com/a/wx_fed/assets/res/OTE0YTAw.png',
+    homepage: 'https://mp.weixin.qq.com/',
+    author: '凉菜',
+});
 
 declare module '@/adapter.js' {
     namespace Adapter {

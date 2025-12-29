@@ -1,6 +1,6 @@
 # 微信适配器
 
-微信适配器支持通过微信公众号接入 OneBots 服务。
+微信适配器支持通过微信公众号接入 imhelper 服务。
 
 ## 功能特性
 
@@ -13,7 +13,7 @@
 ## 安装
 
 ```bash
-npm install @onebots/adapter-wechat
+npm install @imhelper/adapter-wechat
 ```
 
 ## 配置
@@ -50,7 +50,7 @@ wechat.my_mp:
 
 ```bash
 # 注册微信适配器和 OneBot V11 协议
-onebots -r wechat -p onebot-v11
+imhelper -r wechat -p onebot-v11
 ```
 
 ## API 地址
@@ -83,4 +83,4 @@ onebots -r wechat -p onebot-v11
 
 - [微信公众平台](https://mp.weixin.qq.com/)
 - [微信公众平台开发文档](https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html)
-- [@onebots/adapter-wechat 源码](https://github.com/lc-cn/onebots/tree/master/packages/adapter-wechat)
+- [@imhelper/adapter-wechat 源码](https://github.com/lc-cn/imhelper/tree/master/packages/adapter-wechat)

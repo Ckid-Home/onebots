@@ -114,7 +114,7 @@ describe('OneBot V11 - WebHook 鉴权测试', () => {
     console.log('    secret: "your_secret_key"  # 签名密钥');
     console.log(`    http_reverse: ["http://localhost:${CONFIG.webhookPort}"]`);
     console.log('');
-    console.log('配置后，OneBots 会在推送事件时添加 X-Signature 请求头');
+    console.log('配置后，imhelper 会在推送事件时添加 X-Signature 请求头');
     console.log('格式: X-Signature: sha1=<HMAC-SHA1签名>');
     console.log('='.repeat(70) + '\n');
   });

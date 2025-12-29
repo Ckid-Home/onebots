@@ -1,0 +1,39 @@
+{
+  "name": "@imhelper/protocol-onebot-11",
+  "version": "1.0.1",
+  "description": "imhelper OneBot 11 协议实现",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "rm -f *.tsbuildinfo && tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "clean": "rm -rf lib *.tsbuildinfo"
+  },
+  "keywords": [
+    "imhelper",
+    "onebot",
+    "v11",
+    "protocol"
+  ],
+  "author": "凉菜",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "files": [
+    "/lib/**/*.js",
+    "/lib/**/*.d.ts"
+  ],
+  "peerDependencies": {
+    "imhelper": "workspace:*"
+  },
+  "devDependencies": {
+    "imhelper": "workspace:*",
+    "tsc-alias": "latest",
+    "typescript": "latest"
+  },
+  "dependencies": {
+    "ws": "latest"
+  }
+}

@@ -22,6 +22,10 @@ import { Account } from "@/account.js";
 import { SqliteDB } from "@/db.js";
 import pkg from "../package.json" with { type: "json" };
 import { AdapterRegistry,ProtocolRegistry } from "./registry.js";
+import { ConfigValidator, BaseAppConfigSchema } from "./config-validator.js";
+import { LifecycleManager } from "./lifecycle.js";
+import { ErrorHandler, ConfigError } from "./errors.js";
+import { Logger as EnhancedLogger, createLogger } from "./logger.js";
 export {
     configure,
     yaml,
@@ -42,6 +46,8 @@ export class BaseApp extends Koa {
     public httpServer: Server;
     isStarted: boolean = false;
     public logger: Logger;
+    public enhancedLogger: EnhancedLogger;
+    public lifecycle: LifecycleManager;
     static get configPath() {
         return path.join(BaseApp.configDir, "config.yaml");
     }
@@ -49,7 +55,7 @@ export class BaseApp extends Koa {
         return path.join(BaseApp.configDir, "data");
     }
     static get logFile() {
-        return path.join(BaseApp.configDir, "onebots.log");
+        return path.join(BaseApp.configDir, "imhelper.log");
     }
     db:SqliteDB
     adapters: Map<keyof Adapter.Configs, Adapter> = new Map<keyof Adapter.Configs, Adapter>();
@@ -78,34 +84,90 @@ export class BaseApp extends Koa {
     constructor(config: BaseApp.Config = {}) {
         super(config);
         
-        this.config = deepMerge(deepClone(BaseApp.defaultConfig), config);
+        // 初始化生命周期管理器
+        this.lifecycle = new LifecycleManager();
+        
+        // 合并配置并验证
+        const mergedConfig = deepMerge(deepClone(BaseApp.defaultConfig), config);
+        try {
+            this.config = ConfigValidator.validateWithDefaults(mergedConfig, BaseAppConfigSchema);
+        } catch (error) {
+            const configError = ErrorHandler.wrap(error, { config: mergedConfig });
+            throw new ConfigError('Configuration validation failed', {
+                context: { originalError: configError.toJSON() },
+                cause: configError,
+            });
+        }
+        
         this.init();
     }
 
     init() {
-        this.logger = getLogger("[OneBots]");
-        this.db=new SqliteDB(path.resolve(BaseApp.dataDir, this.config.database));
+        // 初始化传统日志（保持兼容性）
+        this.logger = getLogger("[imhelper]");
         this.logger.level = this.config.log_level;
+        
+        // 初始化增强日志
+        this.enhancedLogger = createLogger("[imhelper]", this.config.log_level);
+        
+        // 注册数据库资源到生命周期管理器
+        this.db = new SqliteDB(path.resolve(BaseApp.dataDir, this.config.database));
+        this.lifecycle.register('database', () => {
+            // 数据库清理逻辑（如果需要）
+        });
+        
+        // 创建 HTTP 服务器
         this.httpServer = createServer(this.callback());
         this.router = new Router(this.httpServer, { prefix: this.config.path });
+        
+        // 注册路由清理
+        this.lifecycle.register('router', () => {
+            return this.router.cleanupAsync();
+        });
+        
+        // 注册 HTTP 服务器清理
+        this.lifecycle.register('httpServer', () => {
+            return new Promise<void>((resolve) => {
+                this.httpServer.close(() => resolve());
+            });
+        });
+        
         this.use(KoaBody())
             .use(this.router.routes())
             .use(this.router.allowedMethods())
             .use(async (ctx, next) => {
-                const adapter = ctx.path?.slice(1)?.split("/")[0];
-                if (this.adapters.has(adapter)) return next();
-                return basicAuth({
-                    name: this.config.username,
-                    pass: this.config.password,
-                })(ctx, next);
+                try {
+                    const adapter = ctx.path?.slice(1)?.split("/")[0];
+                    if (this.adapters.has(adapter)) return next();
+                    return basicAuth({
+                        name: this.config.username,
+                        pass: this.config.password,
+                    })(ctx, next);
+                } catch (error) {
+                    const wrappedError = ErrorHandler.wrap(error, { path: ctx.path });
+                    this.enhancedLogger.error(wrappedError, { path: ctx.path });
+                    throw error;
+                }
             });
-        this.logger.info(`username: ${this.config.username}, password: ${this.config.password}`);
+        
+        this.enhancedLogger.info('Application initialized', {
+            username: this.config.username,
+            port: this.config.port,
+        });
+        
         this.initAdapters();
     }
     getLogger(patform: string) {
-        const logger = getLogger(`[OneBots:${patform}]`);
+        const logger = getLogger(`[imhelper:${patform}]`);
         logger.level = this.config.log_level;
         return logger;
+    }
+    
+    /**
+     * 获取增强的 Logger 实例
+     */
+    getEnhancedLogger(name: string): EnhancedLogger {
+        return createLogger(`[imhelper:${name}]`, this.config.log_level);
     }
 
     get adapterConfigs():Map<string,Account.Config[]> {
@@ -184,16 +246,47 @@ export class BaseApp extends Koa {
     }
 
     async start() {
-        this.httpServer.listen(this.config.port);
-        this.logger.mark(
-            `server listen at http://0.0.0.0:${this.config.port}/${
-                this.config.path ? this.config.path : ""
-            }`,
-        );
-        for (const [_, adapter] of this.adapters) {
-            await adapter.start();
+        const stopTimer = this.enhancedLogger.start('Application start');
+        
+        try {
+            // 执行启动钩子
+            await this.lifecycle.start();
+            
+            // 启动 HTTP 服务器
+            await new Promise<void>((resolve, reject) => {
+                this.httpServer.once('error', reject);
+                this.httpServer.listen(this.config.port, () => {
+                    this.httpServer.removeListener('error', reject);
+                    resolve();
+                });
+            });
+            
+            this.enhancedLogger.mark(
+                `Server listening at http://0.0.0.0:${this.config.port}/${
+                    this.config.path ? this.config.path : ""
+                }`,
+                { port: this.config.port, path: this.config.path },
+            );
+            
+            // 启动所有适配器
+            for (const [platform, adapter] of this.adapters) {
+                try {
+                    await adapter.start();
+                    this.enhancedLogger.info(`Adapter started`, { platform });
+                } catch (error) {
+                    const wrappedError = ErrorHandler.wrap(error, { platform });
+                    this.enhancedLogger.error(wrappedError, { platform });
+                    // 继续启动其他适配器
+                }
+            }
+            
+            this.isStarted = true;
+            stopTimer();
+        } catch (error) {
+            const wrappedError = ErrorHandler.wrap(error);
+            this.enhancedLogger.fatal(wrappedError);
+            throw wrappedError;
         }
-        this.isStarted = true;
     }
     async reload(config: BaseApp.Config) {
         await this.stop();
@@ -202,14 +295,38 @@ export class BaseApp extends Koa {
         await this.start();
     }
     async stop() {
-        for (const [_, adapter] of this.adapters) {
-            await adapter.stop();
+        const stopTimer = this.enhancedLogger.start('Application stop');
+        
+        try {
+            // 执行停止钩子
+            await this.lifecycle.stop();
+            
+            // 停止所有适配器
+            const stopPromises: Promise<void>[] = [];
+            for (const [platform, adapter] of this.adapters) {
+                stopPromises.push(
+                    Promise.resolve(adapter.stop()).catch(error => {
+                        const wrappedError = ErrorHandler.wrap(error, { platform });
+                        this.enhancedLogger.error(wrappedError, { platform });
+                    }),
+                );
+            }
+            await Promise.all(stopPromises);
+            this.adapters.clear();
+            
+            // 清理资源
+            await this.lifecycle.cleanup();
+            
+            this.emit("close");
+            this.isStarted = false;
+            stopTimer();
+            
+            this.enhancedLogger.info('Application stopped');
+        } catch (error) {
+            const wrappedError = ErrorHandler.wrap(error);
+            this.enhancedLogger.error(wrappedError);
+            throw wrappedError;
         }
-        this.adapters.clear();
-        // this.ws.close()
-        this.httpServer.close();
-        this.emit("close");
-        this.isStarted = false;
     }
 }
 
@@ -230,7 +347,7 @@ export namespace BaseApp {
     } & KoaOptions & AdapterConfig;
     export const defaultConfig: Config = {
         port: 6727,
-        database: "onebots.db",
+        database: "imhelper.db",
         username: "admin",
         password: "123456",
         timeout: 30,
@@ -238,5 +355,5 @@ export namespace BaseApp {
         log_level: "info",
     };
 
-    export let configDir = path.join(os.homedir(), ".onebots");
+    export let configDir = path.join(os.homedir(), ".imhelper");
 }

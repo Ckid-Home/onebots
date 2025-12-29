@@ -3,9 +3,9 @@
  * 支持WebSocket和Webhook两种接收方式
  */
 import { EventEmitter } from 'events';
-import { createHmac } from 'crypto';
 import WebSocket from 'ws';
-import type { Context, Next } from 'koa';
+import type { RouterContext,Next } from 'imhelper';
+import { Ed25519 } from './ed25519.js';
 import {
     IntentBits,
     type QQConfig,
@@ -42,6 +42,7 @@ export class QQBot extends EventEmitter {
     
     private readonly baseURL: string;
     private readonly wsURL: string;
+    private ed25519: Ed25519 | null = null;
     
     constructor(config: QQConfig) {
         super();
@@ -69,6 +70,11 @@ export class QQBot extends EventEmitter {
         this.wsURL = this.config.sandbox
             ? 'wss://sandbox.api.sgroup.qq.com'
             : 'wss://api.sgroup.qq.com';
+        
+        // 如果是 Webhook 模式，初始化 Ed25519
+        if (this.config.mode === 'webhook' && this.config.secret) {
+            this.ed25519 = new Ed25519(this.config.secret);
+        }
     }
     
     /**
@@ -92,7 +98,6 @@ export class QQBot extends EventEmitter {
         if (this.accessToken && this.tokenExpireTime - now > 5 * 60 * 1000) {
             return this.accessToken;
         }
-        
         try {
             const response = await fetch('https://bots.qq.com/app/getAppAccessToken', {
                 method: 'POST',
@@ -307,8 +312,8 @@ export class QQBot extends EventEmitter {
                 shard: [0, 1],
                 properties: {
                     $os: 'linux',
-                    $browser: 'onebots',
-                    $device: 'onebots',
+                    $browser: 'imhelper',
+                    $device: 'imhelper',
                 },
             },
         };
@@ -861,25 +866,50 @@ export class QQBot extends EventEmitter {
     
     /**
      * 生成签名（用于Webhook验证）
-     * 注意：QQ官方使用Ed25519进行签名验证
-     * 此处使用HMAC-SHA256作为简化实现
-     * 如果验证失败，请考虑使用tweetnacl等库实现Ed25519签名
+     * QQ官方使用Ed25519进行签名验证
+     * 参考: https://bot.q.qq.com/wiki/develop/api-v2/dev-prepare/interface-framework/sign.html
+     * 
+     * @param timestamp 时间戳（event_ts）
+     * @param plainToken 明文令牌
+     * @returns Ed25519签名的十六进制字符串
      */
     private generateSignature(timestamp: string, plainToken: string): string {
-        // 使用HMAC-SHA256进行签名
-        // 参考QQ官方文档: https://bot.q.qq.com/wiki/develop/api-v2/dev-prepare/interface-framework/sign.html
+        if (!this.ed25519) {
+            throw new Error('Ed25519 not initialized. Please ensure secret is configured for webhook mode.');
+        }
+        
+        // QQ官方文档要求：对 timestamp + plain_token 进行签名
         const message = timestamp + plainToken;
-        const hmac = createHmac('sha256', this.config.secret);
-        hmac.update(message);
-        return hmac.digest('hex');
+        return this.ed25519.sign(message);
+    }
+    
+    /**
+     * 验证Webhook请求的签名
+     * QQ会在请求头中发送签名，需要验证请求的合法性
+     * 
+     * @param signature 请求头中的签名（X-Signature-Ed25519）
+     * @param timestamp 请求头中的时间戳（X-Signature-Timestamp）
+     * @param body 请求体原始内容
+     * @returns 验证是否通过
+     */
+    private verifySignature(signature: string, timestamp: string, body: string): boolean {
+        if (!this.ed25519) {
+            return false;
+        }
+        
+        // QQ官方文档要求：对 timestamp + body 进行验证
+        const message = timestamp + body;
+        return this.ed25519.verify(signature, message);
     }
     
     /**
      * 处理Webhook请求
      * 注意：需要确保Koa的bodyParser中间件已配置，
      * 或者配置rawBody: true 以获取原始请求体
+     * 
+     * QQ官方文档: https://bot.q.qq.com/wiki/develop/api-v2/dev-prepare/interface-framework/sign.html
      */
-    async handleWebhook(ctx: Context, next: Next): Promise<void> {
+    async handleWebhook(ctx: RouterContext, next: Next): Promise<void> {
         // 从请求体读取数据
         let body: string = '';
         
@@ -915,8 +945,11 @@ export class QQBot extends EventEmitter {
             const payload: WebhookPayload = JSON.parse(body);
             
             // 处理URL验证请求 (op=13)
+            // QQ官方会发送验证请求，需要返回签名
             if (payload.op === 13) {
                 const validation = payload.d as WebhookValidation;
+                
+                // 生成签名：对 event_ts + plain_token 进行 Ed25519 签名
                 const signature = this.generateSignature(validation.event_ts, validation.plain_token);
                 
                 const response: WebhookValidationResponse = {
@@ -931,7 +964,23 @@ export class QQBot extends EventEmitter {
             }
             
             // 处理事件推送 (op=0)
+            // 需要验证请求签名以确保请求来自QQ官方
             if (payload.op === 0) {
+                // 获取请求头中的签名和时间戳
+                const signature = ctx.headers['x-signature-ed25519'] as string;
+                const timestamp = ctx.headers['x-signature-timestamp'] as string;
+                
+                // 验证签名（如果配置了secret）
+                if (this.config.secret && signature && timestamp) {
+                    const isValid = this.verifySignature(signature, timestamp, body);
+                    if (!isValid) {
+                        this.emit('error', new Error('Invalid webhook signature'));
+                        ctx.status = 401;
+                        ctx.body = { error: 'Invalid signature' };
+                        return;
+                    }
+                }
+                
                 // 更新序列号
                 if (payload.s) {
                     this.lastSeq = payload.s;

@@ -1,10 +1,10 @@
-# @onebots/core
+# @imhelper/core
 
-OneBots 核心库 - 提供多平台多协议机器人应用的基础架构。
+imhelper 核心库 - 提供多平台多协议机器人应用的基础架构。
 
 ## 简介
 
-`@onebots/core` 是 OneBots 框架的核心包，提供了构建多平台多协议机器人应用所需的基础类和工具。它包含：
+`@imhelper/core` 是 imhelper 框架的核心包，提供了构建多平台多协议机器人应用所需的基础类和工具。它包含：
 
 - **BaseApp**: 应用基类，提供核心功能
 - **Adapter**: 适配器基类，用于连接不同平台
@@ -24,9 +24,9 @@ OneBots 核心库 - 提供多平台多协议机器人应用的基础架构。
 ## 安装
 
 ```bash
-npm install @onebots/core
+npm install @imhelper/core
 # 或
-pnpm add @onebots/core
+pnpm add @imhelper/core
 ```
 
 ## 核心概念
@@ -63,7 +63,7 @@ pnpm add @onebots/core
 ## 使用示例
 
 ```typescript
-import { BaseApp, Adapter, Protocol } from '@onebots/core';
+import { BaseApp, Adapter, Protocol } from '@imhelper/core';
 
 // 创建自定义适配器
 class MyAdapter extends Adapter {
@@ -135,7 +135,7 @@ import type {
   Dict, 
   CommonEvent, 
   CommonTypes 
-} from '@onebots/core';
+} from '@imhelper/core';
 ```
 
 ## 开发
@@ -153,12 +153,12 @@ pnpm test:run
 
 ## 相关包
 
-- [onebots](../onebots) - 主应用包
-- [@onebots/adapter-wechat](../adapter-wechat) - 微信适配器
-- [@onebots/protocol-onebot-v11](../protocol-onebot-v11) - OneBot V11 协议
-- [@onebots/protocol-onebot-v12](../protocol-onebot-v12) - OneBot V12 协议
-- [@onebots/protocol-satori](../protocol-satori) - Satori 协议
-- [@onebots/protocol-milky-v1](../protocol-milky-v1) - Milky V1 协议
+- [imhelper](../imhelper) - 主应用包
+- [@imhelper/adapter-wechat](../adapter-wechat) - 微信适配器
+- [@imhelper/protocol-onebot-11](../protocol-onebot-v11) - OneBot V11 协议
+- [@imhelper/protocol-onebot-12](../protocol-onebot-v12) - OneBot V12 协议
+- [@imhelper/protocol-satori-1](../protocol-satori) - Satori 协议
+- [@imhelper/protocol-milky-v1](../protocol-milky-v1) - Milky V1 协议
 
 ## 许可证
 

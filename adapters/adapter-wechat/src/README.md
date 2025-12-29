@@ -1,6 +1,6 @@
 # 微信公众号适配器
 
-基于 OneBots 统一 API 的微信公众号适配器，支持消息收发、粉丝管理、标签（分组）管理。
+基于 imhelper 统一 API 的微信公众号适配器，支持消息收发、粉丝管理、标签（分组）管理。
 
 ## 功能特性
 
@@ -300,7 +300,7 @@ router.post('/wechat/webhook/:account_id', async (ctx) => {
 
 ### 消息 API
 
-| OneBots 统一 API | 微信公众号 API | 说明 |
+| imhelper 统一 API | 微信公众号 API | 说明 |
 |-----------------|---------------|------|
 | `sendMessage` | `POST /cgi-bin/message/custom/send` | 发送客服消息 |
 | `deleteMessage` | ❌ 不支持 | 微信不允许删除已发送消息 |
@@ -308,7 +308,7 @@ router.post('/wechat/webhook/:account_id', async (ctx) => {
 
 ### 用户 API
 
-| OneBots 统一 API | 微信公众号 API | 说明 |
+| imhelper 统一 API | 微信公众号 API | 说明 |
 |-----------------|---------------|------|
 | `getLoginInfo` | - | 返回公众号自身信息 |
 | `getUserInfo` | `GET /cgi-bin/user/info` | 获取用户基本信息 |
@@ -317,7 +317,7 @@ router.post('/wechat/webhook/:account_id', async (ctx) => {
 
 ### 标签（分组）API
 
-| OneBots 统一 API | 微信公众号 API | 说明 |
+| imhelper 统一 API | 微信公众号 API | 说明 |
 |-----------------|---------------|------|
 | `getGroupList` | `GET /cgi-bin/tags/get` | 获取标签列表 |
 | `getGroupInfo` | `GET /cgi-bin/tags/get` | 获取标签信息 |
@@ -368,12 +368,12 @@ src/adapters/wechat/
 
 - 微信公众号使用**标签**（Tags）替代了旧的**分组**（Groups）
 - 一个用户可以有多个标签
-- 适配器将标签映射为 OneBots 的 `Group` 概念
+- 适配器将标签映射为 imhelper 的 `Group` 概念
 
 ### 4. OpenID vs UIN
 
 - 微信使用 `openid` 标识用户
-- 适配器会自动将 `openid` 转换为 OneBots 的 `Id` 类型
+- 适配器会自动将 `openid` 转换为 imhelper 的 `Id` 类型
 - 同一用户在不同公众号的 openid 不同
 
 ## 依赖安装
@@ -397,10 +397,10 @@ pnpm add axios form-data
 
 ## 许可证
 
-与 OneBots 主项目保持一致。
+与 imhelper 主项目保持一致。
 
 ## 相关链接
 
 - [微信公众平台官方文档](https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html)
 - [微信公众号 API 文档](https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html)
-- [OneBots 项目](https://github.com/lc-cn/onebots)
+- [imhelper 项目](https://github.com/lc-cn/imhelper)

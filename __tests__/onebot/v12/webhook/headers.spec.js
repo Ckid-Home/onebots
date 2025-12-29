@@ -232,7 +232,7 @@ describe('OneBot V12 - HTTP Webhook 请求头测试', () => {
     expect(impl.length).toBeGreaterThan(0);
     console.log('✅ X-Impl 请求头存在');
     
-    // 验证格式（应该是实现名称，如 "onebots"）
+    // 验证格式（应该是实现名称，如 "imhelper"）
     if (/^[a-z0-9_-]+$/.test(impl)) {
       console.log('✅ X-Impl 格式符合标准（小写字母、数字、下划线、连字符）');
     } else {

@@ -4,7 +4,7 @@
 :::
 ## 1. 在当前项目的根目录创建 `index.js` 文件，并录入一下内容：
 ```javascript
-const {App,createOnebots} = require('onebots')
+const {App,createOnebots} = require('imhelper')
 
 App.registerAdapter('icqq') // 如不需要使用icqq，请注释该行
 App.registerAdapter('qq') // 如不需要使用qq官方机器人，请注释该行

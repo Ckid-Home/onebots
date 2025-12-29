@@ -14,7 +14,7 @@ Milky 协议的特点：
 ## 安装
 
 ```bash
-npm install @onebots/protocol-milky-v1
+npm install @imhelper/protocol-milky-v1
 ```
 
 ## 配置
@@ -162,5 +162,5 @@ ws.on('message', (data) => {
 
 ## 相关链接
 
-- [@onebots/protocol-milky-v1 README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-milky-v1)
-- [源码](https://github.com/lc-cn/onebots/tree/master/packages/protocol-milky-v1/src)
+- [@imhelper/protocol-milky-v1 README](https://github.com/lc-cn/imhelper/tree/master/packages/protocol-milky-v1)
+- [源码](https://github.com/lc-cn/imhelper/tree/master/packages/protocol-milky-v1/src)

@@ -86,14 +86,10 @@ export class Router extends KoaRouter {
         // 规范化路径：确保以 / 开头
         const normalizedPath = path.startsWith("/") ? path : `/${path}`;
         
-        let fullPath: string;
-        if (this.opts.prefix && !normalizedPath.startsWith(this.opts.prefix)) {
-            // 如果路径不包含 prefix，则加上 prefix
-            fullPath = `${this.opts.prefix}${normalizedPath}`;
-        } else {
-            // 如果路径已经包含 prefix 或者没有 prefix，直接使用
-            fullPath = normalizedPath;
-        }
+        // WebSocket 路径不受 Router prefix 影响
+        // 因为 WebSocket upgrade 是直接处理 HTTP upgrade 请求的，使用原始 pathname
+        // 所以直接使用传入的路径，不添加 prefix
+        const fullPath = normalizedPath;
 
         // 检查路径是否已存在
         if (this.wsMap.has(fullPath)) {
@@ -106,7 +102,7 @@ export class Router extends KoaRouter {
             path: fullPath 
         });
 
-        // 存储完整路径（客户端请求的路径）
+        // 存储完整路径（客户端请求的路径，不受 prefix 影响）
         this.wsMap.set(fullPath, wsServer);
 
         return wsServer;
@@ -146,7 +142,11 @@ export class Router extends KoaRouter {
     cleanup(): void {
         // 关闭所有 WebSocket 服务器
         for (const wsServer of this.wsMap.values()) {
-            wsServer.close();
+            try {
+                wsServer.close();
+            } catch (error) {
+                // 忽略关闭错误
+            }
         }
         this.wsMap.clear();
 
@@ -155,6 +155,39 @@ export class Router extends KoaRouter {
             this.server.removeListener("upgrade", this.upgradeHandler);
             this.upgradeHandler = undefined;
         }
+    }
+    
+    /**
+     * 异步清理（返回 Promise）
+     */
+    async cleanupAsync(): Promise<void> {
+        return new Promise<void>((resolve) => {
+            // 关闭所有 WebSocket 服务器
+            const closePromises: Promise<void>[] = [];
+            for (const wsServer of this.wsMap.values()) {
+                closePromises.push(
+                    new Promise<void>((resolve) => {
+                        try {
+                            wsServer.close(() => resolve());
+                        } catch {
+                            resolve();
+                        }
+                    }),
+                );
+            }
+            
+            Promise.all(closePromises).then(() => {
+                this.wsMap.clear();
+                
+                // 移除 upgrade 事件监听器
+                if (this.upgradeHandler) {
+                    this.server.removeListener("upgrade", this.upgradeHandler);
+                    this.upgradeHandler = undefined;
+                }
+                
+                resolve();
+            });
+        });
     }
 
     /**

@@ -1,10 +1,10 @@
-# @onebots/adapter-wechat
+# @imhelper/adapter-wechat
 
 ## 1.0.1
 
 ### Patch Changes
 
-- onebots@0.5.1
+- imhelper@0.5.1
 
 ## 1.0.0
 
@@ -17,4 +17,4 @@
 - f3372b5: fix: 初始化管理
 - Updated dependencies [f3372b5]
 - Updated dependencies [f3372b5]
-  - onebots@0.5.0
+  - imhelper@0.5.0

@@ -2,11 +2,11 @@
  * Discord 适配器
  * 继承 Adapter 基类，实现 Discord 平台功能
  */
-import { Account, AdapterRegistry, AccountStatus } from "onebots";
-import { Adapter } from "onebots";
-import { BaseApp } from "onebots";
+import { Account, AdapterRegistry, AccountStatus } from "imhelper";
+import { Adapter } from "imhelper";
+import { BaseApp } from "imhelper";
 import { DiscordBot } from "./bot.js";
-import { CommonEvent, CommonTypes } from "onebots";
+import { CommonEvent, CommonTypes } from "imhelper";
 import type { DiscordConfig } from "./types.js";
 import {
     Message,
@@ -320,7 +320,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         const guildId = params.group_id.string;
         const userId = params.user_id.string;
 
-        await bot.kickMember(guildId, userId, 'Kicked via OneBots');
+        await bot.kickMember(guildId, userId, 'Kicked via imhelper');
     }
 
     /**
@@ -668,7 +668,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
      */
     async getVersion(uin: string): Promise<Adapter.VersionInfo> {
         return {
-            app_name: 'onebots-discord',
+            app_name: 'imhelper-discord',
             app_version: '1.0.0',
             impl: 'discord.js',
             version: '14.x',
@@ -728,7 +728,14 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             // 忽略机器人自己的消息
             if (message.author.bot) return;
 
-            this.logger.debug(`收到消息:`, message.content);
+            // 打印消息接收日志
+            const content = message.content || '';
+            const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+            const channelType = message.channel.type === 1 ? '私聊' : message.channel.type === 0 ? '频道' : '群组';
+            this.logger.info(
+                `[DISCORD] 收到${channelType}消息 | 消息ID: ${message.id} | 频道: ${message.channel.id} | ` +
+                `发送者: ${message.author.username}(${message.author.id}) | 内容: ${contentPreview}`
+            );
 
             // 构建消息段
             const messageSegments: CommonTypes.Segment[] = [];
@@ -1137,7 +1144,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
     }
 }
 
-declare module "onebots" {
+declare module "imhelper" {
     export namespace Adapter {
         export interface Configs {
             discord: DiscordConfig;
@@ -1145,7 +1152,14 @@ declare module "onebots" {
     }
 }
 
-AdapterRegistry.register('discord', DiscordAdapter);
+AdapterRegistry.register('discord', DiscordAdapter,{
+    name: 'discord',
+    displayName: 'Discord官方机器人',
+    description: 'Discord官方机器人适配器，支持频道、群聊和私聊',
+    icon: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png',
+    homepage: 'https://discord.com/',
+    author: '凉菜',
+});
 
 declare module '@/adapter.js' {
     namespace Adapter {

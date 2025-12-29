@@ -15,7 +15,7 @@ OneBot V12 相比 V11 的改进：
 ## 安装
 
 ```bash
-npm install @onebots/protocol-onebot-v12
+npm install @imhelper/protocol-onebot-12
 ```
 
 ## 配置
@@ -139,7 +139,7 @@ OneBot V12 采用更清晰的事件分类：
 
 ### 迁移建议
 
-对于新项目，推荐直接使用 V12。现有 V11 项目可以逐步迁移，OneBots 支持同时提供两个版本的协议。
+对于新项目，推荐直接使用 V12。现有 V11 项目可以逐步迁移，imhelper 支持同时提供两个版本的协议。
 
 ## 支持的框架
 
@@ -152,6 +152,6 @@ OneBot V12 采用更清晰的事件分类：
 ## 相关链接
 
 - [OneBot V12 标准](https://github.com/botuniverse/onebot-12)
-- [@onebots/protocol-onebot-v12 README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-onebot-v12)
+- [@imhelper/protocol-onebot-12 README](https://github.com/lc-cn/imhelper/tree/master/packages/protocol-onebot-v12)
 - [配置说明](/config/v12)
 - [从 V11 迁移](https://12.onebot.dev/guide/migration/)

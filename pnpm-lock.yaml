@@ -51,9 +51,9 @@ importers:
       discord.js:
         specifier: ^14.16.3
         version: 14.25.1
-      onebots:
+      imhelper:
         specifier: workspace:*
-        version: link:../../packages/onebots
+        version: link:../../packages/server
     devDependencies:
       tsc-alias:
         specifier: latest
@@ -64,24 +64,15 @@ importers:
 
   adapters/adapter-kook:
     dependencies:
-      '@types/koa':
-        specifier: ^2.13.4
-        version: 2.15.0
       '@types/node':
         specifier: ^22.7.3
         version: 22.19.1
-      '@types/ws':
-        specifier: ^8.5.3
-        version: 8.18.1
-      koa:
-        specifier: latest
-        version: 3.1.1
-      onebots:
+      imhelper:
         specifier: workspace:*
-        version: link:../../packages/onebots
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3
+        version: link:../../packages/server
+      kook-client:
+        specifier: ^1.0.4
+        version: 1.0.4
     devDependencies:
       tsc-alias:
         specifier: latest
@@ -92,21 +83,18 @@ importers:
 
   adapters/adapter-qq:
     dependencies:
-      '@types/koa':
-        specifier: ^2.13.4
-        version: 2.15.0
+      '@noble/curves':
+        specifier: ^1.5.0
+        version: 1.9.7
       '@types/node':
         specifier: ^22.7.3
         version: 22.19.1
       '@types/ws':
         specifier: ^8.5.3
         version: 8.18.1
-      koa:
-        specifier: latest
-        version: 3.1.1
-      onebots:
+      imhelper:
         specifier: workspace:*
-        version: link:../../packages/onebots
+        version: link:../../packages/server
       ws:
         specifier: ^8.18.3
         version: 8.18.3
@@ -126,12 +114,12 @@ importers:
       '@types/node':
         specifier: ^22.7.3
         version: 22.19.1
+      imhelper:
+        specifier: workspace:*
+        version: link:../../packages/server
       koa:
         specifier: latest
         version: 3.1.1
-      onebots:
-        specifier: workspace:*
-        version: link:../../packages/onebots
     devDependencies:
       tsc-alias:
         specifier: latest
@@ -142,33 +130,39 @@ importers:
 
   development:
     dependencies:
-      '@onebots/adapter-discord':
+      '@imhelper/adapter-discord':
         specifier: workspace:*
         version: link:../adapters/adapter-discord
-      '@onebots/adapter-kook':
+      '@imhelper/adapter-kook':
         specifier: workspace:*
         version: link:../adapters/adapter-kook
-      '@onebots/adapter-qq':
+      '@imhelper/adapter-qq':
         specifier: workspace:*
         version: link:../adapters/adapter-qq
-      '@onebots/adapter-wechat':
+      '@imhelper/adapter-wechat':
         specifier: workspace:*
         version: link:../adapters/adapter-wechat
-      '@onebots/protocol-milky-v1':
+      '@imhelper/protocol-milky-v1':
         specifier: workspace:*
-        version: link:../protocols/protocol-milky-v1
-      '@onebots/protocol-onebot-v11':
+        version: link:../protocols/milky-1/protocol
+      '@imhelper/protocol-onebot-11':
         specifier: workspace:*
-        version: link:../protocols/protocol-onebot-v11
-      '@onebots/protocol-onebot-v12':
+        version: link:../protocols/onebot-11/protocol
+      '@imhelper/protocol-onebot-12':
         specifier: workspace:*
-        version: link:../protocols/protocol-onebot-v12
-      '@onebots/protocol-satori-v1':
+        version: link:../protocols/onebot-12/protocol
+      '@imhelper/protocol-satori-1':
         specifier: workspace:*
-        version: link:../protocols/protocol-satori
-      onebots:
+        version: link:../protocols/satori-1/protocol
+      imhelper:
         specifier: workspace:*
-        version: link:../packages/onebots
+        version: link:../packages/server
+      js-yaml:
+        specifier: ^4.1.0
+        version: 4.1.1
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
 
   docs:
     devDependencies:
@@ -190,52 +184,22 @@ importers:
 
   packages/client:
     dependencies:
-      '@element-plus/icons-vue':
-        specifier: ^2.3.2
-        version: 2.3.2(vue@3.5.25(typescript@5.9.3))
-      '@xterm/addon-fit':
-        specifier: ^0.10.0
-        version: 0.10.0(@xterm/xterm@5.5.0)
-      '@xterm/addon-web-links':
-        specifier: ^0.11.0
-        version: 0.11.0(@xterm/xterm@5.5.0)
-      '@xterm/xterm':
-        specifier: ^5.5.0
-        version: 5.5.0
-      dayjs:
-        specifier: ^1.11.10
-        version: 1.11.19
-      element-plus:
-        specifier: ^2.4.4
-        version: 2.11.9(vue@3.5.25(typescript@5.9.3))
-      vue:
-        specifier: ^3.4.0
-        version: 3.5.25(typescript@5.9.3)
-      vue-router:
-        specifier: ^4.2.5
-        version: 4.6.3(vue@3.5.25(typescript@5.9.3))
+      eventsource:
+        specifier: ^2.0.2
+        version: 2.0.2
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
     devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.0
-        version: 5.2.4(vite@5.4.21(@types/node@22.19.1)(sass@1.94.2))(vue@3.5.25(typescript@5.9.3))
-      sass:
-        specifier: ^1.69.6
-        version: 1.94.2
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
       typescript:
         specifier: latest
         version: 5.9.3
-      unplugin-auto-import:
-        specifier: ^0.17.3
-        version: 0.17.8(@vueuse/core@12.8.2(typescript@5.9.3))(rollup@4.53.3)
-      unplugin-vue-components:
-        specifier: ^0.26.0
-        version: 0.26.0(@babel/parser@7.28.5)(rollup@4.53.3)(vue@3.5.25(typescript@5.9.3))
-      vite:
-        specifier: ^5.0.10
-        version: 5.4.21(@types/node@22.19.1)(sass@1.94.2)
-      vite-plugin-style-import:
-        specifier: ^2.0.0
-        version: 2.0.0(vite@5.4.21(@types/node@22.19.1)(sass@1.94.2))
 
   packages/core:
     dependencies:
@@ -295,36 +259,45 @@ importers:
         specifier: latest
         version: 1.0.1
 
-  packages/onebots:
+  packages/server:
     dependencies:
+      '@imhelper/core':
+        specifier: workspace:*
+        version: link:../core
+      '@imhelper/web':
+        specifier: workspace:*
+        version: link:../web
       '@karinjs/node-pty':
         specifier: ^1.1.3
         version: 1.1.3
-      '@onebots/client':
-        specifier: workspace:*
-        version: link:../client
-      '@onebots/core':
-        specifier: workspace:*
-        version: link:../core
       koa-static:
         specifier: ^5.0.0
         version: 5.0.0
     optionalDependencies:
-      '@onebots/adapter-wechat':
+      '@imhelper/adapter-discord':
+        specifier: workspace:*
+        version: link:../../adapters/adapter-discord
+      '@imhelper/adapter-kook':
+        specifier: workspace:*
+        version: link:../../adapters/adapter-kook
+      '@imhelper/adapter-qq':
+        specifier: workspace:*
+        version: link:../../adapters/adapter-qq
+      '@imhelper/adapter-wechat':
         specifier: workspace:*
         version: link:../../adapters/adapter-wechat
-      '@onebots/protocol-milky-v1':
+      '@imhelper/protocol-milky-v1':
         specifier: workspace:*
-        version: link:../../protocols/protocol-milky-v1
-      '@onebots/protocol-onebot-v11':
+        version: link:../../protocols/milky-1/protocol
+      '@imhelper/protocol-onebot-11':
         specifier: workspace:*
-        version: link:../../protocols/protocol-onebot-v11
-      '@onebots/protocol-onebot-v12':
+        version: link:../../protocols/onebot-11/protocol
+      '@imhelper/protocol-onebot-12':
         specifier: workspace:*
-        version: link:../../protocols/protocol-onebot-v12
-      '@onebots/protocol-satori-v1':
+        version: link:../../protocols/onebot-12/protocol
+      '@imhelper/protocol-satori-1':
         specifier: workspace:*
-        version: link:../../protocols/protocol-satori
+        version: link:../../protocols/satori-1/protocol
     devDependencies:
       '@types/koa':
         specifier: ^3.0.1
@@ -345,7 +318,72 @@ importers:
         specifier: latest
         version: 5.9.3
 
-  protocols/protocol-milky-v1:
+  packages/web:
+    dependencies:
+      '@element-plus/icons-vue':
+        specifier: ^2.3.2
+        version: 2.3.2(vue@3.5.25(typescript@5.9.3))
+      '@xterm/addon-fit':
+        specifier: ^0.10.0
+        version: 0.10.0(@xterm/xterm@5.5.0)
+      '@xterm/addon-web-links':
+        specifier: ^0.11.0
+        version: 0.11.0(@xterm/xterm@5.5.0)
+      '@xterm/xterm':
+        specifier: ^5.5.0
+        version: 5.5.0
+      dayjs:
+        specifier: ^1.11.10
+        version: 1.11.19
+      element-plus:
+        specifier: ^2.4.4
+        version: 2.11.9(vue@3.5.25(typescript@5.9.3))
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
+      vue-router:
+        specifier: ^4.2.5
+        version: 4.6.3(vue@3.5.25(typescript@5.9.3))
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.0
+        version: 5.2.4(vite@5.4.21(@types/node@22.19.1)(sass@1.94.2))(vue@3.5.25(typescript@5.9.3))
+      sass:
+        specifier: ^1.69.6
+        version: 1.94.2
+      typescript:
+        specifier: latest
+        version: 5.9.3
+      unplugin-auto-import:
+        specifier: ^0.17.3
+        version: 0.17.8(@vueuse/core@12.8.2(typescript@5.9.3))(rollup@4.53.3)
+      unplugin-vue-components:
+        specifier: ^0.26.0
+        version: 0.26.0(@babel/parser@7.28.5)(rollup@4.53.3)(vue@3.5.25(typescript@5.9.3))
+      vite:
+        specifier: ^5.0.10
+        version: 5.4.21(@types/node@22.19.1)(sass@1.94.2)
+      vite-plugin-style-import:
+        specifier: ^2.0.0
+        version: 2.0.0(vite@5.4.21(@types/node@22.19.1)(sass@1.94.2))
+
+  protocols/milky-1/client:
+    dependencies:
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/milky-1/protocol:
     dependencies:
       koa-static:
         specifier: ^5.0.0
@@ -354,9 +392,9 @@ importers:
         specifier: latest
         version: 8.18.3
     devDependencies:
-      onebots:
+      imhelper:
         specifier: workspace:*
-        version: link:../../packages/onebots
+        version: link:../../../packages/server
       tsc-alias:
         specifier: latest
         version: 1.8.16
@@ -364,15 +402,18 @@ importers:
         specifier: latest
         version: 5.9.3
 
-  protocols/protocol-onebot-v11:
+  protocols/onebot-11/client:
     dependencies:
+      '@imhelper/client':
+        specifier: workspace:*
+        version: link:../../../packages/client
       ws:
-        specifier: latest
+        specifier: ^8.18.3
         version: 8.18.3
     devDependencies:
-      onebots:
-        specifier: workspace:*
-        version: link:../../packages/onebots
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       tsc-alias:
         specifier: latest
         version: 1.8.16
@@ -380,15 +421,15 @@ importers:
         specifier: latest
         version: 5.9.3
 
-  protocols/protocol-onebot-v12:
+  protocols/onebot-11/protocol:
     dependencies:
       ws:
         specifier: latest
         version: 8.18.3
     devDependencies:
-      onebots:
+      imhelper:
         specifier: workspace:*
-        version: link:../../packages/onebots
+        version: link:../../../packages/server
       tsc-alias:
         specifier: latest
         version: 1.8.16
@@ -396,15 +437,66 @@ importers:
         specifier: latest
         version: 5.9.3
 
-  protocols/protocol-satori:
+  protocols/onebot-12/client:
+    dependencies:
+      '@imhelper/client':
+        specifier: workspace:*
+        version: link:../../../packages/client
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/onebot-12/protocol:
     dependencies:
       ws:
         specifier: latest
         version: 8.18.3
     devDependencies:
-      onebots:
+      imhelper:
         specifier: workspace:*
-        version: link:../../packages/onebots
+        version: link:../../../packages/server
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/satori-1/client:
+    dependencies:
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/satori-1/protocol:
+    dependencies:
+      ws:
+        specifier: latest
+        version: 8.18.3
+    devDependencies:
+      imhelper:
+        specifier: workspace:*
+        version: link:../../../packages/server
       tsc-alias:
         specifier: latest
         version: 1.8.16
@@ -1153,6 +1245,10 @@ packages:
 
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
+
+  '@noble/curves@1.9.7':
+    resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
@@ -2021,6 +2117,10 @@ packages:
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
 
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
+    engines: {node: '>=12'}
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -2117,6 +2217,10 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
+  eventsource@2.0.2:
+    resolution: {integrity: sha512-IzUmBGPR3+oUG9dUeXynyNmf91/3zUSJg1lCktzKw47OXuhco54U3r9B7O4XX+Rb1Itm9OZ2b0RkTs10bICOxA==}
+    engines: {node: '>=12.0.0'}
+
   execa@8.0.1:
     resolution: {integrity: sha512-VyhnebXciFV2DESc+p6B+y0LjSm0krU4OgJN44qFAhBY0TJ+1V61tYD2+wHusZ6F9n5K+vl8k0sTy7PEfV4qpg==}
     engines: {node: '>=16.17'}
@@ -2183,6 +2287,10 @@ packages:
   form-data@4.0.5:
     resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
     engines: {node: '>= 6'}
+
+  formdata-node@6.0.3:
+    resolution: {integrity: sha512-8e1++BCiTzUno9v5IZ2J6bv4RU+3UKDmqWUQD0MIMVCd9AdhWkO1gw57oo1mNEX1dMq2EGI+FbWz4B92pscSQg==}
+    engines: {node: '>= 18'}
 
   formidable@3.5.4:
     resolution: {integrity: sha512-YikH+7CUTOtP44ZTnUhR7Ic2UASBPOqmaRkRKxRbywPTe5VxF7RRCck4af9wutiZ/QKM5nME9Bie2fFaPz5Gug==}
@@ -2445,6 +2553,10 @@ packages:
     resolution: {integrity: sha512-KDDuvpfqSK0ZKEO2gCPedNjl5wYpfj+HNiuVRlbhd1A88S3M0ySkdf2V/EJ4NWt5dwh5PXCdcenrKK2IQJAxsg==}
     engines: {node: '>= 18'}
 
+  kook-client@1.0.4:
+    resolution: {integrity: sha512-iIIEysc0aWig3SWv0tJnl4svk907u8k61OhTENS294dH+RDAvuDNntkfRvjxUA1v9ZGTYDnb5f99VaFP3vMeLg==}
+    engines: {node: '>=16'}
+
   local-pkg@0.4.3:
     resolution: {integrity: sha512-SFppqq5p42fe2qcZQqqEOiVRXl+WCP1MdT6k7BDEW1j++sp5fIY+/fdRQitvKgB5BrBcmrs5m/L0v2FrU5MY1g==}
     engines: {node: '>=14'}
@@ -2640,6 +2752,10 @@ packages:
   node-addon-api@7.1.1:
     resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
 
+  node-persist@4.0.4:
+    resolution: {integrity: sha512-8sPAz/7tw1mCCc8xBG4f0wi+flHkSSgQeX998iQ75Pu27evA6UUWCjSE7xnrYTg2q33oU5leJ061EKPDv6BocQ==}
+    engines: {node: '>=10.12.0'}
+
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
@@ -2679,6 +2795,10 @@ packages:
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
     engines: {node: '>=6'}
+
+  p-limit@3.1.0:
+    resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
+    engines: {node: '>=10'}
 
   p-limit@5.0.0:
     resolution: {integrity: sha512-/Eaoq+QyLSiXQ4lyYV23f14mZRQcXnxfHrN0vCai+ak9G0pp9iEQukIIZq5NccEvwRB8PUnZT0KsOoDCINS1qQ==}
@@ -2859,6 +2979,9 @@ packages:
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
+
+  reconnecting-websocket@4.4.0:
+    resolution: {integrity: sha512-D2E33ceRPga0NvTDhJmphEgJ7FUYF0v4lr1ki0csq06OdlxKfugGzN0dSkxM/NfqCxYELK4KcaTOUOjTV6Dcng==}
 
   reflect-metadata@0.1.14:
     resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
@@ -3415,6 +3538,10 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  yocto-queue@0.1.0:
+    resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
+    engines: {node: '>=10'}
 
   yocto-queue@1.2.2:
     resolution: {integrity: sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==}
@@ -4094,6 +4221,10 @@ snapshots:
       fs-extra: 8.1.0
       globby: 11.1.0
       read-yaml-file: 1.1.0
+
+  '@noble/curves@1.9.7':
+    dependencies:
+      '@noble/hashes': 1.8.0
 
   '@noble/hashes@1.8.0': {}
 
@@ -5006,6 +5137,8 @@ snapshots:
       no-case: 3.0.4
       tslib: 2.8.1
 
+  dotenv@17.2.3: {}
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -5168,6 +5301,8 @@ snapshots:
 
   events@3.3.0: {}
 
+  eventsource@2.0.2: {}
+
   execa@8.0.1:
     dependencies:
       cross-spawn: 7.0.6
@@ -5239,6 +5374,8 @@ snapshots:
       es-set-tostringtag: 2.1.0
       hasown: 2.0.2
       mime-types: 2.1.35
+
+  formdata-node@6.0.3: {}
 
   formidable@3.5.4:
     dependencies:
@@ -5552,6 +5689,21 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
+  kook-client@1.0.4:
+    dependencies:
+      axios: 1.13.2
+      dotenv: 17.2.3
+      formdata-node: 6.0.3
+      log4js: 6.9.1
+      node-persist: 4.0.4
+      reconnecting-websocket: 4.4.0
+      ws: 8.18.3
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
   local-pkg@0.4.3: {}
 
   local-pkg@0.5.1:
@@ -5740,6 +5892,10 @@ snapshots:
   node-addon-api@7.1.1:
     optional: true
 
+  node-persist@4.0.4:
+    dependencies:
+      p-limit: 3.1.0
+
   normalize-path@3.0.0: {}
 
   normalize-wheel-es@1.2.0: {}
@@ -5777,6 +5933,10 @@ snapshots:
   p-limit@2.3.0:
     dependencies:
       p-try: 2.2.0
+
+  p-limit@3.1.0:
+    dependencies:
+      yocto-queue: 0.1.0
 
   p-limit@5.0.0:
     dependencies:
@@ -5939,6 +6099,8 @@ snapshots:
       picomatch: 2.3.1
 
   readdirp@4.1.2: {}
+
+  reconnecting-websocket@4.4.0: {}
 
   reflect-metadata@0.1.14: {}
 
@@ -6572,6 +6734,8 @@ snapshots:
   wrappy@1.0.2: {}
 
   ws@8.18.3: {}
+
+  yocto-queue@0.1.0: {}
 
   yocto-queue@1.2.2: {}
 

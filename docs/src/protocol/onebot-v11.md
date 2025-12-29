@@ -14,7 +14,7 @@ OneBot V11（原 CQHTTP）是目前最流行的机器人协议标准之一，提
 ## 安装
 
 ```bash
-npm install @onebots/protocol-onebot-v11
+npm install @imhelper/protocol-onebot-11
 ```
 
 ## 配置
@@ -59,7 +59,7 @@ curl -X POST http://localhost:6727/wechat/my_mp/onebot/v11/send_private_msg \
 
 ### 反向 WebSocket
 
-OneBots 主动连接到指定的 WebSocket 服务器。
+imhelper 主动连接到指定的 WebSocket 服务器。
 
 配置示例：
 ```yaml
@@ -116,5 +116,5 @@ OneBot V11 支持的事件：
 ## 相关链接
 
 - [OneBot V11 标准](https://github.com/botuniverse/onebot-11)
-- [@onebots/protocol-onebot-v11 README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-onebot-v11)
+- [@imhelper/protocol-onebot-11 README](https://github.com/lc-cn/imhelper/tree/master/packages/protocol-onebot-v11)
 - [配置说明](/config/v11)

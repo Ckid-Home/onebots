@@ -55,7 +55,7 @@ describe('OneBot V12 - WebSocket Reverse', () => {
     console.log('        v12:');
     console.log(`          ws_reverse: ["ws://localhost:${CONFIG.wsReversePort}"]`);
     console.log('');
-    console.log('配置后重启服务器，OneBots 将主动连接到指定的 WebSocket 服务器');
+    console.log('配置后重启服务器，imhelper 将主动连接到指定的 WebSocket 服务器');
     console.log('='.repeat(70) + '\n');
   });
 
