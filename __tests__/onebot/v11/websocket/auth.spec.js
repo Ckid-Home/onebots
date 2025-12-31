@@ -1,7 +1,7 @@
 /**
  * OneBot 11 WebSocket 鉴权测试
  * 测试正向 WebSocket 的 access_token 鉴权机制
- * 参考: https://github.com/botuniverse/onebot-11/blob/master/communication/ws.md
+ * 参考: https://github.com/botuniverse/onebot-v11/blob/master/communication/ws.md
  */
 
 import { describe, test, expect, beforeAll } from 'vitest';

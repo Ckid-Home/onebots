@@ -1,6 +1,6 @@
 # 全局配置
 
-imhelper 使用 YAML 格式的配置文件，默认读取运行目录下的 `config.yaml`。
+onebots 使用 YAML 格式的配置文件，默认读取运行目录下的 `config.yaml`。
 
 ## 配置说明
 

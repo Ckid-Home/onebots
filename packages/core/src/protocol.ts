@@ -3,7 +3,6 @@ import { Account } from "@/account.js";
 import { Adapter } from "@/adapter.js";
 import { Dict } from "./types.js";
 import { Router } from "./router.js";
-import { BaseApp } from "@/base-app.js";
 
 /**
  * Base Protocol class

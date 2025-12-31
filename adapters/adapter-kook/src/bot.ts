@@ -4,7 +4,7 @@
  */
 import { EventEmitter } from 'events';
 import {Client,ChannelMessageEvent,PrivateMessageEvent} from 'kook-client';
-import type { RouterContext, Next } from 'imhelper';
+import type { RouterContext, Next } from 'onebots';
 import type {
     KookConfig,
     KookUser,

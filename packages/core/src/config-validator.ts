@@ -192,7 +192,7 @@ export const BaseAppConfigSchema: Schema = {
     },
     database: {
         type: 'string',
-        default: 'imhelper.db',
+        default: 'onebots.db',
     },
     timeout: {
         type: 'number',

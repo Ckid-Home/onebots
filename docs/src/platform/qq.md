@@ -1,6 +1,6 @@
 # QQ 适配器
 
-QQ 适配器支持通过 QQ 官方 API 接入 imhelper 服务。
+QQ 适配器支持通过 QQ 官方 API 接入 onebots 服务。
 
 ## 状态
 
@@ -21,9 +21,9 @@ QQ 适配器支持通过 QQ 官方 API 接入 imhelper 服务。
 ## 安装
 
 ```bash
-npm install @imhelper/adapter-qq
+npm install @onebots/adapter-qq
 # 或
-pnpm add @imhelper/adapter-qq
+pnpm add @onebots/adapter-qq
 ```
 
 ## 接收模式

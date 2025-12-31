@@ -5,7 +5,7 @@
  * 
  * 必需的请求头:
  * - User-Agent: 如 OneBot/12 (qq) Go-LibOneBot/1.0.0
- * - Sec-WebSocket-Protocol: <onebot_version>.<impl> 如 12.imhelper
+ * - Sec-WebSocket-Protocol: <onebot_version>.<impl> 如 12.onebots
  * - Authorization: Bearer <access_token> (如果配置了 access_token)
  */
 
@@ -121,7 +121,7 @@ describe('OneBot V12 - WebSocket Reverse 请求头测试', () => {
     console.log('OneBot 12 标准要求的请求头:');
     console.log('  ✓ User-Agent: OneBot/12 (<impl>) <software>');
     console.log('  ✓ Sec-WebSocket-Protocol: <onebot_version>.<impl>');
-    console.log('    示例: 12.imhelper');
+    console.log('    示例: 12.onebots');
     console.log('  ✓ Authorization: Bearer <access_token> (可选)');
     console.log('='.repeat(70) + '\n');
   });
@@ -200,7 +200,7 @@ describe('OneBot V12 - WebSocket Reverse 请求头测试', () => {
     expect(protocol.length).toBeGreaterThan(0);
     
     // 标准格式: <onebot_version>.<impl>
-    // 例如: 12.imhelper
+    // 例如: 12.onebots
     const protocolPattern = /^(\d+)\.([a-z0-9_-]+)$/;
     const match = protocol.match(protocolPattern);
     
@@ -215,7 +215,7 @@ describe('OneBot V12 - WebSocket Reverse 请求头测试', () => {
     } else {
       console.log('⚠️  Sec-WebSocket-Protocol 格式不符合标准');
       console.log('   预期格式: <onebot_version>.<impl>');
-      console.log('   示例: 12.imhelper');
+      console.log('   示例: 12.onebots');
     }
   });
 

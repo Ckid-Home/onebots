@@ -76,13 +76,13 @@ export default defineConfig({
   
   resolve: {
     alias: {
-      '@imhelper/core': resolve(__dirname, './packages/core/src'),
-      '@imhelper/protocol-onebot-11': resolve(__dirname, './packages/protocol-onebot-v11/src'),
-      '@imhelper/protocol-onebot-12': resolve(__dirname, './packages/protocol-onebot-v12/src'),
-      '@imhelper/protocol-satori-1': resolve(__dirname, './packages/protocol-satori/src'),
-      '@imhelper/protocol-milky-v1': resolve(__dirname, './packages/protocol-milky-v1/src'),
-      '@imhelper/adapter-wechat': resolve(__dirname, './packages/adapter-wechat/src'),
-      'imhelper': resolve(__dirname, './packages/imhelper/src')
+      '@onebots/core': resolve(__dirname, './packages/core/src'),
+      '@onebots/protocol-onebot-v11': resolve(__dirname, './packages/protocol-onebot-v11/src'),
+      '@onebots/protocol-onebot-v12': resolve(__dirname, './packages/protocol-onebot-v12/src'),
+      '@onebots/protocol-satori-v1': resolve(__dirname, './packages/protocol-satori/src'),
+      '@onebots/protocol-milky-v1': resolve(__dirname, './packages/protocol-milky-v1/src'),
+      '@onebots/adapter-wechat': resolve(__dirname, './packages/adapter-wechat/src'),
+      'onebots': resolve(__dirname, './packages/onebots/src')
     }
   }
 });

@@ -1,6 +1,6 @@
 # 协议配置
 
-协议配置用于设置 imhelper 对外提供的协议接口参数。可以在 general 中设置默认值，也可以在账号级别单独配置。
+协议配置用于设置 onebots 对外提供的协议接口参数。可以在 general 中设置默认值，也可以在账号级别单独配置。
 
 ## 配置层级
 
@@ -50,7 +50,7 @@ onebot.v11:
 
 ### 正向 WebSocket
 
-客户端主动连接到 imhelper。
+客户端主动连接到 onebots。
 
 **访问地址**: `ws://localhost:6727/{platform}/{account_id}/onebot/v11`
 
@@ -63,7 +63,7 @@ onebot.v11:
 
 ### 反向 WebSocket
 
-imhelper 主动连接到指定服务器。
+onebots 主动连接到指定服务器。
 
 **配置项**:
 ```yaml

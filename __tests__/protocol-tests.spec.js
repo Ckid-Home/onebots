@@ -1,5 +1,5 @@
 /**
- * imhelper 协议测试套件（Vitest 版本）
+ * onebots 协议测试套件（Vitest 版本）
  */
 
 import { describe, test, expect, beforeAll } from 'vitest';
@@ -101,7 +101,7 @@ beforeAll(async () => {
   }
 });
 
-describe('imhelper 协议测试', () => {
+describe('onebots 协议测试', () => {
   test('配置信息', () => {
     console.log('\n配置信息:');
     console.log(`  服务器: ${CONFIG.baseUrl}`);

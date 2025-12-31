@@ -1,7 +1,7 @@
 {
-  "name": "@imhelper/adapter-kook",
+  "name": "@onebots/adapter-kook",
   "version": "1.0.0",
-  "description": "imhelper KOOK(开黑了)适配器",
+  "description": "onebots KOOK(开黑了)适配器",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -10,7 +10,7 @@
     "clean": "rm -rf lib *.tsbuildinfo"
   },
   "keywords": [
-    "imhelper",
+    "onebots",
     "kook",
     "kaiheila",
     "adapter"
@@ -30,7 +30,7 @@
     "typescript": "latest"
   },
   "peerDependencies": {
-    "imhelper": "workspace:*"
+    "onebots": "workspace:*"
   },
   "dependencies": {
     "@types/node": "^22.7.3",

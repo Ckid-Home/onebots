@@ -55,7 +55,7 @@ export class BaseApp extends Koa {
         return path.join(BaseApp.configDir, "data");
     }
     static get logFile() {
-        return path.join(BaseApp.configDir, "imhelper.log");
+        return path.join(BaseApp.configDir, "onebots.log");
     }
     db:SqliteDB
     adapters: Map<keyof Adapter.Configs, Adapter> = new Map<keyof Adapter.Configs, Adapter>();
@@ -104,11 +104,11 @@ export class BaseApp extends Koa {
 
     init() {
         // 初始化传统日志（保持兼容性）
-        this.logger = getLogger("[imhelper]");
+        this.logger = getLogger("[onebots]");
         this.logger.level = this.config.log_level;
         
         // 初始化增强日志
-        this.enhancedLogger = createLogger("[imhelper]", this.config.log_level);
+        this.enhancedLogger = createLogger("[onebots]", this.config.log_level);
         
         // 注册数据库资源到生命周期管理器
         this.db = new SqliteDB(path.resolve(BaseApp.dataDir, this.config.database));
@@ -118,7 +118,7 @@ export class BaseApp extends Koa {
         
         // 创建 HTTP 服务器
         this.httpServer = createServer(this.callback());
-        this.router = new Router(this.httpServer, { prefix: this.config.path });
+        this.router = new Router(this.httpServer);
         
         // 注册路由清理
         this.lifecycle.register('router', () => {
@@ -133,22 +133,28 @@ export class BaseApp extends Koa {
         });
         
         this.use(KoaBody())
-            .use(this.router.routes())
-            .use(this.router.allowedMethods())
             .use(async (ctx, next) => {
-                try {
-                    const adapter = ctx.path?.slice(1)?.split("/")[0];
-                    if (this.adapters.has(adapter)) return next();
-                    return basicAuth({
-                        name: this.config.username,
-                        pass: this.config.password,
-                    })(ctx, next);
-                } catch (error) {
-                    const wrappedError = ErrorHandler.wrap(error, { path: ctx.path });
-                    this.enhancedLogger.error(wrappedError, { path: ctx.path });
-                    throw error;
+                console.log(this.router.stack.map(layer=>{
+                    return {
+                        path: layer.path,
+                        methods: layer.methods,
+                        regexp: layer.regexp?.toString(),
+                    }
+                }))
+                // 检查是否是协议路径格式: /{platform}/{accountId}/{protocol}/{version}/...
+                const pathParts = ctx.path?.split("/").filter(p => p) || [];
+                
+                const [_platform, _accountId, protocol, version] = pathParts;
+                if(ProtocolRegistry.has(protocol, version)) {
+                    return next();
                 }
-            });
+                return await basicAuth({
+                    name: this.config.username,
+                    pass: this.config.password,
+                })(ctx, next)
+            })
+            .use(this.router.routes())
+            .use(this.router.allowedMethods());
         
         this.enhancedLogger.info('Application initialized', {
             username: this.config.username,
@@ -158,7 +164,7 @@ export class BaseApp extends Koa {
         this.initAdapters();
     }
     getLogger(patform: string) {
-        const logger = getLogger(`[imhelper:${patform}]`);
+        const logger = getLogger(`[onebots:${patform}]`);
         logger.level = this.config.log_level;
         return logger;
     }
@@ -167,7 +173,7 @@ export class BaseApp extends Koa {
      * 获取增强的 Logger 实例
      */
     getEnhancedLogger(name: string): EnhancedLogger {
-        return createLogger(`[imhelper:${name}]`, this.config.log_level);
+        return createLogger(`[onebots:${name}]`, this.config.log_level);
     }
 
     get adapterConfigs():Map<string,Account.Config[]> {
@@ -347,7 +353,7 @@ export namespace BaseApp {
     } & KoaOptions & AdapterConfig;
     export const defaultConfig: Config = {
         port: 6727,
-        database: "imhelper.db",
+        database: "onebots.db",
         username: "admin",
         password: "123456",
         timeout: 30,
@@ -355,5 +361,5 @@ export namespace BaseApp {
         log_level: "info",
     };
 
-    export let configDir = path.join(os.homedir(), ".imhelper");
+    export let configDir = path.join(os.homedir(), ".onebots");
 }

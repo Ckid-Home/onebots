@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>imhelper 系统架构图</title>
+    <title>onebots 系统架构图</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         body {
@@ -89,7 +89,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🤖 imhelper 系统架构图</h1>
+        <h1>🤖 onebots 系统架构图</h1>
         
         <div class="info-box">
             <strong>提示：</strong>右键点击图表可以保存为PNG或SVG格式。或者使用下方的导出按钮。
@@ -553,7 +553,7 @@ sequenceDiagram
             for (let i = 0; i < diagrams.length; i++) {
                 const svg = diagrams[i].querySelector('svg');
                 if (svg) {
-                    await exportSVGtoPNG(svg, `imhelper-architecture-${i + 1}.png`);
+                    await exportSVGtoPNG(svg, `onebots-architecture-${i + 1}.png`);
                 }
             }
             alert('所有图表已导出为PNG格式！');
@@ -571,7 +571,7 @@ sequenceDiagram
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `imhelper-architecture-${i + 1}.svg`;
+                    a.download = `onebots-architecture-${i + 1}.svg`;
                     a.click();
                     URL.revokeObjectURL(url);
                 }

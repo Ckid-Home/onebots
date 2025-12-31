@@ -4,7 +4,7 @@ OneBot V11 是基于 OneBot 11 标准的实现，完全兼容 CQHTTP 接口。
 
 ## 标准参考
 
-- 官方仓库：https://github.com/botuniverse/onebot-11
+- 官方仓库：https://github.com/botuniverse/onebot-v11
 - 官方文档：https://11.onebot.dev
 
 ## 文档导航

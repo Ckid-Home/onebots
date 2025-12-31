@@ -1,11 +1,11 @@
 <template>
-  <el-container class="imhelper-container">
+  <el-container class="onebots-container">
     <!-- 顶部导航栏 -->
     <el-header class="header">
       <div class="header-content">
         <div class="logo">
           <el-icon :size="28"><Monitor /></el-icon>
-          <span class="title">imhelper 管理平台</span>
+          <span class="title">onebots 管理平台</span>
         </div>
         <div class="header-actions">
           <el-badge :value="onlineBotCount" :hidden="onlineBotCount === 0" type="success">
@@ -88,7 +88,7 @@ const isCollapse = ref(false)
 </script>
 
 <style lang="scss" scoped>
-.imhelper-container {
+.onebots-container {
   height: 100vh;
   background: var(--bg-color);
   overflow: hidden;

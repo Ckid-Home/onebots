@@ -110,7 +110,7 @@ const emit = defineEmits<{
 }>()
 
 const getFullUrl = (url: string) => {
-  const port = localStorage.getItem('imhelper:serverPort')
+  const port = localStorage.getItem('onebots:serverPort')
   return `${location.protocol}//${location.hostname}:${port}${url}`
 }
 </script>

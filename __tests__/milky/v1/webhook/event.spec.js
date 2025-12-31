@@ -5,7 +5,7 @@
  * 
  * WebHook 配置:
  * - 在 config.yaml 中配置 webhook_url
- * - imhelper 会将事件 POST 到配置的 URL
+ * - onebots 会将事件 POST 到配置的 URL
  * - Content-Type: application/json
  * - 可选: X-Signature 签名验证
  */
@@ -158,7 +158,7 @@ describe('Milky V1 - WebHook 事件推送', () => {
 describe('Milky V1 - WebHook 签名验证', () => {
   test('WebHook 签名说明', () => {
     console.log('\n💡 WebHook 签名验证（如果配置了 secret）:');
-    console.log('   1. imhelper 使用 HMAC-SHA256 算法');
+    console.log('   1. onebots 使用 HMAC-SHA256 算法');
     console.log('   2. 签名内容: 请求体的原始 JSON 字符串');
     console.log('   3. 密钥: config.yaml 中配置的 webhook.secret');
     console.log('   4. 签名放在 X-Signature header 中');

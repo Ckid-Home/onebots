@@ -19,7 +19,7 @@
 #### 使用示例
 
 ```typescript
-import { NetworkError, ErrorHandler, ErrorCategory } from '@imhelper/core';
+import { NetworkError, ErrorHandler, ErrorCategory } from '@onebots/core';
 
 // 创建特定类型的错误
 const error = new NetworkError('Connection failed', {
@@ -47,7 +47,7 @@ if (ErrorHandler.isRecoverable(error)) {
 #### 使用示例
 
 ```typescript
-import { createLogger } from '@imhelper/core';
+import { createLogger } from '@onebots/core';
 
 const logger = createLogger('MyModule');
 
@@ -78,7 +78,7 @@ contextLogger.info('Processing request'); // 自动包含 requestId
 #### 使用示例
 
 ```typescript
-import { ConfigValidator, BaseAppConfigSchema } from '@imhelper/core';
+import { ConfigValidator, BaseAppConfigSchema } from '@onebots/core';
 
 // 验证配置
 const config = {
@@ -116,7 +116,7 @@ const validated = ConfigValidator.validate(config, customSchema);
 #### 使用示例
 
 ```typescript
-import { Container, container } from '@imhelper/core';
+import { Container, container } from '@onebots/core';
 
 // 注册服务
 class Database {
@@ -148,7 +148,7 @@ const userService = container.get<UserService>('UserService');
 #### 使用示例
 
 ```typescript
-import { LifecycleManager } from '@imhelper/core';
+import { LifecycleManager } from '@onebots/core';
 
 const lifecycle = new LifecycleManager();
 
@@ -194,7 +194,7 @@ process.on('SIGTERM', async () => {
 所有新功能都已集成到 `BaseApp` 中：
 
 ```typescript
-import { BaseApp } from '@imhelper/core';
+import { BaseApp } from '@onebots/core';
 
 const app = new BaseApp({
     port: 8080,

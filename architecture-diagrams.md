@@ -1,6 +1,6 @@
-# imhelper 架构图
+# onebots 架构图
 
-本文档包含 imhelper 项目的各种架构图，使用 Mermaid 语法编写。
+本文档包含 onebots 项目的各种架构图，使用 Mermaid 语法编写。
 
 ## 导出图片的方法
 
@@ -483,7 +483,7 @@ graph TB
 
 ```mermaid
 graph TD
-    Root["imhelper/"]
+    Root["onebots/"]
     
     Root --> Src["src/"]
     Root --> Config["config.yaml"]
@@ -548,8 +548,8 @@ graph TB
         DingTalk_API["钉钉 API"]
     end
     
-    subgraph imhelper["imhelper 服务器"]
-        App["imhelper App<br/>Port: 6727"]
+    subgraph onebots["onebots 服务器"]
+        App["onebots App<br/>Port: 6727"]
         
         subgraph Adapters["适配器实例"]
             QQ_Adapter["QQ Adapter"]
@@ -600,7 +600,7 @@ graph TB
     MLK_1 <-->|HTTP/WebSocket| Bot4
     
     style External fill:#ffebee
-    style imhelper fill:#e8f5e9
+    style onebots fill:#e8f5e9
     style BotApps fill:#e1f5ff
     style App fill:#4caf50,color:#fff
 ```

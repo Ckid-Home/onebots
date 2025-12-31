@@ -183,7 +183,7 @@ async function testWebSocket(url, protocol, version) {
             });
 
             if (error.message.includes('ECONNREFUSED')) {
-                console.log('\n⚠️  无法连接到服务器，请确保 imhelper 服务正在运行');
+                console.log('\n⚠️  无法连接到服务器，请确保 onebots 服务正在运行');
                 console.log(`   启动命令: cd development && pnpm dev\n`);
             }
 

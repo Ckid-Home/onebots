@@ -1,4 +1,4 @@
-# @imhelper/docs
+# @onebots/docs
 
 ## 0.5.0
 

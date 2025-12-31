@@ -1,7 +1,7 @@
 /**
  * OneBot 11 HTTP 鉴权测试
  * 测试 HTTP API 的 access_token 鉴权机制
- * 参考: https://github.com/botuniverse/onebot-11/blob/master/communication/http.md
+ * 参考: https://github.com/botuniverse/onebot-v11/blob/master/communication/http.md
  */
 
 import { describe, test, expect, beforeAll } from 'vitest';

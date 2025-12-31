@@ -18,6 +18,9 @@ importers:
       '@types/koa-static':
         specifier: ^4.0.4
         version: 4.0.4
+      '@types/node':
+        specifier: ^22.7.3
+        version: 22.19.1
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
@@ -51,9 +54,9 @@ importers:
       discord.js:
         specifier: ^14.16.3
         version: 14.25.1
-      imhelper:
+      onebots:
         specifier: workspace:*
-        version: link:../../packages/server
+        version: link:../../packages/onebots
     devDependencies:
       tsc-alias:
         specifier: latest
@@ -67,12 +70,12 @@ importers:
       '@types/node':
         specifier: ^22.7.3
         version: 22.19.1
-      imhelper:
-        specifier: workspace:*
-        version: link:../../packages/server
       kook-client:
         specifier: ^1.0.4
         version: 1.0.4
+      onebots:
+        specifier: workspace:*
+        version: link:../../packages/onebots
     devDependencies:
       tsc-alias:
         specifier: latest
@@ -92,9 +95,9 @@ importers:
       '@types/ws':
         specifier: ^8.5.3
         version: 8.18.1
-      imhelper:
+      onebots:
         specifier: workspace:*
-        version: link:../../packages/server
+        version: link:../../packages/onebots
       ws:
         specifier: ^8.18.3
         version: 8.18.3
@@ -114,12 +117,12 @@ importers:
       '@types/node':
         specifier: ^22.7.3
         version: 22.19.1
-      imhelper:
-        specifier: workspace:*
-        version: link:../../packages/server
       koa:
         specifier: latest
         version: 3.1.1
+      onebots:
+        specifier: workspace:*
+        version: link:../../packages/onebots
     devDependencies:
       tsc-alias:
         specifier: latest
@@ -130,39 +133,52 @@ importers:
 
   development:
     dependencies:
-      '@imhelper/adapter-discord':
+      '@imhelper/onebot-v11':
+        specifier: workspace:*
+        version: link:../protocols/onebot-v11/sdk
+      '@imhelper/onebot-v12':
+        specifier: workspace:*
+        version: link:../protocols/onebot-v12/sdk
+      '@onebots/adapter-discord':
         specifier: workspace:*
         version: link:../adapters/adapter-discord
-      '@imhelper/adapter-kook':
+      '@onebots/adapter-kook':
         specifier: workspace:*
         version: link:../adapters/adapter-kook
-      '@imhelper/adapter-qq':
+      '@onebots/adapter-qq':
         specifier: workspace:*
         version: link:../adapters/adapter-qq
-      '@imhelper/adapter-wechat':
+      '@onebots/adapter-wechat':
         specifier: workspace:*
         version: link:../adapters/adapter-wechat
-      '@imhelper/protocol-milky-v1':
+      '@onebots/protocol-milky-v1':
         specifier: workspace:*
-        version: link:../protocols/milky-1/protocol
-      '@imhelper/protocol-onebot-11':
+        version: link:../protocols/milky-v1/protocol
+      '@onebots/protocol-onebot-v11':
         specifier: workspace:*
-        version: link:../protocols/onebot-11/protocol
-      '@imhelper/protocol-onebot-12':
+        version: link:../protocols/onebot-v11/protocol
+      '@onebots/protocol-onebot-v12':
         specifier: workspace:*
-        version: link:../protocols/onebot-12/protocol
-      '@imhelper/protocol-satori-1':
+        version: link:../protocols/onebot-v12/protocol
+      '@onebots/protocol-satori-v1':
         specifier: workspace:*
-        version: link:../protocols/satori-1/protocol
+        version: link:../protocols/satori-v1/protocol
       imhelper:
         specifier: workspace:*
-        version: link:../packages/server
+        version: link:../packages/imhelper
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.1
+      onebots:
+        specifier: workspace:*
+        version: link:../packages/onebots
       ws:
         specifier: ^8.18.3
         version: 8.18.3
+    devDependencies:
+      eventsource:
+        specifier: ^2.0.0
+        version: 2.0.2
 
   docs:
     devDependencies:
@@ -181,25 +197,6 @@ importers:
       vue:
         specifier: ^3.5.13
         version: 3.5.25(typescript@5.9.3)
-
-  packages/client:
-    dependencies:
-      eventsource:
-        specifier: ^2.0.2
-        version: 2.0.2
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3
-    devDependencies:
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
-      tsc-alias:
-        specifier: latest
-        version: 1.8.16
-      typescript:
-        specifier: latest
-        version: 5.9.3
 
   packages/core:
     dependencies:
@@ -259,45 +256,64 @@ importers:
         specifier: latest
         version: 1.0.1
 
-  packages/server:
+  packages/imhelper:
     dependencies:
-      '@imhelper/core':
-        specifier: workspace:*
-        version: link:../core
-      '@imhelper/web':
-        specifier: workspace:*
-        version: link:../web
+      eventsource:
+        specifier: ^2.0.2
+        version: 2.0.2
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  packages/onebots:
+    dependencies:
       '@karinjs/node-pty':
         specifier: ^1.1.3
         version: 1.1.3
+      '@onebots/core':
+        specifier: workspace:*
+        version: link:../core
+      '@onebots/web':
+        specifier: workspace:*
+        version: link:../web
       koa-static:
         specifier: ^5.0.0
         version: 5.0.0
     optionalDependencies:
-      '@imhelper/adapter-discord':
+      '@onebots/adapter-discord':
         specifier: workspace:*
         version: link:../../adapters/adapter-discord
-      '@imhelper/adapter-kook':
+      '@onebots/adapter-kook':
         specifier: workspace:*
         version: link:../../adapters/adapter-kook
-      '@imhelper/adapter-qq':
+      '@onebots/adapter-qq':
         specifier: workspace:*
         version: link:../../adapters/adapter-qq
-      '@imhelper/adapter-wechat':
+      '@onebots/adapter-wechat':
         specifier: workspace:*
         version: link:../../adapters/adapter-wechat
-      '@imhelper/protocol-milky-v1':
+      '@onebots/protocol-milky-v1':
         specifier: workspace:*
-        version: link:../../protocols/milky-1/protocol
-      '@imhelper/protocol-onebot-11':
+        version: link:../../protocols/milky-v1/protocol
+      '@onebots/protocol-onebot-v11':
         specifier: workspace:*
-        version: link:../../protocols/onebot-11/protocol
-      '@imhelper/protocol-onebot-12':
+        version: link:../../protocols/onebot-v11/protocol
+      '@onebots/protocol-onebot-v12':
         specifier: workspace:*
-        version: link:../../protocols/onebot-12/protocol
-      '@imhelper/protocol-satori-1':
+        version: link:../../protocols/onebot-v12/protocol
+      '@onebots/protocol-satori-v1':
         specifier: workspace:*
-        version: link:../../protocols/satori-1/protocol
+        version: link:../../protocols/satori-v1/protocol
     devDependencies:
       '@types/koa':
         specifier: ^3.0.1
@@ -305,6 +321,9 @@ importers:
       '@types/koa-static':
         specifier: ^4.0.4
         version: 4.0.4
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.1
       tsc-alias:
         specifier: latest
         version: 1.8.16
@@ -367,23 +386,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(vite@5.4.21(@types/node@22.19.1)(sass@1.94.2))
 
-  protocols/milky-1/client:
-    dependencies:
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3
-    devDependencies:
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
-      tsc-alias:
-        specifier: latest
-        version: 1.8.16
-      typescript:
-        specifier: latest
-        version: 5.9.3
-
-  protocols/milky-1/protocol:
+  protocols/milky-v1/protocol:
     dependencies:
       koa-static:
         specifier: ^5.0.0
@@ -392,9 +395,9 @@ importers:
         specifier: latest
         version: 8.18.3
     devDependencies:
-      imhelper:
+      onebots:
         specifier: workspace:*
-        version: link:../../../packages/server
+        version: link:../../../packages/onebots
       tsc-alias:
         specifier: latest
         version: 1.8.16
@@ -402,77 +405,7 @@ importers:
         specifier: latest
         version: 5.9.3
 
-  protocols/onebot-11/client:
-    dependencies:
-      '@imhelper/client':
-        specifier: workspace:*
-        version: link:../../../packages/client
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3
-    devDependencies:
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
-      tsc-alias:
-        specifier: latest
-        version: 1.8.16
-      typescript:
-        specifier: latest
-        version: 5.9.3
-
-  protocols/onebot-11/protocol:
-    dependencies:
-      ws:
-        specifier: latest
-        version: 8.18.3
-    devDependencies:
-      imhelper:
-        specifier: workspace:*
-        version: link:../../../packages/server
-      tsc-alias:
-        specifier: latest
-        version: 1.8.16
-      typescript:
-        specifier: latest
-        version: 5.9.3
-
-  protocols/onebot-12/client:
-    dependencies:
-      '@imhelper/client':
-        specifier: workspace:*
-        version: link:../../../packages/client
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3
-    devDependencies:
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
-      tsc-alias:
-        specifier: latest
-        version: 1.8.16
-      typescript:
-        specifier: latest
-        version: 5.9.3
-
-  protocols/onebot-12/protocol:
-    dependencies:
-      ws:
-        specifier: latest
-        version: 8.18.3
-    devDependencies:
-      imhelper:
-        specifier: workspace:*
-        version: link:../../../packages/server
-      tsc-alias:
-        specifier: latest
-        version: 1.8.16
-      typescript:
-        specifier: latest
-        version: 5.9.3
-
-  protocols/satori-1/client:
+  protocols/milky-v1/sdk:
     dependencies:
       ws:
         specifier: ^8.18.3
@@ -488,15 +421,101 @@ importers:
         specifier: latest
         version: 5.9.3
 
-  protocols/satori-1/protocol:
+  protocols/onebot-v11/protocol:
     dependencies:
       ws:
         specifier: latest
         version: 8.18.3
     devDependencies:
+      onebots:
+        specifier: workspace:*
+        version: link:../../../packages/onebots
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/onebot-v11/sdk:
+    dependencies:
       imhelper:
         specifier: workspace:*
-        version: link:../../../packages/server
+        version: link:../../../packages/imhelper
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/onebot-v12/protocol:
+    dependencies:
+      ws:
+        specifier: latest
+        version: 8.18.3
+    devDependencies:
+      onebots:
+        specifier: workspace:*
+        version: link:../../../packages/onebots
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/onebot-v12/sdk:
+    dependencies:
+      imhelper:
+        specifier: workspace:*
+        version: link:../../../packages/imhelper
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/satori-v1/protocol:
+    dependencies:
+      ws:
+        specifier: latest
+        version: 8.18.3
+    devDependencies:
+      onebots:
+        specifier: workspace:*
+        version: link:../../../packages/onebots
+      tsc-alias:
+        specifier: latest
+        version: 1.8.16
+      typescript:
+        specifier: latest
+        version: 5.9.3
+
+  protocols/satori-v1/sdk:
+    dependencies:
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       tsc-alias:
         specifier: latest
         version: 1.8.16

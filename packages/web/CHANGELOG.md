@@ -1,4 +1,4 @@
-# @imhelper/client
+# imhelper
 
 ## 0.5.1
 

@@ -1,6 +1,6 @@
 /**
  * OneBot 11 WebSocket 测试
- * 基于 OneBot 11 正向 WebSocket 标准: https://github.com/botuniverse/onebot-11/blob/master/communication/ws.md
+ * 基于 OneBot 11 正向 WebSocket 标准: https://github.com/botuniverse/onebot-v11/blob/master/communication/ws.md
  */
 
 import { describe, test, expect, beforeAll } from 'vitest';

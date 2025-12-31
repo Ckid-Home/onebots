@@ -5,11 +5,11 @@
  * - 粉丝管理（getFriendList, getFriendInfo等，对应微信的关注用户）
  * - 标签管理（getGroupList, getGroupInfo等，对应微信的用户标签）
  */
-import { Account,AdapterRegistry, AccountStatus } from "imhelper";
-import { Adapter } from "imhelper";
-import { BaseApp } from "imhelper";
+import { Account,AdapterRegistry, AccountStatus } from "onebots";
+import { Adapter } from "onebots";
+import { BaseApp } from "onebots";
 import { WechatBot } from "./bot.js";
-import { CommonEvent } from "imhelper";
+import { CommonEvent } from "onebots";
 import type { WechatConfig } from "./types.js";
 
 export class WechatAdapter extends Adapter<WechatBot, "wechat"> {
@@ -562,7 +562,7 @@ export class WechatAdapter extends Adapter<WechatBot, "wechat"> {
     }
 }
 
-declare module "imhelper" {
+declare module "onebots" {
     export namespace Adapter {
         export interface Configs {
             wechat: WechatConfig;

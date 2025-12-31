@@ -6,11 +6,11 @@
  * - 频道管理（getChannelList, getChannelInfo 等）
  * - 用户管理（getFriendList, getUserInfo 等）
  */
-import { Account, AdapterRegistry, AccountStatus } from "imhelper";
-import { Adapter } from "imhelper";
-import { BaseApp } from "imhelper";
+import { Account, AdapterRegistry, AccountStatus } from "onebots";
+import { Adapter } from "onebots";
+import { BaseApp } from "onebots";
 import { KookBot } from "./bot.js";
-import { CommonEvent } from "imhelper";
+import { CommonEvent } from "onebots";
 import type { KookConfig, KookEvent, KookMessageType } from "./types.js";
 import { parseKMarkdown, mentionUser, mentionAll, mentionHere } from "./utils.js";
 
@@ -570,7 +570,7 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
      */
     async getVersion(uin: string): Promise<Adapter.VersionInfo> {
         return {
-            app_name: 'imhelper KOOK Adapter',
+            app_name: 'onebots KOOK Adapter',
             app_version: '1.0.0',
             impl: 'kook',
             version: '1.0.0',
@@ -911,7 +911,7 @@ export class KookAdapter extends Adapter<KookBot, "kook"> {
     }
 }
 
-declare module "imhelper" {
+declare module "onebots" {
     export namespace Adapter {
         export interface Configs {
             kook: KookConfig;

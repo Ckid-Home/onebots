@@ -1,26 +1,26 @@
 # 快速开始
 
-本指南将帮助你快速部署 imhelper 服务。
+本指南将帮助你快速部署 onebots 服务。
 
-## 什么是 imhelper？
+## 什么是 onebots？
 
-imhelper 是一个**协议转换中间层**，帮助你将各平台机器人接入到任意支持标准协议的机器人框架：
+onebots 是一个**协议转换中间层**，帮助你将各平台机器人接入到任意支持标准协议的机器人框架：
 
 - **平台层**：微信、QQ、钉钉等各大平台的机器人 API
-- **imhelper**：统一的协议转换层，抹平平台差异
+- **onebots**：统一的协议转换层，抹平平台差异
 - **框架层**：Koishi、NoneBot、Yunzai 等机器人应用框架
 
 ```
 平台 API (微信、QQ、钉钉...)
         ↓
-    imhelper  ← 本项目
+    onebots  ← 本项目
         ↓
 标准协议 (OneBot、Satori...)
         ↓
 机器人框架 (Koishi、NoneBot...)
 ```
 
-**使用场景**：当你想用 Koishi 等框架开发机器人，但平台不直接支持时，imhelper 可以作为桥梁。
+**使用场景**：当你想用 Koishi 等框架开发机器人，但平台不直接支持时，onebots 可以作为桥梁。
 
 ## 前置要求
 
@@ -32,26 +32,26 @@ imhelper 是一个**协议转换中间层**，帮助你将各平台机器人接�
 ### 全局安装
 
 ```bash
-npm install -g imhelper
+npm install -g onebots
 # 或
-pnpm add -g imhelper
+pnpm add -g onebots
 ```
 
 ### 项目安装
 
 ```bash
-npm install imhelper
+npm install onebots
 # 或
-pnpm add imhelper
+pnpm add onebots
 ```
 
 ## 工作原理
 
 1. **配置平台账号**：在配置文件中填写平台机器人的认证信息
-2. **加载适配器**：imhelper 使用对应适配器连接平台（如微信适配器）
+2. **加载适配器**：onebots 使用对应适配器连接平台（如微信适配器）
 3. **选择协议**：指定要提供的协议接口（如 OneBot V11、Satori）
-4. **启动服务**：imhelper 开始监听并转换消息
-5. **框架接入**：机器人框架通过标准协议与 imhelper 通信
+4. **启动服务**：onebots 开始监听并转换消息
+5. **框架接入**：机器人框架通过标准协议与 onebots 通信
 
 ## 创建配置文件
 
@@ -94,13 +94,13 @@ wechat.my_wechat_mp:
 
 ```bash
 # 基础用法：指定适配器和协议
-imhelper -r wechat -p onebot-v11
+onebots -r wechat -p onebot-v11
 
 # 自定义配置文件
-imhelper -r wechat -p onebot-v11 -c config.yaml
+onebots -r wechat -p onebot-v11 -c config.yaml
 
 # 同时启用多个协议（一个账号对外提供多个协议接口）
-imhelper -r wechat -p onebot-v11 -p onebot-v12 -p satori-v1
+onebots -r wechat -p onebot-v11 -p onebot-v12 -p satori-v1
 ```
 
 **命令行参数说明：**
@@ -116,9 +116,9 @@ imhelper -r wechat -p onebot-v11 -p onebot-v12 -p satori-v1
 创建 `index.js` 或 `index.ts`：
 
 ```javascript
-import { App } from 'imhelper';
-import { WeChatAdapter } from '@imhelper/adapter-wechat';
-import { OneBotV11Protocol } from '@imhelper/protocol-onebot-11';
+import { App } from 'onebots';
+import { WeChatAdapter } from '@onebots/adapter-wechat';
+import { OneBotV11Protocol } from '@onebots/protocol-onebot-v11';
 
 // 注册适配器和协议
 await App.registerAdapter('wechat', WeChatAdapter);
@@ -145,7 +145,7 @@ tsx index.ts
 
 ```bash
 # 微信公众号
-npm install @imhelper/adapter-wechat
+npm install @onebots/adapter-wechat
 ```
 
 更多适配器：[适配器列表](/guide/adapter)
@@ -156,16 +156,16 @@ npm install @imhelper/adapter-wechat
 
 ```bash
 # OneBot V11（Koishi、NoneBot2 等）
-npm install @imhelper/protocol-onebot-11
+npm install @onebots/protocol-onebot-v11
 
 # OneBot V12（新版本框架）
-npm install @imhelper/protocol-onebot-12
+npm install @onebots/protocol-onebot-v12
 
 # Satori（Koishi、Chronocat 等）
-npm install @imhelper/protocol-satori-1-v1
+npm install @onebots/protocol-satori-v1-v1
 
 # Milky（轻量级协议）
-npm install @imhelper/protocol-milky-v1
+npm install @onebots/protocol-milky-v1
 ```
 
 ## 验证服务
@@ -173,11 +173,11 @@ npm install @imhelper/protocol-milky-v1
 成功启动后会看到类似日志：
 
 ```log
-[2025-11-29 12:00:00] [MARK] [imhelper] - server listen at http://0.0.0.0:6727/
-[2025-11-29 12:00:00] [INFO] [imhelper:wechat] - Starting adapter for platform wechat
-[2025-11-29 12:00:00] [INFO] [imhelper:my_wechat_mp] - Starting account my_wechat_mp
-[2025-11-29 12:00:00] [INFO] [imhelper:onebot/v11] - Starting HTTP server
-[2025-11-29 12:00:00] [INFO] [imhelper:onebot/v11] - HTTP server listening on /wechat/my_wechat_mp/onebot/v11/:action
+[2025-11-29 12:00:00] [MARK] [onebots] - server listen at http://0.0.0.0:6727/
+[2025-11-29 12:00:00] [INFO] [onebots:wechat] - Starting adapter for platform wechat
+[2025-11-29 12:00:00] [INFO] [onebots:my_wechat_mp] - Starting account my_wechat_mp
+[2025-11-29 12:00:00] [INFO] [onebots:onebot/v11] - Starting HTTP server
+[2025-11-29 12:00:00] [INFO] [onebots:onebot/v11] - HTTP server listening on /wechat/my_wechat_mp/onebot/v11/:action
 ```
 
 看到以上输出说明服务已正常运行。
@@ -230,16 +230,16 @@ ws://localhost:6727/{platform}/{account_id}/onebot/v11
 ## 6. 启动项目
 ::: code-group
 ```shell [ICQQ]
-npx imhelper -r icqq
+npx onebots -r icqq
 ```
 ```shell [QQ官方]
-npx imhelper -r qq
+npx onebots -r qq
 ```
 ```shell [钉钉机器人]
-npx imhelper -r dingtalk
+npx onebots -r dingtalk
 ```
 ```shell [微信机器人]
-npx imhelper -r wechat
+npx onebots -r wechat
 ```
 :::
 

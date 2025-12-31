@@ -1,4 +1,4 @@
-# @imhelper/core
+# @onebots/core
 
 ## 0.5.0
 

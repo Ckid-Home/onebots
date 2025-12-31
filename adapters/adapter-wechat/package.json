@@ -1,7 +1,7 @@
 {
-  "name": "@imhelper/adapter-wechat",
+  "name": "@onebots/adapter-wechat",
   "version": "1.0.1",
-  "description": "imhelper 微信公众号适配器",
+  "description": "onebots 微信公众号适配器",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -10,7 +10,7 @@
     "clean": "rm -rf lib *.tsbuildinfo"
   },
   "keywords": [
-    "imhelper",
+    "onebots",
     "wechat",
     "adapter"
   ],
@@ -29,7 +29,7 @@
     "typescript": "latest"
   },
   "peerDependencies": {
-    "imhelper": "workspace:*"
+    "onebots": "workspace:*"
   },
   "dependencies": {
     "@types/koa": "^2.13.4",

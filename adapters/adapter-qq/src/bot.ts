@@ -4,7 +4,7 @@
  */
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
-import type { RouterContext,Next } from 'imhelper';
+import type { RouterContext,Next } from 'onebots';
 import { Ed25519 } from './ed25519.js';
 import {
     IntentBits,
@@ -38,6 +38,7 @@ export class QQBot extends EventEmitter {
     private heartbeatInterval: NodeJS.Timeout | null = null;
     private reconnectAttempts: number = 0;
     private isResuming: boolean = false;
+    private resumeFailCount: number = 0; // RESUME 失败次数
     private user: QQUser | null = null;
     
     private readonly baseURL: string;
@@ -240,6 +241,21 @@ export class QQBot extends EventEmitter {
             this.ws.on('close', (code, reason) => {
                 this.emit('ws_close', code, reason.toString());
                 this.stopHeartbeat();
+                
+                // 4902 表示 RESUME 失败，需要清除 session 并使用 IDENTIFY
+                if (code === 4902) {
+                    // 4902 表示 RESUME 失败，立即清除 session 信息，强制使用 IDENTIFY
+                    console.log(`[QQBot] 收到 4902 错误，清除 session (sessionId: ${this.sessionId}, isResuming: ${this.isResuming})`);
+                    this.sessionId = '';
+                    this.lastSeq = 0;
+                    this.isResuming = false;
+                    this.resumeFailCount = 0;
+                    this.emit('resume_failed', 'RESUME 失败 (4902)，已清除 session，将使用 IDENTIFY 重新连接');
+                } else {
+                    // 其他错误码，重置 RESUME 失败计数
+                    this.resumeFailCount = 0;
+                }
+                
                 this.handleReconnect();
             });
             
@@ -292,8 +308,10 @@ export class QQBot extends EventEmitter {
         this.startHeartbeat(d.heartbeat_interval);
         
         if (this.isResuming && this.sessionId) {
+            console.log(`[QQBot] 尝试 RESUME (sessionId: ${this.sessionId}, lastSeq: ${this.lastSeq})`);
             this.sendResume();
         } else {
+            console.log(`[QQBot] 使用 IDENTIFY (isResuming: ${this.isResuming}, sessionId: ${this.sessionId || 'none'})`);
             this.sendIdentify();
         }
     }
@@ -312,8 +330,8 @@ export class QQBot extends EventEmitter {
                 shard: [0, 1],
                 properties: {
                     $os: 'linux',
-                    $browser: 'imhelper',
-                    $device: 'imhelper',
+                    $browser: 'onebots',
+                    $device: 'onebots',
                 },
             },
         };
@@ -352,6 +370,7 @@ export class QQBot extends EventEmitter {
         if (eventType === 'RESUMED') {
             this.isResuming = false;
             this.reconnectAttempts = 0;
+            this.resumeFailCount = 0; // RESUME 成功，重置失败计数
             this.emit('resumed');
             return;
         }
@@ -385,6 +404,7 @@ export class QQBot extends EventEmitter {
         this.user = data.user;
         this.reconnectAttempts = 0;
         this.isResuming = false;
+        this.resumeFailCount = 0; // 连接成功，重置 RESUME 失败计数
         
         this.emit('ready', data);
     }
@@ -413,7 +433,15 @@ export class QQBot extends EventEmitter {
         }
         
         this.reconnectAttempts++;
-        this.isResuming = !!this.sessionId;
+        // 只有在有 sessionId 且 isResuming 标志为 true 时才尝试 RESUME
+        // 如果 isResuming 已经被清除（比如 4902 错误），则使用 IDENTIFY
+        // 注意：不要覆盖已经在 close 事件中设置的 isResuming 值
+        if (this.isResuming && this.sessionId) {
+            // 保持 isResuming 为 true，尝试 RESUME
+        } else {
+            // 如果没有 sessionId 或 isResuming 为 false，使用 IDENTIFY
+            this.isResuming = false;
+        }
         
         const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
         

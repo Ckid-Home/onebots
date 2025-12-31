@@ -1,11 +1,11 @@
 ---
 layout: home
 editLint: false
-title: imhelper
+title: onebots
 titleTemplate: :title - 多平台多协议机器人协议转换服务
 
 hero:
-  name: imhelper
+  name: onebots
   text: 统一的机器人协议转换层
   tagline: 连接各大平台与主流机器人框架，让开发更简单
   actions:
@@ -20,7 +20,7 @@ hero:
     link: /guide/adapter
   - theme: alt
     text: GitHub
-    link: https://github.com/lc-cn/imhelper
+    link: https://github.com/lc-cn/onebots
 
 features:
 - title: 🎯 协议标准化

@@ -2,11 +2,11 @@
  * QQ官方机器人适配器
  * 继承Adapter基类，实现QQ官方机器人的消息收发和管理功能
  */
-import { Account, AdapterRegistry, AccountStatus } from "imhelper";
-import { Adapter } from "imhelper";
-import { BaseApp } from "imhelper";
+import { Account, AdapterRegistry, AccountStatus } from "onebots";
+import { Adapter } from "onebots";
+import { BaseApp } from "onebots";
 import { QQBot } from "./bot.js";
-import { CommonEvent } from "imhelper";
+import { CommonEvent } from "onebots";
 import type {
     QQConfig,
     QQMessageEvent,
@@ -357,9 +357,9 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
      */
     async getVersion(uin: string): Promise<Adapter.VersionInfo> {
         return {
-            app_name: "imhelper-qq-adapter",
+            app_name: "onebots-qq-adapter",
             app_version: "1.0.0",
-            impl: "imhelper",
+            impl: "onebots",
             version: "1.0.0",
             onebot_version: "12",
         };
@@ -899,7 +899,7 @@ export class QQAdapter extends Adapter<QQBot, "qq"> {
 }
 
 // 声明模块扩展
-declare module "imhelper" {
+declare module "onebots" {
     export namespace Adapter {
         export interface Configs {
             qq: QQConfig;

@@ -2,11 +2,11 @@
  * Discord 适配器
  * 继承 Adapter 基类，实现 Discord 平台功能
  */
-import { Account, AdapterRegistry, AccountStatus } from "imhelper";
-import { Adapter } from "imhelper";
-import { BaseApp } from "imhelper";
+import { Account, AdapterRegistry, AccountStatus } from "onebots";
+import { Adapter } from "onebots";
+import { BaseApp } from "onebots";
 import { DiscordBot } from "./bot.js";
-import { CommonEvent, CommonTypes } from "imhelper";
+import { CommonEvent, CommonTypes } from "onebots";
 import type { DiscordConfig } from "./types.js";
 import {
     Message,
@@ -320,7 +320,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         const guildId = params.group_id.string;
         const userId = params.user_id.string;
 
-        await bot.kickMember(guildId, userId, 'Kicked via imhelper');
+        await bot.kickMember(guildId, userId, 'Kicked via onebots');
     }
 
     /**
@@ -668,7 +668,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
      */
     async getVersion(uin: string): Promise<Adapter.VersionInfo> {
         return {
-            app_name: 'imhelper-discord',
+            app_name: 'onebots-discord',
             app_version: '1.0.0',
             impl: 'discord.js',
             version: '14.x',
@@ -1144,7 +1144,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
     }
 }
 
-declare module "imhelper" {
+declare module "onebots" {
     export namespace Adapter {
         export interface Configs {
             discord: DiscordConfig;

@@ -1,6 +1,6 @@
 /**
  * OneBot 11 HTTP API 测试（优化版）
- * 基于 OneBot 11 标准: https://github.com/botuniverse/onebot-11
+ * 基于 OneBot 11 标准: https://github.com/botuniverse/onebot-v11
  */
 
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';

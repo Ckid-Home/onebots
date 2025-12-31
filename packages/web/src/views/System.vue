@@ -86,7 +86,7 @@
             {{ systemInfo.node_version }}
           </el-descriptions-item>
           <el-descriptions-item label="SDK 版本" :span="2">
-            imhelper v{{ systemInfo.sdk_version }}
+            onebots v{{ systemInfo.sdk_version }}
           </el-descriptions-item>
           <el-descriptions-item label="运行目录" :span="2">
             <el-text truncated>{{ systemInfo.process_cwd }}</el-text>

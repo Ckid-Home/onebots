@@ -2,8 +2,8 @@ import { defineConfig } from "vitepress";
 
 const pkg = require("../../package.json");
 export default defineConfig({
-    title: "imhelper",
-    titleTemplate: ":title - imhelper",
+    title: "onebots",
+    titleTemplate: ":title - onebots",
     head: [["meta", { name: "theme-color", content: "#3c8772" }]],
     srcDir: "./src",
     outDir: "./dist",
@@ -49,12 +49,12 @@ export default defineConfig({
                 text: pkg.version,
                 items: [
                     {
-                        text: "Package", link: `https://www.npmjs.com/package/imhelper/v/` + pkg.version
+                        text: "Package", link: `https://www.npmjs.com/package/onebots/v/` + pkg.version
                     },
                     {
-                        text: "Release", link: `https://github.com/lc-cn/imhelper/releases/tag/v` + pkg.version
+                        text: "Release", link: `https://github.com/lc-cn/onebots/releases/tag/v` + pkg.version
                     },
-                    { text: "Changelog", link: "https://github.com/icqqjs/imhelper/blob/master/CHANGELOG.md" }
+                    { text: "Changelog", link: "https://github.com/icqqjs/onebots/blob/master/CHANGELOG.md" }
                 ]
             }
         ],
@@ -84,13 +84,13 @@ export default defineConfig({
             ]
         },
         footer: {
-            message: "Released under the <a href=\"https://github.com/icqqjs/imhelper/blob/master/LICENSE\">MIT License</a>.",
+            message: "Released under the <a href=\"https://github.com/icqqjs/onebots/blob/master/LICENSE\">MIT License</a>.",
             copyright: "Copyright © 2022-2024 <a href=\"https://github.com/lc-cn\">凉菜</a>"
         },
         editLink: {
-            pattern: "https://github.com/icqqjs/imhelper/edit/master/docs/src/:path", text: "参与贡献"
+            pattern: "https://github.com/icqqjs/onebots/edit/master/docs/src/:path", text: "参与贡献"
         },
-        socialLinks: [{ icon: "github", link: "https://github.com/icqqjs/imhelper" }],
+        socialLinks: [{ icon: "github", link: "https://github.com/icqqjs/onebots" }],
         lastUpdated: {
             text: "上次更新时间"
         },

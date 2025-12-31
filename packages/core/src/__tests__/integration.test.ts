@@ -17,7 +17,7 @@ describe('Integration Tests', () => {
             const validated = ConfigValidator.validateWithDefaults(config, BaseAppConfigSchema);
             
             expect(validated.port).toBe(6727);
-            expect(validated.database).toBe('imhelper.db');
+            expect(validated.database).toBe('onebots.db');
             expect(validated.username).toBe('admin');
             expect(validated.password).toBe('123456');
             expect(validated.log_level).toBe('info');

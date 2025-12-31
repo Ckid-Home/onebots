@@ -1,7 +1,7 @@
 {
-  "name": "@imhelper/adapter-discord",
+  "name": "@onebots/adapter-discord",
   "version": "1.0.0",
-  "description": "imhelper Discord 适配器",
+  "description": "onebots Discord 适配器",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -10,7 +10,7 @@
     "clean": "rm -rf lib *.tsbuildinfo"
   },
   "keywords": [
-    "imhelper",
+    "onebots",
     "discord",
     "adapter"
   ],
@@ -29,7 +29,7 @@
     "typescript": "latest"
   },
   "peerDependencies": {
-    "imhelper": "workspace:*"
+    "onebots": "workspace:*"
   },
   "dependencies": {
     "@types/node": "^22.7.3",

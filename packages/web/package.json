@@ -1,5 +1,5 @@
 {
-  "name": "@imhelper/web",
+  "name": "@onebots/web",
   "version": "0.5.1",
   "description": "IMHelper Web 管理界面",
   "type": "module",

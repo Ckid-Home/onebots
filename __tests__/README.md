@@ -1,4 +1,4 @@
-# imhelper 测试套件
+# onebots 测试套件
 
 基于多协议标准的完整测试套件：
 - [OneBot 11 标准](https://11.onebot.dev/)
@@ -171,13 +171,13 @@ pnpm vitest run __tests__/onebot/v11/webhook/http-reverse.spec.js
 
 测试将：
 1. 启动一个 HTTP 服务器监听端口 18080
-2. 等待 imhelper 推送事件
+2. 等待 onebots 推送事件
 3. 验证接收到的事件格式
 4. 检查心跳事件
 
 ### 反向 WebSocket (WS-Reverse) 测试
 
-反向 WebSocket 测试验证 imhelper 主动连接到外部 WebSocket 服务器的功能。
+反向 WebSocket 测试验证 onebots 主动连接到外部 WebSocket 服务器的功能。
 
 **配置示例** (`config.yaml`):
 ```yaml
@@ -203,7 +203,7 @@ pnpm vitest run __tests__/onebot/v12/websocket/ws-reverse.spec.js
 
 测试将：
 1. 启动一个 WebSocket 服务器
-2. 等待 imhelper 主动连接
+2. 等待 onebots 主动连接
 3. 接收推送的事件
 4. 发送 API 调用并验证响应
 5. 验证事件格式和心跳
@@ -274,7 +274,7 @@ pnpm vitest run __tests__/onebot/v12/websocket/ws-reverse.spec.js
 
 ## 📚 参考文档
 
-- [OneBot 11 标准](https://github.com/botuniverse/onebot-11)
+- [OneBot 11 标准](https://github.com/botuniverse/onebot-v11)
 - [OneBot 12 标准](https://12.onebot.dev/)
 - [Vitest 文档](https://vitest.dev/)
 
