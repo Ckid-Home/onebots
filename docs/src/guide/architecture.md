@@ -4,6 +4,8 @@
 
 ## 整体架构图
 
+> 建议放大查看
+
 ```mermaid
 graph TB
     subgraph Platforms["🌐 平台层 (Platform Layer)"]
