@@ -249,34 +249,37 @@ npm install @imhelper/milky-v1
 #### 3. 使用示例
 
 ```typescript
-// OneBot V11 客户端示例
-import { OneBotV11Client } from '@imhelper/onebot-v11';
+import { createImHelper } from 'imhelper';
+import { createOnebot11Adapter } from '@imhelper/onebot-v11';
 
-const client = new OneBotV11Client({
+// 创建适配器
+const adapter = createOnebot11Adapter({
   baseUrl: 'http://localhost:6727',
-  platform: 'kook',
-  accountId: 'zhin',
+  selfId: 'zhin',
   accessToken: 'your_token',
-  receiveMode: 'websocket', // 或 'webhook', 'sse'
+  receiveMode: 'ws', // 'ws' | 'wss' | 'webhook' | 'sse'
+  path: '/kook/zhin/onebot/v11',
+  wsUrl: 'ws://localhost:6727/kook/zhin/onebot/v11',
+  platform: 'kook',
 });
 
-// 监听事件
-client.onEvent((event) => {
-  if (event.post_type === 'message') {
-    console.log('收到消息:', event);
-  }
+// 创建 ImHelper 实例
+const helper = createImHelper(adapter);
+
+// 监听消息事件
+helper.on('message.private', (message) => {
+  console.log('收到私聊消息:', message.content);
+  message.reply('收到！');
 });
 
 // 连接
-await client.connect();
+await adapter.connect();
 
 // 发送消息
-await client.sendPrivateMsg(123456, 'Hello!');
+await helper.sendPrivateMessage('123456', 'Hello!');
 ```
 
-更多客户端SDK使用示例，请参考各协议客户端的 README：
-- [OneBot V11 客户端](./protocols/onebot-v11/sdk/README.md)
-- [OneBot V12 客户端](./protocols/onebot-v12/sdk/README.md)
+更多客户端SDK使用示例，请查看 [客户端SDK使用指南](https://docs.onebots.org/guide/client-sdk)
 
 ## 🎯 支持的平台
 

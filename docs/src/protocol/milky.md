@@ -13,8 +13,16 @@ Milky 协议的特点：
 
 ## 安装
 
+### 服务端
+
 ```bash
 npm install @onebots/protocol-milky-v1
+```
+
+### 客户端SDK
+
+```bash
+npm install imhelper @imhelper/milky-v1
 ```
 
 ## 配置
@@ -134,7 +142,45 @@ Milky 协议适合以下场景：
 | 性能 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
 | 易用性 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 
-## 快速开始
+## 使用客户端SDK
+
+onebots 提供了 imhelper 客户端SDK，可以方便地连接 Milky 协议：
+
+### 使用示例
+
+```typescript
+import { createImHelper } from 'imhelper';
+import { createMilkyAdapter } from '@imhelper/milky-v1';
+
+// 创建适配器
+const adapter = createMilkyAdapter({
+  baseUrl: 'http://localhost:6727',
+  selfId: 'zhin',
+  accessToken: 'your_token',
+  receiveMode: 'ws',
+  path: '/kook/zhin/milky/v1',
+  wsUrl: 'ws://localhost:6727/kook/zhin/milky/v1',
+  platform: 'kook',
+});
+
+// 创建 ImHelper 实例
+const helper = createImHelper(adapter);
+
+// 监听消息事件
+helper.on('message.private', (message) => {
+  console.log('收到私聊消息:', message.content);
+  message.reply('收到！');
+});
+
+// 连接
+await adapter.connect();
+```
+
+详细说明请查看：[客户端SDK使用指南](/guide/client-sdk)
+
+## 快速开始（原生 WebSocket）
+
+如果你不想使用 SDK，也可以直接使用原生 WebSocket：
 
 ```javascript
 // WebSocket 客户端示例
@@ -164,3 +210,4 @@ ws.on('message', (data) => {
 
 - [@onebots/protocol-milky-v1 README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-milky-v1)
 - [源码](https://github.com/lc-cn/onebots/tree/master/packages/protocol-milky-v1/src)
+- [客户端SDK使用指南](/guide/client-sdk)

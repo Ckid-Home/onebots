@@ -14,8 +14,16 @@ Satori 协议的特点：
 
 ## 安装
 
+### 服务端
+
 ```bash
-npm install @onebots/protocol-satori-v1-v1
+npm install @onebots/protocol-satori-v1
+```
+
+### 客户端SDK
+
+```bash
+npm install imhelper @imhelper/satori-v1
 ```
 
 ## 配置
@@ -154,6 +162,42 @@ Satori 协议已在以下平台得到验证：
 - Kook
 - 微信（通过 onebots）
 
+## 使用客户端SDK
+
+onebots 提供了 imhelper 客户端SDK，可以方便地连接 Satori 协议：
+
+### 使用示例
+
+```typescript
+import { createImHelper } from 'imhelper';
+import { createSatoriAdapter } from '@imhelper/satori-v1';
+
+// 创建适配器
+const adapter = createSatoriAdapter({
+  baseUrl: 'http://localhost:6727',
+  selfId: 'zhin',
+  token: 'your_token',
+  receiveMode: 'ws',
+  path: '/kook/zhin/satori/v1',
+  wsUrl: 'ws://localhost:6727/kook/zhin/satori/v1',
+  platform: 'kook',
+});
+
+// 创建 ImHelper 实例
+const helper = createImHelper(adapter);
+
+// 监听消息事件
+helper.on('message.channel', (message) => {
+  console.log('收到频道消息:', message.content);
+  message.reply('<text>收到！</text>');
+});
+
+// 连接
+await adapter.connect();
+```
+
+详细说明请查看：[客户端SDK使用指南](/guide/client-sdk)
+
 ## 在 Koishi 中使用
 
 Koishi 原生支持 Satori 协议：
@@ -186,3 +230,4 @@ plugins:
 - [Satori 协议规范](https://satori.js.org/)
 - [Koishi 文档](https://koishi.chat/)
 - [@onebots/protocol-satori-v1 README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-satori)
+- [客户端SDK使用指南](/guide/client-sdk)

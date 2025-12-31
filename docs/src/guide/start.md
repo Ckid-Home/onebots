@@ -4,23 +4,29 @@
 
 ## 什么是 onebots？
 
-onebots 是一个**协议转换中间层**，帮助你将各平台机器人接入到任意支持标准协议的机器人框架：
+onebots 是一个**多平台多协议机器人应用框架**，提供完整的服务端和客户端解决方案：
 
 - **平台层**：微信、QQ、钉钉等各大平台的机器人 API
-- **onebots**：统一的协议转换层，抹平平台差异
+- **onebots（服务端）**：统一的协议转换层，将平台 API 转换为标准协议
+- **标准协议**：OneBot V11/V12、Satori、Milky 等标准协议接口
+- **imhelper（客户端SDK）**：统一的客户端接口，抹平协议差异
 - **框架层**：Koishi、NoneBot、Yunzai 等机器人应用框架
 
 ```
 平台 API (微信、QQ、钉钉...)
         ↓
-    onebots  ← 本项目
+    onebots (服务端) ← 本项目服务端
         ↓
 标准协议 (OneBot、Satori...)
+        ↓
+    imhelper (客户端SDK) ← 本项目客户端
         ↓
 机器人框架 (Koishi、NoneBot...)
 ```
 
-**使用场景**：当你想用 Koishi 等框架开发机器人，但平台不直接支持时，onebots 可以作为桥梁。
+**使用场景**：
+- **服务端场景**：当你想用 Koishi 等框架开发机器人，但平台不直接支持时，onebots 服务端可以作为桥梁
+- **客户端场景**：当你需要开发跨协议的机器人应用时，imhelper 提供统一的客户端接口，无需关心底层协议差异
 
 ## 前置要求
 
@@ -162,7 +168,7 @@ npm install @onebots/protocol-onebot-v11
 npm install @onebots/protocol-onebot-v12
 
 # Satori（Koishi、Chronocat 等）
-npm install @onebots/protocol-satori-v1-v1
+npm install @onebots/protocol-satori-v1
 
 # Milky（轻量级协议）
 npm install @onebots/protocol-milky-v1
@@ -217,29 +223,17 @@ ws://localhost:6727/{platform}/{account_id}/onebot/v11
 
 在框架的 WebSocket 配置中填入此地址即可接收事件推送。
 
+## 使用客户端SDK
+
+除了通过机器人框架接入，你也可以直接使用 imhelper 客户端SDK 来开发机器人应用。
+
+详细说明请查看：[客户端SDK使用指南](/guide/client-sdk)
+
 ## 下一步
 
 - 📚 [配置文件详解](/config/global)
+- 💻 [客户端SDK使用指南](/guide/client-sdk)
 - 🔌 [开发自定义适配器](/guide/adapter)
 - 📡 [协议说明](/v11/index)
 - 🛠️ [API 参考](/v11/action)
-
-    sign_api_addr: http://127.0.0.1/8080/qsign?key=114514 # 签名地址  # [!code ++]
-  # 。。。其他配置项参见上方对应oneBot版本的通用配置 # [!code ++]
-```
-## 6. 启动项目
-::: code-group
-```shell [ICQQ]
-npx onebots -r icqq
-```
-```shell [QQ官方]
-npx onebots -r qq
-```
-```shell [钉钉机器人]
-npx onebots -r dingtalk
-```
-```shell [微信机器人]
-npx onebots -r wechat
-```
-:::
 

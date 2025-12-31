@@ -289,31 +289,6 @@ importers:
       koa-static:
         specifier: ^5.0.0
         version: 5.0.0
-    optionalDependencies:
-      '@onebots/adapter-discord':
-        specifier: workspace:*
-        version: link:../../adapters/adapter-discord
-      '@onebots/adapter-kook':
-        specifier: workspace:*
-        version: link:../../adapters/adapter-kook
-      '@onebots/adapter-qq':
-        specifier: workspace:*
-        version: link:../../adapters/adapter-qq
-      '@onebots/adapter-wechat':
-        specifier: workspace:*
-        version: link:../../adapters/adapter-wechat
-      '@onebots/protocol-milky-v1':
-        specifier: workspace:*
-        version: link:../../protocols/milky-v1/protocol
-      '@onebots/protocol-onebot-v11':
-        specifier: workspace:*
-        version: link:../../protocols/onebot-v11/protocol
-      '@onebots/protocol-onebot-v12':
-        specifier: workspace:*
-        version: link:../../protocols/onebot-v12/protocol
-      '@onebots/protocol-satori-v1':
-        specifier: workspace:*
-        version: link:../../protocols/satori-v1/protocol
     devDependencies:
       '@types/koa':
         specifier: ^3.0.1

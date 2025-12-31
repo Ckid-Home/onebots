@@ -104,6 +104,51 @@ OneBot V11 支持的事件：
 
 详细说明请参考 [OneBot V11 事件文档](/v11/event)。
 
+## 使用客户端SDK
+
+onebots 提供了 imhelper 客户端SDK，可以方便地连接 OneBot V11 协议：
+
+### 安装
+
+```bash
+npm install imhelper @imhelper/onebot-v11
+```
+
+### 使用示例
+
+```typescript
+import { createImHelper } from 'imhelper';
+import { createOnebot11Adapter } from '@imhelper/onebot-v11';
+
+// 创建适配器
+const adapter = createOnebot11Adapter({
+  baseUrl: 'http://localhost:6727',
+  selfId: 'zhin',
+  accessToken: 'your_token',
+  receiveMode: 'ws', // 'ws' | 'wss' | 'webhook' | 'sse'
+  path: '/kook/zhin/onebot/v11',
+  wsUrl: 'ws://localhost:6727/kook/zhin/onebot/v11',
+  platform: 'kook',
+});
+
+// 创建 ImHelper 实例
+const helper = createImHelper(adapter);
+
+// 监听消息事件
+helper.on('message.private', (message) => {
+  console.log('收到私聊消息:', message.content);
+  message.reply('收到！');
+});
+
+// 连接
+await adapter.connect();
+
+// 发送消息
+await helper.sendPrivateMessage('123456', 'Hello!');
+```
+
+详细说明请查看：[客户端SDK使用指南](/guide/client-sdk)
+
 ## 支持的框架
 
 以下机器人框架原生支持 OneBot V11：
@@ -118,3 +163,4 @@ OneBot V11 支持的事件：
 - [OneBot V11 标准](https://github.com/botuniverse/onebot-v11)
 - [@onebots/protocol-onebot-v11 README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-onebot-v11)
 - [配置说明](/config/v11)
+- [客户端SDK使用指南](/guide/client-sdk)

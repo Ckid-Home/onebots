@@ -141,6 +141,53 @@ OneBot V12 采用更清晰的事件分类：
 
 对于新项目，推荐直接使用 V12。现有 V11 项目可以逐步迁移，onebots 支持同时提供两个版本的协议。
 
+## 使用客户端SDK
+
+onebots 提供了 imhelper 客户端SDK，可以方便地连接 OneBot V12 协议：
+
+### 安装
+
+```bash
+npm install imhelper @imhelper/onebot-v12
+```
+
+### 使用示例
+
+```typescript
+import { createImHelper } from 'imhelper';
+import { createOnebot12Adapter } from '@imhelper/onebot-v12';
+
+// 创建适配器
+const adapter = createOnebot12Adapter({
+  baseUrl: 'http://localhost:6727',
+  selfId: 'zhin',
+  accessToken: 'your_token',
+  receiveMode: 'ws',
+  path: '/kook/zhin/onebot/v12',
+  wsUrl: 'ws://localhost:6727/kook/zhin/onebot/v12',
+  platform: 'kook',
+});
+
+// 创建 ImHelper 实例
+const helper = createImHelper(adapter);
+
+// 监听消息事件
+helper.on('message.private', (message) => {
+  console.log('收到私聊消息:', message.content);
+  message.reply([{ type: 'text', data: { text: '收到！' } }]);
+});
+
+// 连接
+await adapter.connect();
+
+// 发送消息
+await helper.sendPrivateMessage('123456', [
+  { type: 'text', data: { text: 'Hello!' } }
+]);
+```
+
+详细说明请查看：[客户端SDK使用指南](/guide/client-sdk)
+
 ## 支持的框架
 
 目前支持 OneBot V12 的框架：
@@ -155,3 +202,4 @@ OneBot V12 采用更清晰的事件分类：
 - [@onebots/protocol-onebot-v12 README](https://github.com/lc-cn/onebots/tree/master/packages/protocol-onebot-v12)
 - [配置说明](/config/v12)
 - [从 V11 迁移](https://12.onebot.dev/guide/migration/)
+- [客户端SDK使用指南](/guide/client-sdk)

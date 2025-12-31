@@ -138,7 +138,32 @@ qq.my_bot:
 - [icqq](https://github.com/icqqjs/icqq) - QQ 协议实现
 - [NapCat](https://github.com/NapNeko/NapCatQQ) - OneBot V11/V12 协议实现
 
+## 使用客户端SDK连接
+
+onebots 提供了 imhelper 客户端SDK，可以方便地连接 QQ 适配器：
+
+```typescript
+import { createImHelper } from 'imhelper';
+import { createOnebot11Adapter } from '@imhelper/onebot-v11';
+
+const adapter = createOnebot11Adapter({
+  baseUrl: 'http://localhost:6727',
+  selfId: 'my_bot',
+  accessToken: 'your_token',
+  receiveMode: 'ws',
+  path: '/qq/my_bot/onebot/v11',
+  wsUrl: 'ws://localhost:6727/qq/my_bot/onebot/v11',
+  platform: 'qq',
+});
+
+const helper = createImHelper(adapter);
+await adapter.connect();
+```
+
+详细说明请查看：[客户端SDK使用指南](/guide/client-sdk)
+
 ## 相关链接
 
 - [QQ 开放平台](https://q.qq.com/)
 - [QQ 机器人文档](https://bot.q.qq.com/wiki/)
+- [客户端SDK使用指南](/guide/client-sdk)

@@ -79,8 +79,34 @@ onebots -r wechat -p onebot-v11
 - **服务号**: 完整接口权限（推荐）
 - **企业号**: 企业内部应用
 
+## 使用客户端SDK连接
+
+onebots 提供了 imhelper 客户端SDK，可以方便地连接微信适配器：
+
+```typescript
+import { createImHelper } from 'imhelper';
+import { createOnebot11Adapter } from '@imhelper/onebot-v11';
+
+const adapter = createOnebot11Adapter({
+  baseUrl: 'http://localhost:6727',
+  selfId: 'my_mp',
+  accessToken: 'your_token',
+  receiveMode: 'webhook', // 微信通常使用 webhook 模式
+  path: '/wechat/my_mp/onebot/v11',
+  wsUrl: 'ws://localhost:6727/wechat/my_mp/onebot/v11',
+  platform: 'wechat',
+});
+
+const helper = createImHelper(adapter);
+// Webhook 模式需要启动本地服务器接收事件
+await adapter.connect(8080);
+```
+
+详细说明请查看：[客户端SDK使用指南](/guide/client-sdk)
+
 ## 相关链接
 
 - [微信公众平台](https://mp.weixin.qq.com/)
 - [微信公众平台开发文档](https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html)
-- [@onebots/adapter-wechat 源码](https://github.com/lc-cn/onebots/tree/master/packages/adapter-wechat)
+- [@onebots/adapter-wechat 源码](https://github.com/lc-cn/onebots/tree/master/adapters/adapter-wechat)
+- [客户端SDK使用指南](/guide/client-sdk)

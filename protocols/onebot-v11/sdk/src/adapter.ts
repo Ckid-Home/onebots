@@ -11,11 +11,15 @@ export interface OneBotV11AdapterConfig {
   wsUrl?: string; // WebSocket URL（可选，自动构建）
   platform?: string; // 平台名称（可选，用于构建 HTTP 路径）
 }
+export type Segment = {
+  type: string;
+  data: Record<string, any>;
+}
 
 /**
  * 创建 OneBot V11 适配器
  */
-export function createOnebot11Adapter(config: OneBotV11AdapterConfig): Adapter<number, string | any[], OneBotV11Response> {
+export function createOnebot11Adapter(config: OneBotV11AdapterConfig): Adapter<number, string | Segment[], OneBotV11Response> {
   const { baseUrl, selfId, accessToken, receiveMode, path = '/onebot/v11', wsUrl, platform } = config;
 
   // 解析 baseUrl 获取协议和主机
