@@ -1,8 +1,9 @@
 import { defineConfig } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 
 const pkg = require("../../package.json");
 
-export default defineConfig({
+export default withMermaid(defineConfig({
     title: "onebots",
     titleTemplate: ":title - onebots",
     head: [["meta", { name: "theme-color", content: "#3c8772" }]],
@@ -249,7 +250,7 @@ export default defineConfig({
     
     vite: {
         optimizeDeps: {
-            include: ['dayjs', 'element-plus'],
+            include: ['dayjs', 'element-plus', 'mermaid'],
             esbuildOptions: {
                 target: 'esnext'
             }
@@ -260,5 +261,19 @@ export default defineConfig({
         resolve: {
             dedupe: ['dayjs']
         }
+    },
+
+    // Mermaid 配置
+    mermaid: {
+        // 启用缩放和平移
+        startOnLoad: true,
+        securityLevel: 'loose',
+        flowchart: {
+            useMaxWidth: true,
+            htmlLabels: true
+        }
+    },
+    mermaidPlugin: {
+        class: "mermaid"
     }
-});
+}));
