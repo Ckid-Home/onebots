@@ -16,15 +16,25 @@ onebots 目前支持以下平台适配器：
 | **Kook** | ✅ 已实现 | `@onebots/adapter-kook` | 支持频道、私聊、服务器管理 |
 | **微信** | ✅ 已实现 | `@onebots/adapter-wechat` | 支持微信公众号 |
 | **Discord** | ✅ 已实现 | `@onebots/adapter-discord` | 支持Discord机器人 |
-| **钉钉** | 🚧 计划中 | - | 开发中 |
+| **Telegram** | ✅ 已实现 | `@onebots/adapter-telegram` | 支持私聊、群组、频道 |
+| **飞书** | ✅ 已实现 | `@onebots/adapter-feishu` | 支持单聊、群聊、富文本消息 |
+| **钉钉** | ✅ 已实现 | `@onebots/adapter-dingtalk` | 支持企业内部应用和自定义机器人 |
+| **Slack** | ✅ 已实现 | `@onebots/adapter-slack` | 支持频道消息、私聊、应用命令 |
+| **企业微信** | ✅ 已实现 | `@onebots/adapter-wecom` | 支持应用消息推送、通讯录同步 |
+| **Microsoft Teams** | ✅ 已实现 | `@onebots/adapter-teams` | 支持频道消息、私聊、自适应卡片 |
 
 ### 快速链接
 
-- [QQ 适配器文档](/platform/qq)
-- [Kook 适配器文档](/platform/kook)
-- [微信适配器文档](/platform/wechat)
-- [Discord 适配器文档](/platform/discord)
-- [钉钉适配器文档](/platform/dingtalk)
+- [QQ 适配器文档](/zh/platform/qq)
+- [Kook 适配器文档](/zh/platform/kook)
+- [微信适配器文档](/zh/platform/wechat)
+- [Discord 适配器文档](/zh/platform/discord)
+- [钉钉适配器文档](/zh/platform/dingtalk)
+- [Telegram 适配器文档](/zh/platform/telegram)
+- [飞书适配器文档](/zh/platform/feishu)
+- [Slack 适配器文档](/zh/platform/slack)
+- [企业微信适配器文档](/zh/platform/wecom)
+- [Microsoft Teams 适配器文档](/zh/platform/teams)
 
 ## 1. 安装依赖 
 
@@ -42,6 +52,24 @@ npm install @onebots/adapter-wechat
 
 # Discord
 npm install @onebots/adapter-discord discord.js
+
+# Telegram
+npm install @onebots/adapter-telegram grammy
+
+# 飞书
+npm install @onebots/adapter-feishu
+
+# 钉钉
+npm install @onebots/adapter-dingtalk
+
+# Slack
+npm install @onebots/adapter-slack @slack/web-api
+
+# 企业微信
+npm install @onebots/adapter-wecom
+
+# Microsoft Teams
+npm install @onebots/adapter-teams botbuilder botframework-connector
 ```
 
 详细说明请参考 [快速开始](./start.md#安装插件)

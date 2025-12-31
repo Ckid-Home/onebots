@@ -1,0 +1,39 @@
+{
+  "name": "@onebots/adapter-telegram",
+  "version": "1.0.0",
+  "description": "onebots Telegram适配器",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "clean": "rm -rf lib *.tsbuildinfo"
+  },
+  "keywords": [
+    "onebots",
+    "telegram",
+    "adapter"
+  ],
+  "author": "凉菜",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "files": [
+    "/lib/**/*.js",
+    "/lib/**/*.d.ts"
+  ],
+  "devDependencies": {
+    "tsc-alias": "latest",
+    "typescript": "latest"
+  },
+  "peerDependencies": {
+    "onebots": "workspace:*"
+  },
+  "dependencies": {
+    "@types/node": "^22.7.3",
+    "grammy": "^1.24.0"
+  }
+}
+

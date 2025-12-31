@@ -1,6 +1,6 @@
 <div align="center">
     <h1>OneBots - 多平台多协议机器人应用框架</h1>
-    <p>使用 TypeScript 实现的 OneBot 应用启动器，支持 Kook、QQ官方机器人、微信以及 Discord 机器人</p>
+    <p>使用 TypeScript 实现的多平台多协议机器人应用框架，支持 QQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams 等 10+ 平台</p>
 
 [![Build Package](https://github.com/icqqjs/onebots/actions/workflows/release.yml/badge.svg?branch=master&event=push)](https://github.com/icqqjs/onebots/actions/workflows/release.yml) 
 [![Build Docs](https://github.com/lc-cn/onebots/actions/workflows/build_deploy_docs.yml/badge.svg)](https://github.com/lc-cn/onebots/actions/workflows/build_deploy_docs.yml)
@@ -22,7 +22,7 @@ OneBots 是一个基于 TypeScript 开发的多平台、多协议机器人应用
 
 ### ✨ 核心特性
 
-- 🎯 **多平台支持** - 支持 QQ、Kook、微信、Discord 等多个平台
+- 🎯 **多平台支持** - 支持 QQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams 等 10+ 平台
 - 📡 **多协议支持** - 支持 OneBot V11/V12、Satori、Milky 等协议
 - 🔌 **插件化架构** - 适配器和协议可动态加载
 - 🏗️ **模块化设计** - 清晰的代码结构，易于扩展和维护
@@ -46,7 +46,13 @@ onebots/
 │   ├── adapter-qq/             # @onebots/adapter-qq - QQ官方机器人适配器
 │   ├── adapter-kook/           # @onebots/adapter-kook - Kook适配器
 │   ├── adapter-wechat/         # @onebots/adapter-wechat - 微信适配器
-│   └── adapter-discord/        # @onebots/adapter-discord - Discord适配器
+│   ├── adapter-discord/        # @onebots/adapter-discord - Discord适配器
+│   ├── adapter-telegram/       # @onebots/adapter-telegram - Telegram适配器
+│   ├── adapter-feishu/         # @onebots/adapter-feishu - 飞书适配器
+│   ├── adapter-dingtalk/       # @onebots/adapter-dingtalk - 钉钉适配器
+│   ├── adapter-slack/          # @onebots/adapter-slack - Slack适配器
+│   ├── adapter-wecom/          # @onebots/adapter-wecom - 企业微信适配器
+│   └── adapter-teams/          # @onebots/adapter-teams - Microsoft Teams适配器
 ├── protocols/                   # 协议包
 │   ├── onebot-v11/
 │   │   ├── protocol/           # @onebots/protocol-onebot-v11 - OneBot V11协议实现
@@ -72,7 +78,7 @@ onebots/
 - `@onebots/core` - 核心抽象层，提供适配器、协议、账号等基础接口
 - `onebots` - 主应用包，提供命令行工具和完整应用功能
 - `@onebots/web` - Web 管理界面
-- `@onebots/adapter-*` - 各平台适配器（qq、kook、wechat、discord）
+- `@onebots/adapter-*` - 各平台适配器（qq、kook、wechat、discord、telegram、feishu、dingtalk、slack、wecom、teams）
 - `@onebots/protocol-*` - 各协议实现（onebot-v11、onebot-v12、satori-v1、milky-v1）
 
 #### 客户端SDK包（`imhelper` / `@imhelper/*`）

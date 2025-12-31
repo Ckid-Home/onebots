@@ -220,16 +220,78 @@ discord.your_bot_id:
 
 ## 钉钉平台
 
-🚧 **计划中**
+✅ **已实现**
 
-计划支持的配置项：
+### 配置项
+
+#### app_key（企业内部应用模式）
+
+- **类型**: `string`
+- **必填**: ✅*（企业内部应用模式必填）
+- **说明**: 钉钉应用 AppKey
+
+#### app_secret（企业内部应用模式）
+
+- **类型**: `string`
+- **必填**: ✅*（企业内部应用模式必填）
+- **说明**: 钉钉应用 AppSecret
+
+#### agent_id
+
+- **类型**: `string`
+- **必填**: ❌
+- **说明**: 企业内部应用的 AgentId
+
+#### webhook_url（自定义机器人模式）
+
+- **类型**: `string`
+- **必填**: ✅*（自定义机器人模式必填）
+- **说明**: 自定义机器人 Webhook URL
+
+#### encrypt_key
+
+- **类型**: `string`
+- **必填**: ❌
+- **说明**: 事件加密密钥
+
+#### token
+
+- **类型**: `string`
+- **必填**: ❌
+- **说明**: 事件验证 Token
+
+*注：企业内部应用模式和自定义机器人模式二选一。
+
+### 配置示例
+
+#### 企业内部应用模式
 
 ```yaml
 dingtalk.my_bot:
-  appkey: your_app_key
-  appsecret: your_app_secret
-  agent_id: your_agent_id
+  # 钉钉平台配置
+  app_key: 'your_app_key'
+  app_secret: 'your_app_secret'
+  agent_id: 'your_agent_id'  # 可选
+  
+  # 协议配置
+  onebot.v11:
+    use_http: true
+    use_ws: true
 ```
+
+#### 自定义机器人模式
+
+```yaml
+dingtalk.my_bot:
+  # 钉钉平台配置
+  webhook_url: 'https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN'
+  
+  # 协议配置
+  onebot.v11:
+    use_http: true
+```
+
+详细配置请参考：[钉钉适配器配置](/config/adapter/dingtalk)
 
 ## Kook 平台
 
@@ -427,5 +489,11 @@ wechat.prod:
 - [适配器配置指南](/guide/adapter)
 - [微信平台](/platform/wechat)
 - [QQ 平台](/platform/qq)
+- [Discord 平台](/platform/discord)
 - [Kook 平台](/platform/kook)
+- [钉钉平台](/platform/dingtalk)
+- [Telegram 平台](/platform/telegram)
+- [飞书平台](/platform/feishu)
+- [Slack 平台](/platform/slack)
+- [企业微信平台](/platform/wecom)
 - [Discord 平台](/platform/discord)

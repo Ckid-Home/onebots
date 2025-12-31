@@ -1,109 +1,252 @@
 import { defineConfig } from "vitepress";
 
 const pkg = require("../../package.json");
+
 export default defineConfig({
     title: "onebots",
     titleTemplate: ":title - onebots",
     head: [["meta", { name: "theme-color", content: "#3c8772" }]],
     srcDir: "./src",
     outDir: "./dist",
-    description: "基于NodeJS的 M Platform => N Protocol 解决方案",
+    lastUpdated: true,
+    ignoreDeadLinks: true,
+
+    // 多语言配置
+    locales: {
+        root: {
+            label: "简体中文",
+            lang: "zh-CN",
+            description: "基于NodeJS的 M Platform => N Protocol 解决方案",
+            themeConfig: {
+                nav: [
+                    { text: "开始", link: "/guide/start", activeMatch: "/guide/" },
+                    { text: "架构", link: "/guide/architecture" },
+                    {
+                        text: "配置",
+                        items: [
+                            { text: "全局配置", link: "/config/global" },
+                            { text: "通用配置", link: "/config/general" },
+                            { text: "平台配置", link: "/config/platform" },
+                            { text: "协议配置", link: "/config/protocol" }
+                        ]
+                    },
+                    {
+                        text: "平台",
+                        items: [
+                            { text: "微信公众号", link: "/platform/wechat" },
+                            { text: "QQ机器人", link: "/platform/qq" },
+                            { text: "钉钉机器人", link: "/platform/dingtalk" },
+                            { text: "Discord", link: "/platform/discord" },
+                            { text: "Kook", link: "/platform/kook" },
+                            { text: "Telegram", link: "/platform/telegram" },
+                            { text: "飞书", link: "/platform/feishu" },
+                            { text: "Slack", link: "/platform/slack" },
+                            { text: "企业微信", link: "/platform/wecom" },
+                            { text: "Microsoft Teams", link: "/platform/teams" }
+                        ]
+                    },
+                    {
+                        text: "协议",
+                        items: [
+                            { text: "OneBot V11", link: "/protocol/onebot-v11" },
+                            { text: "OneBot V12", link: "/protocol/onebot-v12" },
+                            { text: "Satori", link: "/protocol/satori" },
+                            { text: "Milky", link: "/protocol/milky" }
+                        ]
+                    },
+                    {
+                        text: pkg.version,
+                        items: [
+                            {
+                                text: "Package", link: `https://www.npmjs.com/package/onebots/v/` + pkg.version
+                            },
+                            {
+                                text: "Release", link: `https://github.com/lc-cn/onebots/releases/tag/v` + pkg.version
+                            },
+                            { text: "Changelog", link: "https://github.com/icqqjs/onebots/blob/master/CHANGELOG.md" }
+                        ]
+                    }
+                ],
+                sidebar: {
+                    "/guide/": [
+                        { text: `准备工作`, link: "/guide/prepare" },
+                        { text: `快速开始`, link: "/guide/start" },
+                        { text: `系统架构`, link: "/guide/architecture" },
+                        { text: `客户端SDK`, link: "/guide/client-sdk" },
+                        { text: `开发适配器`, link: "/guide/adapter" },
+                        { text: `适配器开发计划`, link: "/guide/adapter-todo" }
+                    ],
+                    "/config/": [
+                        { text: "全局配置", link: "/config/global" },
+                        { text: "通用配置 (general)", link: "/config/general" },
+                        { text: "平台配置", link: "/config/platform" },
+                        { text: "协议配置", link: "/config/protocol" }
+                    ],
+                    "/platform/": [
+                        { text: "微信公众号", link: "/platform/wechat" },
+                        { text: "QQ机器人", link: "/platform/qq" },
+                        { text: "Discord", link: "/platform/discord" },
+                        { text: "钉钉机器人", link: "/platform/dingtalk" },
+                        { text: "Kook", link: "/platform/kook" },
+                        { text: "Telegram", link: "/platform/telegram" },
+                        { text: "飞书", link: "/platform/feishu" },
+                        { text: "Slack", link: "/platform/slack" },
+                        { text: "企业微信", link: "/platform/wecom" },
+                        { text: "Microsoft Teams", link: "/platform/teams" }
+                    ],
+                    "/protocol/": [
+                        { text: "OneBot V11", link: "/protocol/onebot-v11" },
+                        { text: "OneBot V12", link: "/protocol/onebot-v12" },
+                        { text: "Satori", link: "/protocol/satori" },
+                        { text: "Milky", link: "/protocol/milky" }
+                    ]
+                },
+                footer: {
+                    message: "Released under the <a href=\"https://github.com/icqqjs/onebots/blob/master/LICENSE\">MIT License</a>.",
+                    copyright: "Copyright © 2022-2024 <a href=\"https://github.com/lc-cn\">凉菜</a>"
+                },
+                    editLink: {
+                        pattern: "https://github.com/icqqjs/onebots/edit/master/docs/src/:path",
+                        text: "参与贡献"
+                    },
+                socialLinks: [{ icon: "github", link: "https://github.com/icqqjs/onebots" }],
+                lastUpdated: {
+                    text: "上次更新时间"
+                },
+                docFooter: {
+                    prev: "上一节",
+                    next: "下一节"
+                },
+                outline: {
+                    label: "页面导航"
+                },
+                returnToTopLabel: "返回顶部",
+                darkModeSwitchLabel: "主题",
+                sidebarMenuLabel: "菜单",
+                langMenuLabel: "切换语言"
+            }
+        },
+        en: {
+            label: "English",
+            lang: "en-US",
+            link: "/en/",
+            description: "Multi-platform multi-protocol robot application framework",
+            themeConfig: {
+                nav: [
+                    { text: "Get Started", link: "/en/guide/start", activeMatch: "/en/guide/" },
+                    { text: "Architecture", link: "/en/guide/architecture" },
+                    {
+                        text: "Configuration",
+                        items: [
+                            { text: "Global Config", link: "/en/config/global" },
+                            { text: "General Config", link: "/en/config/general" },
+                            { text: "Platform Config", link: "/en/config/platform" },
+                            { text: "Protocol Config", link: "/en/config/protocol" }
+                        ]
+                    },
+                    {
+                        text: "Platforms",
+                        items: [
+                            { text: "WeChat", link: "/en/platform/wechat" },
+                            { text: "QQ", link: "/en/platform/qq" },
+                            { text: "DingTalk", link: "/en/platform/dingtalk" },
+                            { text: "Discord", link: "/en/platform/discord" },
+                            { text: "Kook", link: "/en/platform/kook" },
+                            { text: "Telegram", link: "/en/platform/telegram" },
+                            { text: "Feishu", link: "/en/platform/feishu" },
+                            { text: "Slack", link: "/en/platform/slack" },
+                            { text: "WeCom", link: "/en/platform/wecom" },
+                            { text: "Microsoft Teams", link: "/en/platform/teams" }
+                        ]
+                    },
+                    {
+                        text: "Protocols",
+                        items: [
+                            { text: "OneBot V11", link: "/en/protocol/onebot-v11" },
+                            { text: "OneBot V12", link: "/en/protocol/onebot-v12" },
+                            { text: "Satori", link: "/en/protocol/satori" },
+                            { text: "Milky", link: "/en/protocol/milky" }
+                        ]
+                    },
+                    {
+                        text: pkg.version,
+                        items: [
+                            {
+                                text: "Package", link: `https://www.npmjs.com/package/onebots/v/` + pkg.version
+                            },
+                            {
+                                text: "Release", link: `https://github.com/lc-cn/onebots/releases/tag/v` + pkg.version
+                            },
+                            { text: "Changelog", link: "https://github.com/icqqjs/onebots/blob/master/CHANGELOG.md" }
+                        ]
+                    }
+                ],
+                sidebar: {
+                    "/en/guide/": [
+                        { text: "Preparation", link: "/en/guide/prepare" },
+                        { text: "Quick Start", link: "/en/guide/start" },
+                        { text: "Architecture", link: "/en/guide/architecture" },
+                        { text: "Client SDK", link: "/en/guide/client-sdk" },
+                        { text: "Adapter Development", link: "/en/guide/adapter" },
+                        { text: "Adapter Roadmap", link: "/en/guide/adapter-todo" }
+                    ],
+                    "/en/config/": [
+                        { text: "Global Config", link: "/en/config/global" },
+                        { text: "General Config", link: "/en/config/general" },
+                        { text: "Platform Config", link: "/en/config/platform" },
+                        { text: "Protocol Config", link: "/en/config/protocol" }
+                    ],
+                    "/en/platform/": [
+                        { text: "WeChat", link: "/en/platform/wechat" },
+                        { text: "QQ", link: "/en/platform/qq" },
+                        { text: "Discord", link: "/en/platform/discord" },
+                        { text: "DingTalk", link: "/en/platform/dingtalk" },
+                        { text: "Kook", link: "/en/platform/kook" },
+                        { text: "Telegram", link: "/en/platform/telegram" },
+                        { text: "Feishu", link: "/en/platform/feishu" },
+                        { text: "Slack", link: "/en/platform/slack" },
+                        { text: "WeCom", link: "/en/platform/wecom" },
+                        { text: "Microsoft Teams", link: "/en/platform/teams" }
+                    ],
+                    "/en/protocol/": [
+                        { text: "OneBot V11", link: "/en/protocol/onebot-v11" },
+                        { text: "OneBot V12", link: "/en/protocol/onebot-v12" },
+                        { text: "Satori", link: "/en/protocol/satori" },
+                        { text: "Milky", link: "/en/protocol/milky" }
+                    ]
+                },
+                footer: {
+                    message: "Released under the <a href=\"https://github.com/icqqjs/onebots/blob/master/LICENSE\">MIT License</a>.",
+                    copyright: "Copyright © 2022-2024 <a href=\"https://github.com/lc-cn\">凉菜</a>"
+                },
+                editLink: {
+                    pattern: "https://github.com/icqqjs/onebots/edit/master/docs/src/en/:path",
+                    text: "Edit this page"
+                },
+                socialLinks: [{ icon: "github", link: "https://github.com/icqqjs/onebots" }],
+                lastUpdated: {
+                    text: "Last updated"
+                },
+                docFooter: {
+                    prev: "Previous",
+                    next: "Next"
+                },
+                outline: {
+                    label: "On this page"
+                },
+                returnToTopLabel: "Return to top",
+                darkModeSwitchLabel: "Appearance",
+                sidebarMenuLabel: "Menu",
+                langMenuLabel: "Change language"
+            }
+        }
+    },
+
     markdown: {
         async config(md) {
         }
     },
-    lang: "zh-CN",
-    lastUpdated: true,
-    ignoreDeadLinks: true,
-    themeConfig: {
-        nav: [
-            { text: "开始", link: "/guide/start", activeMatch: "/guide/" },
-            { text: "架构", link: "/guide/architecture" },
-            {
-                text: "配置",
-                items: [
-                    { text: "全局配置", link: "/config/global" },
-                    { text: "通用配置", link: "/config/general" },
-                    { text: "平台配置", link: "/config/platform" },
-                    { text: "协议配置", link: "/config/protocol" }
-                ]
-            },
-            {
-                text: "平台",
-                items: [
-                    { text: "微信公众号", link: "/platform/wechat" },
-                    { text: "QQ机器人", link: "/platform/qq" },
-                    { text: "钉钉机器人", link: "/platform/dingtalk" },
-                    { text: "Discord", link: "/platform/discord" },
-                    { text: "Kook", link: "/platform/kook" }
-                ]
-            },
-            {
-                text: "协议",
-                items: [
-                    { text: "OneBot V11", link: "/protocol/onebot-v11" },
-                    { text: "OneBot V12", link: "/protocol/onebot-v12" },
-                    { text: "Satori", link: "/protocol/satori" },
-                    { text: "Milky", link: "/protocol/milky" }
-                ]
-            },
-            {
-                text: pkg.version,
-                items: [
-                    {
-                        text: "Package", link: `https://www.npmjs.com/package/onebots/v/` + pkg.version
-                    },
-                    {
-                        text: "Release", link: `https://github.com/lc-cn/onebots/releases/tag/v` + pkg.version
-                    },
-                    { text: "Changelog", link: "https://github.com/icqqjs/onebots/blob/master/CHANGELOG.md" }
-                ]
-            }
-        ],
-        sidebar: {
-            "/guide/": [
-                { text: `准备工作`, link: "/guide/prepare" },
-                { text: `快速开始`, link: "/guide/start" },
-                { text: `系统架构`, link: "/guide/architecture" },
-                { text: `客户端SDK`, link: "/guide/client-sdk" },
-                { text: `开发适配器`, link: "/guide/adapter" }
-            ],
-            "/config/": [
-                { text: "全局配置", link: "/config/global" },
-                { text: "通用配置 (general)", link: "/config/general" },
-                { text: "平台配置", link: "/config/platform" },
-                { text: "协议配置", link: "/config/protocol" }
-            ],
-            "/platform/": [
-                { text: "微信公众号", link: "/platform/wechat" },
-                { text: "QQ机器人", link: "/platform/qq" },
-                { text: "Discord", link: "/platform/discord" },
-                { text: "钉钉机器人", link: "/platform/dingtalk" },
-                { text: "Kook", link: "/platform/kook" }
-            ],
-            "/protocol/": [
-                { text: "OneBot V11", link: "/protocol/onebot-v11" },
-                { text: "OneBot V12", link: "/protocol/onebot-v12" },
-                { text: "Satori", link: "/protocol/satori" },
-                { text: "Milky", link: "/protocol/milky" }
-            ]
-        },
-        footer: {
-            message: "Released under the <a href=\"https://github.com/icqqjs/onebots/blob/master/LICENSE\">MIT License</a>.",
-            copyright: "Copyright © 2022-2024 <a href=\"https://github.com/lc-cn\">凉菜</a>"
-        },
-        editLink: {
-            pattern: "https://github.com/icqqjs/onebots/edit/master/docs/src/:path", text: "参与贡献"
-        },
-        socialLinks: [{ icon: "github", link: "https://github.com/icqqjs/onebots" }],
-        lastUpdated: {
-            text: "上次更新时间"
-        },
-        docFooter: {
-            prev: "上一节",
-            next: "下一节"
-        }
-    },
+    
     vite: {
         optimizeDeps: {
             include: ['dayjs', 'element-plus'],

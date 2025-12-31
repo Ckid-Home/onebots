@@ -24,9 +24,9 @@ hero:
 
 features:
 - title: 🎯 协议标准化
-  details: 统一微信、QQ、钉钉等平台的差异，输出标准的 OneBot、Satori 协议
+  details: 统一各大平台的差异，输出标准的 OneBot、Satori、Milky 协议
 - title: 🔌 广泛的平台兼容
-  details: 内置主流平台适配器，支持微信公众号、QQ、钉钉、Kook、Discord 等，可轻松扩展
+  details: 内置 10+ 主流平台适配器，支持 QQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams 等，可轻松扩展
 - title: 📡 多协议同时提供
   details: 一个账号可同时提供 OneBot V11/V12、Satori、Milky 等多种协议接口
 - title: 💻 统一客户端SDK

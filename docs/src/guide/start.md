@@ -6,14 +6,14 @@
 
 onebots 是一个**多平台多协议机器人应用框架**，提供完整的服务端和客户端解决方案：
 
-- **平台层**：微信、QQ、钉钉等各大平台的机器人 API
+- **平台层**：QQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams 等各大平台的机器人 API
 - **onebots（服务端）**：统一的协议转换层，将平台 API 转换为标准协议
 - **标准协议**：OneBot V11/V12、Satori、Milky 等标准协议接口
 - **imhelper（客户端SDK）**：统一的客户端接口，抹平协议差异
 - **框架层**：Koishi、NoneBot、Yunzai 等机器人应用框架
 
 ```
-平台 API (微信、QQ、钉钉...)
+平台 API (QQ、微信、钉钉、飞书、Telegram、Slack...)
         ↓
     onebots (服务端) ← 本项目服务端
         ↓
@@ -231,9 +231,9 @@ ws://localhost:6727/{platform}/{account_id}/onebot/v11
 
 ## 下一步
 
-- 📚 [配置文件详解](/config/global)
-- 💻 [客户端SDK使用指南](/guide/client-sdk)
-- 🔌 [开发自定义适配器](/guide/adapter)
-- 📡 [协议说明](/protocol/onebot-v11/index)
-- 🛠️ [API 参考](/protocol/onebot-v11/action)
+- 📚 [配置文件详解](/zh/config/global)
+- 💻 [客户端SDK使用指南](/zh/guide/client-sdk)
+- 🔌 [开发自定义适配器](/zh/guide/adapter)
+- 📡 [协议说明](/zh/protocol/onebot-v11/index)
+- 🛠️ [API 参考](/zh/protocol/onebot-v11/action)
 

@@ -101,9 +101,9 @@ general:
     access_token: ''
 
 # Kook 机器人账号配置
-kook.zhin:
+kook.my_bot:
   # Kook 平台配置
-  token: '1/Mjg5MzY=/lAWnMBs98eKLSTPy4SU7ug=='
+  token: 'your_kook_token'
   mode: 'websocket'
   
   # OneBot V11 协议配置

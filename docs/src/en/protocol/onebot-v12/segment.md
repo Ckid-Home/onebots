@@ -1,8 +1,8 @@
-# 消息段 (Segment)
+# Message Segments
 
-## 标准消息段
+## Standard Message Segments
 
-### 文本消息段
+### Text Message Segment
 
 ```json
 {
@@ -13,7 +13,7 @@
 }
 ```
 
-### 图片消息段
+### Image Message Segment
 
 ```json
 {
@@ -24,7 +24,7 @@
 }
 ```
 
-### 视频消息段
+### Video Message Segment
 
 ```json
 {
@@ -35,7 +35,7 @@
 }
 ```
 
-### 音频消息段
+### Audio Message Segment
 
 ```json
 {
@@ -46,7 +46,7 @@
 }
 ```
 
-### 文件消息段
+### File Message Segment
 
 ```json
 {
@@ -57,7 +57,7 @@
 }
 ```
 
-### 表情消息段
+### Face Message Segment
 
 ```json
 {
@@ -68,18 +68,7 @@
 }
 ```
 
-### 图片消息段
-
-```json
-{
-  "type": "image",
-  "data": {
-    "url": "https://example.com/image.png"
-  }
-}
-```
-
-### 提及消息段
+### Mention Message Segment
 
 ```json
 {
@@ -90,13 +79,9 @@
 }
 ```
 
-### 引用消息段
+## Related Links
 
-```json
-{
-  "type": "quote",
-  "data": {
-    "id": "123456789"
-  }
-}
-```
+- [OneBot V12 Protocol](/en/protocol/onebot-v12)
+- [Actions](/en/protocol/onebot-v12/action)
+- [Events](/en/protocol/onebot-v12/event)
+

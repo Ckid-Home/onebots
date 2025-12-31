@@ -103,11 +103,11 @@ general:
     heartbeat_interval: 5000
 
 # QQ 官方机器人账号配置
-qq.3889001676:
+qq.my_bot:
   # QQ 平台配置
-  appId: '102073979'
-  token: 'rf5PImyaJSUal1IqnDiLJREvYQVduHro'
-  secret: 'd4WyQsKmFiBe7a4Y2W0UyTyTyTyTzV1X'
+  appId: 'your_app_id'
+  token: 'your_token'
+  secret: 'your_secret'
   sandbox: false
   intents:
     - 'GROUP_AT_MESSAGE_CREATE'
