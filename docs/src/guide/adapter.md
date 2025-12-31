@@ -241,10 +241,10 @@ discord.bot1:
 ### 协议配置项
 
 各协议的通用配置项请参考：
-- [OneBot V11 配置](/config/v11)
-- [OneBot V12 配置](/config/v12)
-- [Satori 配置](/config/protocol)
-- [Milky 配置](/config/protocol)
+- [OneBot V11 配置](/config/protocol/onebot-v11)
+- [OneBot V12 配置](/config/protocol/onebot-v12)
+- [Satori 配置](/config/protocol/satori-v1)
+- [Milky 配置](/config/protocol/milky-v1)
 
 ### 平台特定配置
 

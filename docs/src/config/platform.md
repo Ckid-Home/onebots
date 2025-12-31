@@ -93,20 +93,134 @@ http://bot.example.com:6727/wechat/my_official_account/webhook
 
 ## QQ 平台
 
-> 🚧 开发中，暂无官方适配器
+✅ **已实现**
 
-计划支持的配置项：
+### 配置项
+
+#### appId
+
+- **类型**: `string`
+- **必填**: ✅
+- **说明**: QQ机器人AppID
+
+#### secret
+
+- **类型**: `string`
+- **必填**: ✅
+- **说明**: QQ机器人Secret
+
+#### token
+
+- **类型**: `string`
+- **必填**: ✅
+- **说明**: QQ机器人Token
+
+#### mode
+
+- **类型**: `string`
+- **可选值**: `websocket` | `webhook`
+- **默认值**: `websocket`
+- **说明**: 连接模式
+
+#### sandbox
+
+- **类型**: `boolean`
+- **默认值**: `false`
+- **说明**: 是否沙箱环境
+
+#### removeAt
+
+- **类型**: `boolean`
+- **默认值**: `true`
+- **说明**: 是否自动移除@机器人内容
+
+#### maxRetry
+
+- **类型**: `number`
+- **默认值**: `10`
+- **说明**: 最大重连次数（仅WebSocket模式）
+
+#### intents
+
+- **类型**: `string[]`
+- **默认值**: `[]`
+- **说明**: 需要监听的事件（仅WebSocket模式需要）
+
+### 配置示例
 
 ```yaml
 qq.my_bot:
-  appid: your_app_id
-  secret: your_secret
-  token: your_token
+  # QQ 平台配置
+  appId: 'your_app_id'
+  token: 'your_token'
+  secret: 'your_secret'
+  sandbox: false
+  intents:
+    - 'GROUP_AT_MESSAGE_CREATE'
+    - 'C2C_MESSAGE_CREATE'
+    - 'PUBLIC_GUILD_MESSAGES'
+  
+  # 协议配置
+  onebot.v11:
+    use_http: true
+    use_ws: true
 ```
+
+详细配置请参考：[QQ 适配器配置](/config/adapter/qq)
+
+## Discord 平台
+
+✅ **已实现**
+
+### 配置项
+
+#### token
+
+- **类型**: `string`
+- **必填**: ✅
+- **说明**: Discord Bot Token
+
+#### intents
+
+- **类型**: `string[]`
+- **必填**: ❌
+- **说明**: Gateway Intents，需要接收的事件类型
+
+#### partials
+
+- **类型**: `string[]`
+- **必填**: ❌
+- **说明**: Partials，部分数据支持
+
+#### presence
+
+- **类型**: `object`
+- **必填**: ❌
+- **说明**: 机器人状态和活动
+
+### 配置示例
+
+```yaml
+discord.your_bot_id:
+  # Discord 平台配置
+  token: 'your_discord_bot_token'
+  intents:
+    - Guilds
+    - GuildMessages
+    - GuildMembers
+    - MessageContent
+  
+  # 协议配置
+  onebot.v11:
+    use_http: true
+    use_ws: true
+```
+
+详细配置请参考：[Discord 适配器配置](/config/adapter/discord)
 
 ## 钉钉平台
 
-> 🚧 计划中
+🚧 **计划中**
 
 计划支持的配置项：
 
@@ -119,15 +233,52 @@ dingtalk.my_bot:
 
 ## Kook 平台
 
-> 🚧 计划中
+✅ **已实现**
 
-计划支持的配置项：
+### 配置项
+
+#### token
+
+- **类型**: `string`
+- **必填**: ✅
+- **说明**: Kook 机器人 Token
+
+#### mode
+
+- **类型**: `string`
+- **可选值**: `websocket` | `webhook`
+- **默认值**: `websocket`
+- **说明**: 连接模式
+
+#### verifyToken
+
+- **类型**: `string`
+- **必填**: ❌（Webhook 模式需要）
+- **说明**: Webhook 验证 Token
+
+#### encryptKey
+
+- **类型**: `string`
+- **必填**: ❌
+- **说明**: 消息加密密钥（可选）
+
+### 配置示例
 
 ```yaml
-kook.my_bot:
-  token: your_bot_token
-  verify_token: your_verify_token
+kook.zhin:
+  # Kook 平台配置
+  token: 'your_kook_token'
+  mode: 'websocket'
+  verifyToken: 'your_verify_token'  # Webhook 模式需要
+  encryptKey: 'your_encrypt_key'    # 可选
+  
+  # 协议配置
+  onebot.v11:
+    use_http: true
+    use_ws: true
 ```
+
+详细配置请参考：[Kook 适配器配置](/config/adapter/kook)
 
 ## 多账号配置
 
@@ -273,5 +424,8 @@ wechat.prod:
 - [全局配置](/config/global)
 - [通用配置](/config/general)
 - [协议配置](/config/protocol)
+- [适配器配置指南](/guide/adapter)
 - [微信平台](/platform/wechat)
 - [QQ 平台](/platform/qq)
+- [Kook 平台](/platform/kook)
+- [Discord 平台](/platform/discord)

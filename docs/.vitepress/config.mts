@@ -30,9 +30,10 @@ export default defineConfig({
             {
                 text: "平台",
                 items: [
-                    { text: "微信", link: "/platform/wechat" },
-                    { text: "QQ", link: "/platform/qq" },
-                    { text: "钉钉", link: "/platform/dingtalk" },
+                    { text: "微信公众号", link: "/platform/wechat" },
+                    { text: "QQ机器人", link: "/platform/qq" },
+                    { text: "钉钉机器人", link: "/platform/dingtalk" },
+                    { text: "Discord", link: "/platform/discord" },
                     { text: "Kook", link: "/platform/kook" }
                 ]
             },
@@ -71,9 +72,10 @@ export default defineConfig({
                 { text: "协议配置", link: "/config/protocol" }
             ],
             "/platform/": [
-                { text: "微信", link: "/platform/wechat" },
-                { text: "QQ", link: "/platform/qq" },
-                { text: "钉钉", link: "/platform/dingtalk" },
+                { text: "微信公众号", link: "/platform/wechat" },
+                { text: "QQ机器人", link: "/platform/qq" },
+                { text: "Discord", link: "/platform/discord" },
+                { text: "钉钉机器人", link: "/platform/dingtalk" },
                 { text: "Kook", link: "/platform/kook" }
             ],
             "/protocol/": [

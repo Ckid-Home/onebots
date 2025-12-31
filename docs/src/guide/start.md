@@ -234,6 +234,6 @@ ws://localhost:6727/{platform}/{account_id}/onebot/v11
 - 📚 [配置文件详解](/config/global)
 - 💻 [客户端SDK使用指南](/guide/client-sdk)
 - 🔌 [开发自定义适配器](/guide/adapter)
-- 📡 [协议说明](/v11/index)
-- 🛠️ [API 参考](/v11/action)
+- 📡 [协议说明](/protocol/onebot-v11/index)
+- 🛠️ [API 参考](/protocol/onebot-v11/action)
 
