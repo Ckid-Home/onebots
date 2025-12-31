@@ -3,7 +3,9 @@ import DefaultTheme from 'vitepress/theme'
 import './custom.css'
 import ElementUI from 'element-plus'
 import {EnhanceAppContext, useRoute} from "vitepress";
-import svgPanZoom from 'svg-pan-zoom'
+
+// svg-pan-zoom 需要在客户端动态导入，避免 SSR 时 window is not defined 错误
+let svgPanZoom: ((svg: SVGElement, options?: object) => object) | null = null
 
 export default {
     extends:DefaultTheme,
@@ -76,14 +78,16 @@ export default {
             // 延迟初始化灯箱内的 pan-zoom
             setTimeout(() => {
                 try {
-                    svgPanZoom(clonedSvg, {
-                        zoomEnabled: true,
-                        controlIconsEnabled: true,
-                        fit: true,
-                        center: true,
-                        minZoom: 0.1,
-                        maxZoom: 20
-                    })
+                    if (svgPanZoom) {
+                        svgPanZoom(clonedSvg, {
+                            zoomEnabled: true,
+                            controlIconsEnabled: true,
+                            fit: true,
+                            center: true,
+                            minZoom: 0.1,
+                            maxZoom: 20
+                        })
+                    }
                 } catch (e) {
                     console.warn('Lightbox pan-zoom init failed', e)
                 }
@@ -123,6 +127,7 @@ export default {
             }
 
             // 初始化 pan-zoom
+            if (!svgPanZoom) return
             try {
                 svgPanZoom(svg, {
                     zoomEnabled: true,
@@ -143,7 +148,11 @@ export default {
             document.querySelectorAll('.mermaid svg').forEach((el) => initSvg(el as SVGElement))
         }
 
-        onMounted(() => {
+        onMounted(async () => {
+            // 动态导入 svg-pan-zoom，避免 SSR 时 window is not defined 错误
+            const module = await import('svg-pan-zoom')
+            svgPanZoom = module.default
+            
             createLightbox()
             
             // 立即检查
