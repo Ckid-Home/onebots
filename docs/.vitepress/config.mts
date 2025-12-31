@@ -18,6 +18,7 @@ export default defineConfig({
     themeConfig: {
         nav: [
             { text: "开始", link: "/guide/start", activeMatch: "/guide/" },
+            { text: "架构", link: "/guide/architecture" },
             {
                 text: "配置",
                 items: [
@@ -63,6 +64,8 @@ export default defineConfig({
             "/guide/": [
                 { text: `准备工作`, link: "/guide/prepare" },
                 { text: `快速开始`, link: "/guide/start" },
+                { text: `系统架构`, link: "/guide/architecture" },
+                { text: `客户端SDK`, link: "/guide/client-sdk" },
                 { text: `开发适配器`, link: "/guide/adapter" }
             ],
             "/config/": [
@@ -99,6 +102,20 @@ export default defineConfig({
         docFooter: {
             prev: "上一节",
             next: "下一节"
+        }
+    },
+    vite: {
+        optimizeDeps: {
+            include: ['dayjs', 'element-plus'],
+            esbuildOptions: {
+                target: 'esnext'
+            }
+        },
+        ssr: {
+            noExternal: ['dayjs']
+        },
+        resolve: {
+            dedupe: ['dayjs']
         }
     }
 });
