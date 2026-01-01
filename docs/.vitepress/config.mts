@@ -35,6 +35,7 @@ export default withMermaid(defineConfig({
                         items: [
                             { text: "微信公众号", link: "/platform/wechat" },
                             { text: "QQ机器人", link: "/platform/qq" },
+                            { text: "ICQQ", link: "/platform/icqq" },
                             { text: "钉钉机器人", link: "/platform/dingtalk" },
                             { text: "Discord", link: "/platform/discord" },
                             { text: "Kook", link: "/platform/kook" },
@@ -86,6 +87,7 @@ export default withMermaid(defineConfig({
                     "/platform/": [
                         { text: "微信公众号", link: "/platform/wechat" },
                         { text: "QQ机器人", link: "/platform/qq" },
+                        { text: "ICQQ", link: "/platform/icqq" },
                         { text: "Discord", link: "/platform/discord" },
                         { text: "钉钉机器人", link: "/platform/dingtalk" },
                         { text: "Kook", link: "/platform/kook" },
@@ -151,6 +153,7 @@ export default withMermaid(defineConfig({
                         items: [
                             { text: "WeChat", link: "/en/platform/wechat" },
                             { text: "QQ", link: "/en/platform/qq" },
+                            { text: "ICQQ", link: "/en/platform/icqq" },
                             { text: "DingTalk", link: "/en/platform/dingtalk" },
                             { text: "Discord", link: "/en/platform/discord" },
                             { text: "Kook", link: "/en/platform/kook" },
@@ -202,6 +205,7 @@ export default withMermaid(defineConfig({
                     "/en/platform/": [
                         { text: "WeChat", link: "/en/platform/wechat" },
                         { text: "QQ", link: "/en/platform/qq" },
+                        { text: "ICQQ", link: "/en/platform/icqq" },
                         { text: "Discord", link: "/en/platform/discord" },
                         { text: "DingTalk", link: "/en/platform/dingtalk" },
                         { text: "Kook", link: "/en/platform/kook" },
