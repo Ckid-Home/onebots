@@ -127,6 +127,7 @@ export default {
             }
 
             // 初始化 pan-zoom
+            if (!svgPanZoom) return
             try {
                 if (svgPanZoom) {
                 svgPanZoom(svg, {
