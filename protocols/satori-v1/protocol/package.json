@@ -34,5 +34,9 @@
   },
   "dependencies": {
     "ws": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lc-cn/onebots.git"
   }
 }

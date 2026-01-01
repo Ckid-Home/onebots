@@ -28,9 +28,9 @@
     "/lib/**/*.d.ts"
   ],
   "devDependencies": {
+    "@types/node": "^22.7.3",
     "tsc-alias": "latest",
-    "typescript": "latest",
-    "@types/node": "^22.7.3"
+    "typescript": "latest"
   },
   "peerDependencies": {
     "onebots": "workspace:*"
@@ -40,8 +40,11 @@
       "optional": true
     }
   },
-  "dependencies": {},
   "optionalDependencies": {
     "https-proxy-agent": "^7.0.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lc-cn/onebots.git"
   }
 }

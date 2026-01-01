@@ -27,9 +27,9 @@
     "/lib/**/*.d.ts"
   ],
   "devDependencies": {
+    "@types/node": "^22.7.3",
     "tsc-alias": "latest",
-    "typescript": "latest",
-    "@types/node": "^22.7.3"
+    "typescript": "latest"
   },
   "peerDependencies": {
     "onebots": "workspace:*"
@@ -38,5 +38,9 @@
     "@noble/curves": "^1.5.0",
     "@types/ws": "^8.5.3",
     "ws": "^8.18.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lc-cn/onebots.git"
   }
 }

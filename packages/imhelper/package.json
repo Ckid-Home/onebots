@@ -29,5 +29,9 @@
     "@types/ws": "^8.18.1",
     "tsc-alias": "latest",
     "typescript": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lc-cn/onebots.git"
   }
 }

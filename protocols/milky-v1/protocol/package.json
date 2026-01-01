@@ -35,5 +35,9 @@
   "dependencies": {
     "koa-static": "^5.0.0",
     "ws": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lc-cn/onebots.git"
   }
 }

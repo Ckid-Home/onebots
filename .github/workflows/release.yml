@@ -71,11 +71,13 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Publish to npm (with provenance)
+      # OIDC 可信发布 - 无需 NPM_TOKEN
+      # Trusted Publishers 已配置: lc-cn/onebots + release.yml
+      - name: Publish to npm (OIDC Trusted Publishing)
         run: pnpm publish -r --no-git-checks --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+          # 不再需要 NODE_AUTH_TOKEN - 使用 GitHub OIDC 认证
 
       - name: Create git tags
         run: |
