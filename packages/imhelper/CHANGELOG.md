@@ -1,4 +1,4 @@
-# @onebots/protocol-onebot-v11
+# imhelper
 
 ## 1.0.0
 
@@ -55,27 +55,3 @@
   - 🌐 Web 管理界面 - 可视化管理和监控
   - 🔒 代理支持 - Discord/Telegram 支持 HTTP/HTTPS 代理
   - ☁️ 部分 Serverless 支持 - 飞书、钉钉、QQ 等 Webhook 模式
-
-### Patch Changes
-
-- Updated dependencies [57cf3ba]
-  - onebots@1.0.0
-
-## 1.0.1
-
-### Patch Changes
-
-- onebots@0.5.1
-
-## 1.0.0
-
-### Minor Changes
-
-- f3372b5: fix: refactory
-
-### Patch Changes
-
-- f3372b5: fix: 初始化管理
-- Updated dependencies [f3372b5]
-- Updated dependencies [f3372b5]
-  - onebots@0.5.0
