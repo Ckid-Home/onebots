@@ -71,13 +71,23 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      # OIDC 可信发布 - 无需 NPM_TOKEN
-      # Trusted Publishers 已配置: lc-cn/onebots + release.yml
+      # OIDC 可信发布 - Trusted Publishers 已配置: lc-cn/onebots + release.yml
+      - name: Configure npm for OIDC Publishing
+        run: |
+          # 清除 setup-node 创建的 authToken，让 npm 使用 OIDC
+          # 只保留 registry 配置，不设置任何 token
+          cat > ~/.npmrc << 'EOF'
+          registry=https://registry.npmjs.org/
+          EOF
+          echo "📋 .npmrc 配置:"
+          cat ~/.npmrc
+          
       - name: Publish to npm (OIDC Trusted Publishing)
-        run: pnpm publish -r --no-git-checks --access public --provenance
+        run: |
+          echo "🚀 开始 OIDC 可信发布..."
+          pnpm publish -r --no-git-checks --access public --provenance
         env:
           NPM_CONFIG_PROVENANCE: true
-          # 不再需要 NODE_AUTH_TOKEN - 使用 GitHub OIDC 认证
 
       - name: Create git tags
         run: |
