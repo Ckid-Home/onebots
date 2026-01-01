@@ -21,7 +21,6 @@ export default withMermaid(defineConfig({
             themeConfig: {
                 nav: [
                     { text: "开始", link: "/guide/start", activeMatch: "/guide/" },
-                    { text: "架构", link: "/guide/architecture" },
                     {
                         text: "配置",
                         items: [
