@@ -1,14 +1,9 @@
-# These are supported funding model platforms
+# 赞助支持 OneBots
+# 
+# 支付宝/微信二维码请查看 README.md 中的赞助区
+# QR codes for Alipay/WeChat are available in README.md
 
-github: # Replace with up to 4 GitHub Sponsors-enabled usernames e.g., [user1, user2]
-patreon: # Replace with a single Patreon username
-open_collective: # Replace with a single Open Collective username
-ko_fi: # Replace with a single Ko-fi username
-tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
-community_bridge: # Replace with a single Community Bridge project-name e.g., cloud-foundry
-liberapay: # Replace with a single Liberapay username
-issuehunt: # Replace with a single IssueHunt username
-otechie: # Replace with a single Otechie username
-lfx_crowdfunding: # Replace with a single LFX Crowdfunding project-name e.g., cloud-foundry
+github: lc-cn
 custom:
- - https://afdian.net/a/lc-cn
+  - https://afdian.net/a/lc-cn
+  - https://github.com/lc-cn/onebots#-赞助支持

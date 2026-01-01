@@ -21,6 +21,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write  # 用于 npm OIDC provenance
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,10 +70,11 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Publish to npm
-        run: pnpm publish -r --no-git-checks --access public
+      - name: Publish to npm (with provenance)
+        run: pnpm publish -r --no-git-checks --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Create git tags
         run: |
