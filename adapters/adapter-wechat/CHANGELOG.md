@@ -1,5 +1,17 @@
 # @onebots/adapter-wechat
 
+## 1.0.1
+
+### Patch Changes
+
+- 4f7255b: chore: 切换到 npm OIDC 可信发布
+  - 移除 NPM_TOKEN 依赖
+  - 使用 GitHub OIDC + Provenance 发布
+  - 所有 25 个包已配置 Trusted Publishers
+
+- Updated dependencies [4f7255b]
+  - onebots@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
