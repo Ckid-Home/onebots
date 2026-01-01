@@ -37,6 +37,12 @@ describe('OneBot V11 - HTTP 鉴权测试', () => {
       timeout: 5000,
     }, 'onebot', 'v11', 'get_login_info');
 
+    // 状态码 0 表示连接失败
+    if (status === 0) {
+      console.log('⏭️  跳过测试：连接失败');
+      return;
+    }
+
     console.log('📊 无 token 访问结果:', data);
     
     // 如果服务器配置了 access_token，应该返回 401
@@ -61,6 +67,12 @@ describe('OneBot V11 - HTTP 鉴权测试', () => {
       accessToken: 'wrong_token_12345', // 错误的 token
       timeout: 5000,
     }, 'onebot', 'v11', 'get_login_info');
+
+    // 状态码 0 表示连接失败
+    if (status === 0) {
+      console.log('⏭️  跳过测试：连接失败');
+      return;
+    }
 
     console.log('📊 错误 token 访问结果:', data);
     

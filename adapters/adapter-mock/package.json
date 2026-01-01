@@ -1,19 +1,19 @@
 {
-  "name": "@onebots/adapter-dingtalk",
+  "name": "@onebots/adapter-mock",
   "version": "0.0.0",
-  "description": "onebots 钉钉适配器",
+  "description": "onebots Mock 适配器 - 用于测试和开发",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "rm -f *.tsbuildinfo && tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "clean": "rm -rf lib *.tsbuildinfo"
   },
   "keywords": [
     "onebots",
-    "dingtalk",
-    "ding",
-    "adapter"
+    "mock",
+    "adapter",
+    "testing"
   ],
   "author": "凉菜",
   "license": "MIT",
@@ -30,8 +30,8 @@
     "typescript": "latest",
     "@types/node": "^22.7.3"
   },
-  "peerDependencies": {
+  "dependencies": {
     "onebots": "workspace:*"
-  },
-  "dependencies": {}
+  }
 }
+

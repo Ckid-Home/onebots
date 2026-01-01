@@ -99,6 +99,79 @@ export function createReverseWsServer(port) {
 }
 
 /**
+ * 创建带鉴权的 WebSocket 服务器用于接收反向 WebSocket 连接
+ * @param {number} port - 端口号
+ * @param {string} expectedToken - 预期的访问令牌
+ * @returns {Promise<{server: WebSocketServer, events: Array, connections: Array, connectionAttempts: Array, close: Function}>}
+ */
+export function createReverseWsServerWithAuth(port, expectedToken) {
+  const events = [];
+  const connections = [];
+  const connectionAttempts = [];
+  
+  return new Promise((resolve, reject) => {
+    const wss = new WebSocketServer({ 
+      port,
+      verifyClient: (info, callback) => {
+        // 记录连接尝试
+        const url = new URL(info.req.url, 'ws://localhost');
+        const token = url.searchParams.get('access_token') || info.req.headers['authorization']?.replace('Bearer ', '');
+        
+        connectionAttempts.push({
+          timestamp: Date.now(),
+          url: info.req.url,
+          headers: info.req.headers,
+          token,
+          authorized: !expectedToken || token === expectedToken,
+        });
+        
+        // 如果设置了 expectedToken，则验证
+        if (expectedToken && token !== expectedToken) {
+          console.log('❌ 拒绝连接: token 不匹配');
+          callback(false, 401, 'Unauthorized');
+          return;
+        }
+        
+        console.log('✅ 接受连接:', token ? '有 token' : '无 token');
+        callback(true);
+      }
+    });
+    
+    wss.on('error', reject);
+    
+    wss.on('listening', () => {
+      resolve({
+        server: wss,
+        events,
+        connections,
+        connectionAttempts,
+        close: () => new Promise((resolve) => {
+          connections.forEach(ws => ws.close());
+          wss.close(resolve);
+        })
+      });
+    });
+    
+    wss.on('connection', (ws, req) => {
+      connections.push(ws);
+      
+      ws.on('message', (data) => {
+        try {
+          const event = JSON.parse(data.toString());
+          events.push(event);
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
+        }
+      });
+      
+      ws.on('error', (error) => {
+        console.error('WebSocket connection error:', error);
+      });
+    });
+  });
+}
+
+/**
  * 等待指定数量的事件
  * @param {Array} events - 事件数组
  * @param {number} count - 期望的事件数量

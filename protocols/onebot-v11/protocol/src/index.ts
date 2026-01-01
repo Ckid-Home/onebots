@@ -782,14 +782,6 @@ export class OneBotV11Protocol extends Protocol<"v11",OneBotV11Config.Config> {
         const routePath = `${this.path}/:action`;
         this.logger.info(`[OneBot V11] About to call router.post(${routePath})`);
         this.router.post(routePath, async (ctx) => {
-            this.logger.info(`[OneBot V11] ===== HTTP POST request received =====`, {
-                method: ctx.method,
-                url: ctx.url,
-                path: ctx.path,
-                query: ctx.query,
-                matchedRoute: routePath,
-            });
-            
             // Verify access token
             const token = ctx.query.access_token || ctx.headers.authorization?.replace('Bearer ', '');
             if (!this.verifyToken(token as string)) {

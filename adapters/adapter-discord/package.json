@@ -1,6 +1,6 @@
 {
   "name": "@onebots/adapter-discord",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "onebots Discord 适配器（轻量版，支持 Node.js 和 Cloudflare Workers）",
   "type": "module",
   "main": "lib/index.js",
@@ -39,7 +39,8 @@
   ],
   "devDependencies": {
     "tsc-alias": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/node": "^22.7.3"
   },
   "peerDependencies": {
     "onebots": "workspace:*"
@@ -50,13 +51,15 @@
     },
     "https-proxy-agent": {
       "optional": true
+    },
+    "socks-proxy-agent": {
+      "optional": true
     }
   },
-  "dependencies": {
-    "@types/node": "^22.7.3"
-  },
+  "dependencies": {},
   "optionalDependencies": {
     "ws": "^8.18.0",
-    "https-proxy-agent": "^7.0.6"
+    "https-proxy-agent": "^7.0.6",
+    "socks-proxy-agent": "^8.0.5"
   }
 }

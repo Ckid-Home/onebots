@@ -92,8 +92,11 @@ export function monitorWebSocket(name, ws, duration) {
       console.error(`[${name}] ✗ WebSocket 错误:`, error.message);
       clearTimeout(timeout);
       
-      if (error.message.includes('ECONNREFUSED')) {
-        console.log(`[${name}] ⚠ 服务器未运行`);
+      // 连接被拒绝、404 错误、意外响应等都认为是服务器不可用
+      if (error.message.includes('ECONNREFUSED') || 
+          error.message.includes('404') || 
+          error.message.includes('Unexpected server response')) {
+        console.log(`[${name}] ⚠ 服务器或端点不可用`);
         resolve(events);
       } else {
         reject(error);

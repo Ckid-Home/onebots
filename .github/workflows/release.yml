@@ -71,6 +71,8 @@ jobs:
 
       - name: Publish to npm
         run: pnpm publish -r --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create git tags
         run: |
@@ -79,7 +81,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
           # 从 package.json 获取版本并创建 tag
-          for pkg in packages/*/package.json protocols/*/package.json adapters/*/package.json; do
+          for pkg in packages/*/package.json protocols/*/*/package.json adapters/*/package.json; do
             if [ -f "$pkg" ]; then
               name=$(node -p "require('./$pkg').name")
               version=$(node -p "require('./$pkg').version")

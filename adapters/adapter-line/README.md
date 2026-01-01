@@ -146,6 +146,41 @@ bot.on('message', (event) => {
 3. **图片/视频 URL**：必须是 HTTPS 且可公开访问的 URL
 4. **群组消息**：机器人需要被邀请加入群组才能收发消息
 
+## 依赖说明
+
+本适配器采用轻量级设计，核心功能无需外部依赖。
+
+| 依赖 | 何时需要 | 安装命令 |
+|------|----------|----------|
+| `https-proxy-agent` | 使用代理时 | `npm install https-proxy-agent` |
+
+### 常见问题
+
+#### 1. API 请求失败 / 连接超时
+
+如果你需要通过代理访问 Line API，请配置代理：
+
+```yaml
+line.your_bot:
+  channel_access_token: 'xxx'
+  channel_secret: 'xxx'
+  proxy:
+    url: "http://127.0.0.1:7890"  # 你的代理地址
+```
+
+并安装代理依赖：
+
+```bash
+npm install https-proxy-agent
+```
+
+#### 2. Webhook 签名验证失败
+
+请确认：
+1. `channel_secret` 配置正确
+2. Webhook URL 正确：`https://your-domain.com/line/{account_id}/webhook`
+3. 服务使用 HTTPS（Line 要求 Webhook 必须是 HTTPS）
+
 ## 许可证
 
 MIT

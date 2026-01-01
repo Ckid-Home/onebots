@@ -99,15 +99,27 @@ export class DiscordGateway extends EventEmitter {
         // 动态导入 ws
         const { WebSocket } = await import('ws');
         
-        // 如果有代理，使用 https-proxy-agent
+        // 如果有代理，使用 socks-proxy-agent (WebSocket 更稳定)
         let wsOptions: any = {};
         if (this.proxyUrl) {
             try {
-                // @ts-ignore - https-proxy-agent 是可选依赖
-                const { HttpsProxyAgent } = await import('https-proxy-agent');
-                wsOptions.agent = new HttpsProxyAgent(this.proxyUrl);
+                // 优先使用 SOCKS5 代理 (对 WebSocket 支持更好)
+                // 将 http:// 代理转换为 socks5:// (Clash 混合端口同时支持)
+                const socksUrl = this.proxyUrl.replace(/^https?:\/\//, 'socks5://');
+                // @ts-ignore - socks-proxy-agent 是可选依赖
+                const { SocksProxyAgent } = await import('socks-proxy-agent');
+                wsOptions.agent = new SocksProxyAgent(socksUrl);
+                console.log(`[Gateway] 使用 SOCKS5 代理: ${socksUrl}`);
             } catch {
-                console.warn('[Gateway] https-proxy-agent 未安装，代理将不生效');
+                // 回退到 https-proxy-agent
+                try {
+                    // @ts-ignore - https-proxy-agent 是可选依赖
+                    const { HttpsProxyAgent } = await import('https-proxy-agent');
+                    wsOptions.agent = new HttpsProxyAgent(this.proxyUrl);
+                    console.log(`[Gateway] 使用 HTTP 代理: ${this.proxyUrl}`);
+                } catch {
+                    console.warn('[Gateway] 代理 agent 未安装，将直接连接');
+                }
             }
         }
 

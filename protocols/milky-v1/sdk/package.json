@@ -1,6 +1,6 @@
 {
   "name": "@imhelper/milky-v1",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Milky 协议客户端 SDK",
   "type": "module",
   "main": "lib/index.js",
@@ -34,4 +34,3 @@
     "typescript": "latest"
   }
 }
-

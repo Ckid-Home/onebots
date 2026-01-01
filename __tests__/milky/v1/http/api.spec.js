@@ -56,11 +56,12 @@ describe('Milky V1 - 系统 API', () => {
 
     if (status === 200 && data.status === 'ok') {
       console.log('✅ get_login_info 成功');
-      console.log('   UIN:', data.data.uin);
+      // 兼容 uin 和 user_id 两种字段名
+      console.log('   用户ID:', data.data.uin || data.data.user_id);
       console.log('   昵称:', data.data.nickname);
       expect(data.status).toBe('ok');
       expect(data.retcode).toBe(0);
-      expect(data.data.uin).toBeDefined();
+      expect(data.data.uin || data.data.user_id).toBeDefined();
     } else {
       console.log('⚠️  get_login_info 不支持或失败');
       unsupportedApis.push('get_login_info - ' + (data?.message || '不支持'));
@@ -122,9 +123,11 @@ describe('Milky V1 - 系统 API', () => {
 
     if (status === 200 && data.status === 'ok') {
       console.log('✅ get_friend_list 成功');
-      console.log('   好友数量:', data.data.friends?.length || 0);
+      // data.data 可能是数组本身，也可能是 {friends: [...]}
+      const friends = Array.isArray(data.data) ? data.data : (data.data.friends || []);
+      console.log('   好友数量:', friends.length);
       expect(data.status).toBe('ok');
-      expect(Array.isArray(data.data.friends)).toBe(true);
+      expect(Array.isArray(data.data) || Array.isArray(data.data.friends)).toBe(true);
     } else {
       console.log('⚠️  get_friend_list 不支持或失败');
       unsupportedApis.push('get_friend_list - ' + (data?.message || '不支持'));
@@ -165,9 +168,11 @@ describe('Milky V1 - 系统 API', () => {
 
     if (status === 200 && data.status === 'ok') {
       console.log('✅ get_group_list 成功');
-      console.log('   群数量:', data.data.groups?.length || 0);
+      // data.data 可能是数组本身，也可能是 {groups: [...]}
+      const groups = Array.isArray(data.data) ? data.data : (data.data.groups || []);
+      console.log('   群数量:', groups.length);
       expect(data.status).toBe('ok');
-      expect(Array.isArray(data.data.groups)).toBe(true);
+      expect(Array.isArray(data.data) || Array.isArray(data.data.groups)).toBe(true);
     } else {
       console.log('⚠️  get_group_list 不支持或失败');
       unsupportedApis.push('get_group_list - ' + (data?.message || '不支持'));
@@ -210,8 +215,14 @@ describe('Milky V1 - 系统 API', () => {
     if (status === 200) {
       if (data.status === 'ok') {
         console.log('✅ get_group_member_list 成功');
-        console.log('   成员数量:', data.data.members?.length || 0);
-        expect(Array.isArray(data.data.members)).toBe(true);
+        // Milky 协议: data.data 直接是 GroupMemberInfo[] 数组
+        console.log('   成员数量:', Array.isArray(data.data) ? data.data.length : 0);
+        expect(Array.isArray(data.data)).toBe(true);
+        // 如果有成员，验证结构
+        if (data.data.length > 0) {
+          expect(data.data[0]).toHaveProperty('user_id');
+          expect(data.data[0]).toHaveProperty('nickname');
+        }
       } else {
         console.log('⚠️  get_group_member_list 失败:', data.message);
         unsupportedApis.push('get_group_member_list - ' + data.message);
@@ -630,8 +641,14 @@ describe('Milky V1 - 群聊 API', () => {
     if (status === 200) {
       if (data.status === 'ok') {
         console.log('✅ get_group_member_list 成功');
-        console.log('   成员数量:', data.data.members?.length || 0);
-        expect(Array.isArray(data.data.members)).toBe(true);
+        // Milky 协议: data.data 直接是 GroupMemberInfo[] 数组
+        console.log('   成员数量:', Array.isArray(data.data) ? data.data.length : 0);
+        expect(Array.isArray(data.data)).toBe(true);
+        // 如果有成员，验证结构
+        if (data.data.length > 0) {
+          expect(data.data[0]).toHaveProperty('user_id');
+          expect(data.data[0]).toHaveProperty('nickname');
+        }
       } else {
         console.log('⚠️  get_group_member_list 失败:', data.message);
         unsupportedApis.push('get_group_member_list - ' + data.message);

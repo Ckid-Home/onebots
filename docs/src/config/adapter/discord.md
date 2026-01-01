@@ -41,6 +41,41 @@ discord.{account_id}:
 | `intents` | string[] | 否 | Gateway Intents，需要接收的事件类型 | `[]` |
 | `partials` | string[] | 否 | Partials，部分数据支持 | `[]` |
 | `presence` | object | 否 | 机器人状态和活动 | - |
+| `proxy` | object | 否 | 代理配置 | - |
+| `proxy.url` | string | 否 | 代理服务器地址 | - |
+| `proxy.username` | string | 否 | 代理用户名 | - |
+| `proxy.password` | string | 否 | 代理密码 | - |
+
+## 代理配置
+
+如果你在中国大陆等需要代理的地区，需要配置代理才能连接 Discord：
+
+```yaml
+discord.my_bot:
+  token: 'your_token'
+  proxy:
+    url: "http://127.0.0.1:7890"  # 你的代理地址
+    # username: "user"  # 可选
+    # password: "pass"  # 可选
+```
+
+### 可选依赖
+
+使用代理功能需要安装额外的依赖：
+
+```bash
+# 推荐同时安装（WebSocket 使用 SOCKS5 更稳定）
+npm install https-proxy-agent socks-proxy-agent
+```
+
+| 依赖 | 用途 |
+|------|------|
+| `https-proxy-agent` | REST API 代理 |
+| `socks-proxy-agent` | WebSocket 代理（推荐） |
+
+::: tip 提示
+适配器会自动将 HTTP 代理转换为 SOCKS5 用于 WebSocket 连接，因为 SOCKS5 对长连接支持更好。确保你的代理软件（如 Clash）开启了混合端口。
+:::
 
 ## 必需的 Intents
 

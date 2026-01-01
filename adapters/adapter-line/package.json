@@ -1,6 +1,6 @@
 {
   "name": "@onebots/adapter-line",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "onebots Line Messaging API 适配器（轻量版，支持 Node.js 和 Cloudflare Workers）",
   "type": "module",
   "main": "lib/index.js",
@@ -29,7 +29,8 @@
   ],
   "devDependencies": {
     "tsc-alias": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/node": "^22.7.3"
   },
   "peerDependencies": {
     "onebots": "workspace:*"
@@ -39,11 +40,8 @@
       "optional": true
     }
   },
-  "dependencies": {
-    "@types/node": "^22.7.3"
-  },
+  "dependencies": {},
   "optionalDependencies": {
     "https-proxy-agent": "^7.0.6"
   }
 }
-

@@ -131,15 +131,15 @@ export class BaseApp extends Koa {
             });
         });
         
+        // 注册健康检查端点（无需认证）
+        this.setupHealthEndpoints();
+        
         this.use(KoaBody())
             .use(async (ctx, next) => {
-                console.log(this.router.stack.map(layer=>{
-                    return {
-                        path: layer.path,
-                        methods: layer.methods,
-                        regexp: layer.regexp?.toString(),
-                    }
-                }))
+                // 健康检查端点跳过认证
+                if (ctx.path === '/health' || ctx.path === '/ready' || ctx.path === '/metrics') {
+                    return next();
+                }
                 // 检查是否是协议路径格式: /{platform}/{accountId}/{protocol}/{version}/...
                 const pathParts = ctx.path?.split("/").filter(p => p) || [];
                 
@@ -173,6 +173,107 @@ export class BaseApp extends Koa {
      */
     getEnhancedLogger(name: string): EnhancedLogger {
         return createLogger(`[onebots:${name}]`, this.config.log_level);
+    }
+
+    /**
+     * 设置健康检查端点
+     */
+    private setupHealthEndpoints() {
+        // /health - 基础健康检查（存活探针）
+        this.router.get('/health', (ctx) => {
+            ctx.body = {
+                status: 'ok',
+                timestamp: new Date().toISOString(),
+                uptime: process.uptime(),
+                version: pkg.version,
+            };
+        });
+
+        // /ready - 就绪检查（就绪探针）
+        this.router.get('/ready', (ctx) => {
+            const adaptersStatus: Record<string, { online: number; offline: number; total: number }> = {};
+            let allReady = true;
+            let totalOnline = 0;
+            let totalAccounts = 0;
+
+            for (const [platform, adapter] of this.adapters) {
+                let online = 0;
+                let offline = 0;
+                for (const account of adapter.accounts.values()) {
+                    totalAccounts++;
+                    if (account.status === 'online') {
+                        online++;
+                        totalOnline++;
+                    } else {
+                        offline++;
+                    }
+                }
+                adaptersStatus[platform] = { online, offline, total: online + offline };
+                if (offline > 0) allReady = false;
+            }
+
+            ctx.status = allReady && this.isStarted ? 200 : 503;
+            ctx.body = {
+                ready: allReady && this.isStarted,
+                timestamp: new Date().toISOString(),
+                server: this.isStarted,
+                adapters: adaptersStatus,
+                summary: {
+                    total_adapters: this.adapters.size,
+                    total_accounts: totalAccounts,
+                    online_accounts: totalOnline,
+                },
+            };
+        });
+
+        // /metrics - 简单的 Prometheus 格式指标
+        this.router.get('/metrics', (ctx) => {
+            const metrics: string[] = [];
+            const now = Date.now();
+
+            // 基础指标
+            metrics.push(`# HELP onebots_info OneBots application info`);
+            metrics.push(`# TYPE onebots_info gauge`);
+            metrics.push(`onebots_info{version="${pkg.version}"} 1`);
+
+            metrics.push(`# HELP onebots_uptime_seconds Application uptime in seconds`);
+            metrics.push(`# TYPE onebots_uptime_seconds gauge`);
+            metrics.push(`onebots_uptime_seconds ${process.uptime()}`);
+
+            metrics.push(`# HELP onebots_started Whether the application is started`);
+            metrics.push(`# TYPE onebots_started gauge`);
+            metrics.push(`onebots_started ${this.isStarted ? 1 : 0}`);
+
+            // 内存使用
+            const memUsage = process.memoryUsage();
+            metrics.push(`# HELP onebots_memory_bytes Memory usage in bytes`);
+            metrics.push(`# TYPE onebots_memory_bytes gauge`);
+            metrics.push(`onebots_memory_bytes{type="rss"} ${memUsage.rss}`);
+            metrics.push(`onebots_memory_bytes{type="heapTotal"} ${memUsage.heapTotal}`);
+            metrics.push(`onebots_memory_bytes{type="heapUsed"} ${memUsage.heapUsed}`);
+
+            // 适配器和账号指标
+            metrics.push(`# HELP onebots_adapters_total Total number of adapters`);
+            metrics.push(`# TYPE onebots_adapters_total gauge`);
+            metrics.push(`onebots_adapters_total ${this.adapters.size}`);
+
+            metrics.push(`# HELP onebots_accounts_total Total accounts by platform and status`);
+            metrics.push(`# TYPE onebots_accounts_total gauge`);
+            
+            for (const [platform, adapter] of this.adapters) {
+                let online = 0;
+                let offline = 0;
+                for (const account of adapter.accounts.values()) {
+                    if (account.status === 'online') online++;
+                    else offline++;
+                }
+                metrics.push(`onebots_accounts_total{platform="${platform}",status="online"} ${online}`);
+                metrics.push(`onebots_accounts_total{platform="${platform}",status="offline"} ${offline}`);
+            }
+
+            ctx.type = 'text/plain; charset=utf-8';
+            ctx.body = metrics.join('\n') + '\n';
+        });
     }
 
     get adapterConfigs():Map<string,Account.Config[]> {

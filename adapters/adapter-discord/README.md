@@ -152,10 +152,50 @@ const user = await rest.getUser('user_id');
 
 ## 依赖说明
 
-| 依赖 | 必需 | 说明 |
-|------|------|------|
-| `ws` | Gateway 模式 | Node.js WebSocket |
-| `https-proxy-agent` | 代理时 | HTTP/HTTPS/WS 代理 |
+本适配器采用轻量级设计，核心功能无需外部依赖。以下为可选依赖：
+
+| 依赖 | 何时需要 | 安装命令 |
+|------|----------|----------|
+| `ws` | Node.js Gateway 模式 | `npm install ws` |
+| `https-proxy-agent` | 使用 HTTP/HTTPS 代理（REST API） | `npm install https-proxy-agent` |
+| `socks-proxy-agent` | 使用 SOCKS5 代理（WebSocket 推荐） | `npm install socks-proxy-agent` |
+
+### 常见问题
+
+#### 1. 连接超时 / ECONNRESET
+
+如果你在中国大陆等需要代理的地区，请配置代理：
+
+```yaml
+discord.your_bot:
+  token: 'xxx'
+  proxy:
+    url: "http://127.0.0.1:7890"  # 你的代理地址
+```
+
+并安装代理依赖：
+
+```bash
+# 推荐同时安装（WebSocket 使用 SOCKS5 更稳定）
+npm install https-proxy-agent socks-proxy-agent
+```
+
+#### 2. 缺少 ws 模块
+
+如果看到 `Cannot find module 'ws'` 错误：
+
+```bash
+npm install ws
+```
+
+> **注意**：Cloudflare Workers 模式（Interactions）不需要 `ws`
+
+#### 3. WebSocket 连接失败但 REST API 正常
+
+某些代理软件（如 Clash）的 HTTP 代理模式对 WebSocket 支持不佳。适配器会自动将 HTTP 代理转换为 SOCKS5，但需要：
+
+1. 确保代理软件开启了混合端口（同时支持 HTTP 和 SOCKS5）
+2. 安装 `socks-proxy-agent`：`npm install socks-proxy-agent`
 
 ## 许可证
 

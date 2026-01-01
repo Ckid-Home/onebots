@@ -1,6 +1,6 @@
 {
   "name": "@onebots/adapter-kook",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "onebots KOOK(开黑了)适配器",
   "type": "module",
   "main": "lib/index.js",
@@ -27,13 +27,13 @@
   ],
   "devDependencies": {
     "tsc-alias": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/node": "^22.7.3"
   },
   "peerDependencies": {
     "onebots": "workspace:*"
   },
   "dependencies": {
-    "@types/node": "^22.7.3",
     "kook-client": "^1.0.4"
   }
 }

@@ -45,12 +45,12 @@ export default defineConfig({
         'packages/client/**',
         'packages/docs/**'
       ],
-      // 覆盖率阈值
+      // 覆盖率阈值 - 保证代码质量
       thresholds: {
-        lines: 0,
-        functions: 0,
-        branches: 0,
-        statements: 0
+        lines: 50,
+        functions: 50,
+        branches: 40,
+        statements: 50
       }
     },
     

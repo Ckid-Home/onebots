@@ -343,6 +343,7 @@ export class TelegramAdapter extends Adapter<TelegramBot, "telegram"> {
             token: config.token,
             webhook: config.webhook,
             polling: config.polling || { enabled: true },
+            proxy: config.proxy,
         };
 
         const bot = new TelegramBot(telegramConfig);

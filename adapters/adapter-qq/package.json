@@ -1,6 +1,6 @@
 {
   "name": "@onebots/adapter-qq",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "IMHelper QQ官方机器人适配器",
   "type": "module",
   "main": "lib/index.js",
@@ -28,14 +28,14 @@
   ],
   "devDependencies": {
     "tsc-alias": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/node": "^22.7.3"
   },
   "peerDependencies": {
     "onebots": "workspace:*"
   },
   "dependencies": {
     "@noble/curves": "^1.5.0",
-    "@types/node": "^22.7.3",
     "@types/ws": "^8.5.3",
     "ws": "^8.18.3"
   }

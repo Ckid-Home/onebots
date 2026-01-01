@@ -61,6 +61,40 @@ Webhook 模式配置。
 - **必填**: ❌
 - **说明**: 允许的更新类型
 
+## 代理配置
+
+如果你在中国大陆等需要代理的地区，需要配置代理才能连接 Telegram API：
+
+### proxy
+
+代理配置对象。
+
+#### proxy.url
+
+- **类型**: `string`
+- **必填**: ❌
+- **说明**: 代理服务器地址，支持 `http://` 和 `https://`
+
+#### proxy.username
+
+- **类型**: `string`
+- **必填**: ❌
+- **说明**: 代理用户名（如需要）
+
+#### proxy.password
+
+- **类型**: `string`
+- **必填**: ❌
+- **说明**: 代理密码（如需要）
+
+### 可选依赖
+
+使用代理功能需要安装额外的依赖：
+
+```bash
+npm install https-proxy-agent
+```
+
 ## 配置示例
 
 ### 轮询模式（推荐）
@@ -75,6 +109,17 @@ telegram.my_bot:
     allowed_updates:
       - message
       - callback_query
+```
+
+### 使用代理
+
+```yaml
+telegram.my_bot:
+  token: 'your_telegram_bot_token'
+  proxy:
+    url: "http://127.0.0.1:7890"  # 你的代理地址
+    # username: "user"  # 可选
+    # password: "pass"  # 可选
 ```
 
 ### Webhook 模式

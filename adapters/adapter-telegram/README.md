@@ -73,6 +73,52 @@ onebots -r telegram
 3. 按照提示设置机器人名称和用户名
 4. 获取 Bot Token
 
+## 依赖说明
+
+| 依赖 | 何时需要 | 安装命令 |
+|------|----------|----------|
+| `grammy` | 必需 | `npm install grammy` |
+| `https-proxy-agent` | 使用代理时 | `npm install https-proxy-agent` |
+
+### 常见问题
+
+#### 1. 连接超时 / Network request failed
+
+如果你在中国大陆等需要代理的地区访问 Telegram API，请配置代理：
+
+```yaml
+telegram.your_bot:
+  token: 'xxx'
+  proxy:
+    url: "http://127.0.0.1:7890"  # 你的代理地址
+```
+
+并安装代理依赖：
+
+```bash
+npm install https-proxy-agent
+```
+
+#### 2. 代理配置后仍然超时
+
+1. 确认代理服务正常运行
+2. 检查代理地址和端口是否正确
+3. 确认代理服务允许访问 `api.telegram.org`
+
+可以用以下命令测试代理：
+
+```bash
+curl -x http://127.0.0.1:7890 https://api.telegram.org/bot<TOKEN>/getMe
+```
+
+#### 3. 缺少 https-proxy-agent 警告
+
+如果看到 `https-proxy-agent 未安装` 警告但你需要代理：
+
+```bash
+npm install https-proxy-agent
+```
+
 ## 相关链接
 
 - [Telegram Bot API 文档](https://core.telegram.org/bots/api)

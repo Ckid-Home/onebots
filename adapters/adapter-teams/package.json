@@ -1,6 +1,6 @@
 {
   "name": "@onebots/adapter-teams",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "onebots Microsoft Teams适配器",
   "type": "module",
   "main": "lib/index.js",
@@ -28,15 +28,14 @@
   ],
   "devDependencies": {
     "tsc-alias": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/node": "^22.7.3"
   },
   "peerDependencies": {
     "onebots": "workspace:*"
   },
   "dependencies": {
-    "@types/node": "^22.7.3",
     "botbuilder": "^4.20.0",
     "botframework-connector": "^4.20.0"
   }
 }
-
