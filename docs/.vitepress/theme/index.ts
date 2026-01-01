@@ -79,14 +79,14 @@ export default {
             setTimeout(() => {
                 try {
                     if (svgPanZoom) {
-                        svgPanZoom(clonedSvg, {
-                            zoomEnabled: true,
-                            controlIconsEnabled: true,
-                            fit: true,
-                            center: true,
-                            minZoom: 0.1,
-                            maxZoom: 20
-                        })
+                    svgPanZoom(clonedSvg, {
+                        zoomEnabled: true,
+                        controlIconsEnabled: true,
+                        fit: true,
+                        center: true,
+                        minZoom: 0.1,
+                        maxZoom: 20
+                    })
                     }
                 } catch (e) {
                     console.warn('Lightbox pan-zoom init failed', e)
@@ -129,16 +129,16 @@ export default {
             // 初始化 pan-zoom
             try {
                 if (svgPanZoom) {
-                    svgPanZoom(svg, {
-                        zoomEnabled: true,
-                        controlIconsEnabled: true,
-                        fit: true,
-                        center: true,
-                        minZoom: 0.1,
-                        maxZoom: 10,
-                        zoomScaleSensitivity: 0.3
-                    })
-                    svg.setAttribute('data-pan-zoom-initialized', 'true')
+                svgPanZoom(svg, {
+                    zoomEnabled: true,
+                    controlIconsEnabled: true,
+                    fit: true,
+                    center: true,
+                    minZoom: 0.1,
+                    maxZoom: 10,
+                    zoomScaleSensitivity: 0.3
+                })
+                svg.setAttribute('data-pan-zoom-initialized', 'true')
                 }
             } catch (e) {
                 // 忽略初始化错误（可能是 SVG 还没准备好）

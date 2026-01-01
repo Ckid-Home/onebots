@@ -3,6 +3,20 @@
  * 基于飞书开放平台官方 API
  */
 
+/**
+ * API 端点常量
+ * - FEISHU: 飞书（国内版）
+ * - LARK: Lark（国际版）
+ */
+export const FeishuEndpoint = {
+    /** 飞书（国内版）API 端点 */
+    FEISHU: 'https://open.feishu.cn/open-apis',
+    /** Lark（国际版）API 端点 */
+    LARK: 'https://open.larksuite.com/open-apis',
+} as const;
+
+export type FeishuEndpointType = typeof FeishuEndpoint[keyof typeof FeishuEndpoint];
+
 // 配置类型
 export interface FeishuConfig {
     account_id: string;
@@ -10,6 +24,13 @@ export interface FeishuConfig {
     app_secret: string;       // 应用 App Secret
     encrypt_key?: string;      // 事件加密密钥（可选）
     verification_token?: string; // 事件验证 Token（可选）
+    /**
+     * API 端点，可选值：
+     * - FeishuEndpoint.FEISHU (默认): 'https://open.feishu.cn/open-apis'
+     * - FeishuEndpoint.LARK: 'https://open.larksuite.com/open-apis'
+     * - 或自定义端点 URL
+     */
+    endpoint?: string;
 }
 
 // 飞书用户类型

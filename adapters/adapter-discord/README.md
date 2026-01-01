@@ -1,6 +1,6 @@
 # @onebots/adapter-discord
 
-onebots Discord 适配器，基于 discord.js 实现。
+onebots Discord 适配器，基于 discord.js 实现，支持代理访问。
 
 ## 安装
 
@@ -14,29 +14,44 @@ npm install @onebots/adapter-discord discord.js
 
 ```yaml
 discord.your_bot_id:
-  versions:
-    - version: V11
-    - version: V12
-  protocol:
-    token: 'your_discord_bot_token'  # Discord Bot Token，必填
-    intents:  # 可选，Gateway Intents
-      - Guilds
-      - GuildMessages
-      - GuildMembers
-      - GuildMessageReactions
-      - DirectMessages
-      - DirectMessageReactions
-      - MessageContent
-    partials:  # 可选，Partials
-      - Message
-      - Channel
-      - Reaction
-    presence:  # 可选，机器人状态
-      status: online  # online, idle, dnd, invisible
-      activities:
-        - name: '正在运行 onebots'
-          type: 0  # 0: Playing, 1: Streaming, 2: Listening, 3: Watching, 5: Competing
+  token: 'your_discord_bot_token'  # Discord Bot Token，必填
+  
+  # 代理配置（可选，用于访问 Discord API）
+  proxy:
+    url: "http://127.0.0.1:7890"  # 或 socks5://127.0.0.1:1080
+    # username: "user"  # 可选
+    # password: "pass"  # 可选
+  
+  intents:  # 可选，Gateway Intents
+    - Guilds
+    - GuildMessages
+    - GuildMembers
+    - GuildMessageReactions
+    - DirectMessages
+    - DirectMessageReactions
+    - MessageContent
+  partials:  # 可选，Partials
+    - Message
+    - Channel
+    - Reaction
+  presence:  # 可选，机器人状态
+    status: online  # online, idle, dnd, invisible
+    activities:
+      - name: '正在运行 onebots'
+        type: 0  # 0: Playing, 1: Streaming, 2: Listening, 3: Watching, 5: Competing
 ```
+
+### 代理配置说明
+
+| 配置项 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| `proxy.url` | string | 是 | 代理服务器地址 |
+| `proxy.username` | string | 否 | 代理用户名 |
+| `proxy.password` | string | 否 | 代理密码 |
+
+支持的代理类型：
+- HTTP 代理：`http://host:port`
+- HTTPS 代理：`https://host:port`
 
 ## 获取 Discord Bot Token
 
@@ -158,6 +173,7 @@ discord.your_bot_id:
 2. **Intents 配置**：需要在 Discord Developer Portal 中启用对应的 Privileged Intents
 3. **消息内容**：要接收消息内容，需要启用 MESSAGE CONTENT INTENT
 4. **速率限制**：Discord API 有速率限制，请勿频繁调用
+5. **代理支持**：支持 HTTP/HTTPS 代理，适用于网络受限环境
 
 ## 许可证
 

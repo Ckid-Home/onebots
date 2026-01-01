@@ -20,41 +20,84 @@ import {
     Role,
     EmbedBuilder,
     AttachmentBuilder,
-    ActionRowBuilder,
-    ButtonBuilder,
     ChannelType,
-    PermissionFlagsBits,
     MessagePayload,
     MessageCreateOptions,
     Collection,
+    ClientOptions,
 } from 'discord.js';
-import type { DiscordConfig } from './types.js';
+import { ProxyAgent } from 'undici';
+import { bootstrap } from 'global-agent';
+import type { DiscordConfig, ProxyConfig } from './types.js';
 
 // 可发送消息的频道类型联合
 type SendableChannel = TextChannel | DMChannel | NewsChannel | ThreadChannel | VoiceChannel;
 
 export class DiscordBot extends EventEmitter {
-    private client: Client;
+    private client!: Client;
     private config: DiscordConfig;
     private ready: boolean = false;
+    private initialized: boolean = false;
 
     constructor(config: DiscordConfig) {
         super();
         this.config = config;
+    }
+
+    /**
+     * 初始化客户端（异步，支持代理配置）
+     */
+    private async initClient(): Promise<void> {
+        if (this.initialized) return;
 
         // 解析 intents
-        const intents = this.parseIntents(config.intents);
+        const intents = this.parseIntents(this.config.intents);
         
         // 解析 partials
-        const partials = this.parsePartials(config.partials);
+        const partials = this.parsePartials(this.config.partials);
 
-        // 创建 Discord 客户端
-        this.client = new Client({
+        // 创建 Discord 客户端配置
+        const clientOptions: ClientOptions = {
             intents,
             partials,
-        });
+        };
 
+        // 配置代理
+        if (this.config.proxy?.url) {
+            const proxyUrl = this.buildProxyUrl(this.config.proxy);
+            
+            // REST API 使用 undici ProxyAgent
+            const restAgent = new ProxyAgent(proxyUrl);
+            clientOptions.rest = {
+                agent: restAgent,
+            };
+            
+            // WebSocket 使用 global-agent 拦截所有 HTTP/HTTPS 连接
+            process.env.GLOBAL_AGENT_HTTP_PROXY = proxyUrl;
+            process.env.GLOBAL_AGENT_HTTPS_PROXY = proxyUrl;
+            bootstrap();
+            
+            console.log(`[Discord] 已配置代理: ${this.config.proxy.url}`);
+        }
+
+        // 创建 Discord 客户端
+        this.client = new Client(clientOptions);
         this.setupEventListeners();
+        this.initialized = true;
+    }
+
+    /**
+     * 构建包含认证信息的代理 URL
+     */
+    private buildProxyUrl(proxy: ProxyConfig): string {
+        const proxyUrl = new URL(proxy.url);
+        if (proxy.username) {
+            proxyUrl.username = proxy.username;
+        }
+        if (proxy.password) {
+            proxyUrl.password = proxy.password;
+        }
+        return proxyUrl.toString();
     }
 
     /**
@@ -202,6 +245,9 @@ export class DiscordBot extends EventEmitter {
      */
     async start(): Promise<void> {
         try {
+            // 初始化客户端（包含代理配置）
+            await this.initClient();
+            
             await this.client.login(this.config.token);
             
             // 设置在线状态

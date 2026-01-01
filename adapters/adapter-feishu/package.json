@@ -33,8 +33,7 @@
     "onebots": "workspace:*"
   },
   "dependencies": {
-    "@types/node": "^22.7.3",
-    "axios": "^1.7.0"
+    "@types/node": "^22.7.3"
   }
 }
 

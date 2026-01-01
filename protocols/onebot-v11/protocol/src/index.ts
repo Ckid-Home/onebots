@@ -780,47 +780,14 @@ export class OneBotV11Protocol extends Protocol<"v11",OneBotV11Config.Config> {
         this.logger.info("Starting HTTP server");
         
         const routePath = `${this.path}/:action`;
-        const routerPrefix = (this.router as any).opts?.prefix || '';
-        const fullRoutePath = routerPrefix ? `${routerPrefix}${routePath}` : routePath;
-        
-        console.log(`\n========== [OneBot V11] Registering HTTP POST route ==========`);
-        console.log(`RoutePath: ${routePath}`);
-        console.log(`RouterPrefix: ${routerPrefix}`);
-        console.log(`FullRoutePath: ${fullRoutePath}`);
-        console.log(`ProtocolPath: ${this.path}`);
-        console.log(`AccountPath: ${this.account.path}`);
-        console.log(`RouterStackBefore: ${(this.router as any).stack?.length || 0}`);
-        console.log(`========================================================\n`);
-        this.logger.info(`[OneBot V11] ===== Registering HTTP POST route =====`, {
-            routePath,
-            routerPrefix,
-            fullRoutePath,
-            protocolPath: this.path,
-            accountPath: this.account.path,
-            routerStackBefore: (this.router as any).stack?.length || 0,
-        });
-        
-        // Register HTTP POST endpoint for API calls
-        // 先检查是否已有相同路径的路由，如果有则删除
-        const existingRouteIndex = (this.router as any).stack?.findIndex((layer: any) => layer.path === routePath);
-        if (existingRouteIndex !== undefined && existingRouteIndex >= 0) {
-            this.logger.warn(`[OneBot V11] Found existing route at ${routePath}, removing it first`, {
-                existingRoute: (this.router as any).stack[existingRouteIndex],
-            });
-            (this.router as any).stack.splice(existingRouteIndex, 1);
-        }
-        
-        console.log(`\n[OneBot V11] About to call router.post(${routePath})\n`);
         this.logger.info(`[OneBot V11] About to call router.post(${routePath})`);
-        const postResult = this.router.post(routePath, async (ctx) => {
+        this.router.post(routePath, async (ctx) => {
             this.logger.info(`[OneBot V11] ===== HTTP POST request received =====`, {
                 method: ctx.method,
                 url: ctx.url,
                 path: ctx.path,
                 query: ctx.query,
                 matchedRoute: routePath,
-                fullRoutePath,
-                routerPrefix,
             });
             
             // Verify access token
@@ -853,76 +820,6 @@ export class OneBotV11Protocol extends Protocol<"v11",OneBotV11Config.Config> {
                 };
             }
         });
-
-        const routerStackAfter = (this.router as any).stack?.length || 0;
-        
-        // 查找刚注册的路由（应该是最新的）
-        const registeredRoute = (this.router as any).stack?.find((layer: any) => 
-            layer.path === routePath && layer.methods.includes('POST')
-        ) || (this.router as any).stack?.slice(-1)[0];
-        
-        // 检查所有匹配的路由
-        const allMatchingRoutes = (this.router as any).stack?.filter((layer: any) => 
-            layer.path === routePath || layer.path.includes(routePath.split(':')[0])
-        ) || [];
-        
-        console.log(`\n========== [OneBot V11] HTTP route registered ==========`);
-        console.log(`RoutePath: ${routePath}`);
-        console.log(`FullRoutePath: ${fullRoutePath}`);
-        console.log(`RouterStackBefore: ${(this.router as any).stack?.length || 0}`);
-        console.log(`RouterStackAfter: ${routerStackAfter}`);
-        if (registeredRoute) {
-            console.log(`RegisteredRoute:`);
-            console.log(`  Path: ${registeredRoute.path}`);
-            console.log(`  Methods: ${registeredRoute.methods.join(', ')}`);
-            console.log(`  Index: ${(this.router as any).stack?.indexOf(registeredRoute)}`);
-        } else {
-            console.log(`RegisteredRoute: null`);
-        }
-        console.log(`AllMatchingRoutes: ${allMatchingRoutes.length}`);
-        allMatchingRoutes.forEach((layer: any, idx: number) => {
-            console.log(`  [${idx}] Path: ${layer.path}, Methods: ${layer.methods.join(', ')}`);
-        });
-        console.log(`RouterType: ${this.router.constructor.name}`);
-        console.log(`PostMethodExists: ${typeof (this.router as any).post === 'function'}`);
-        console.log(`PostResult: ${postResult ? 'returned' : 'undefined'}`);
-        console.log(`========================================================\n`);
-        this.logger.info(`[OneBot V11] ===== HTTP route registered =====`, {
-            routePath,
-            fullRoutePath,
-            routerStackBefore: (this.router as any).stack?.length || 0,
-            routerStackAfter,
-            registeredRoute: registeredRoute ? {
-                path: registeredRoute.path,
-                methods: registeredRoute.methods,
-                regex: registeredRoute.regex?.toString().substring(0, 100),
-                name: registeredRoute.name,
-                index: (this.router as any).stack?.indexOf(registeredRoute),
-            } : null,
-            allMatchingRoutes: allMatchingRoutes.map((layer: any, idx: number) => ({
-                index: (this.router as any).stack?.indexOf(layer),
-                path: layer.path,
-                methods: layer.methods,
-                name: layer.name,
-            })),
-            routerType: this.router.constructor.name,
-            postMethodExists: typeof (this.router as any).post === 'function',
-            postResult: postResult ? 'returned' : 'undefined',
-        });
-        
-        // 验证路由是否正确注册
-        if (registeredRoute && !registeredRoute.methods.includes('POST')) {
-            this.logger.error(`[OneBot V11] ⚠️  WARNING: Route registered with methods ${registeredRoute.methods.join(', ')}, but expected POST!`, {
-                registeredRoute,
-                routePath,
-                allRoutesForPath: allMatchingRoutes,
-                postResult: postResult ? 'returned' : 'undefined',
-            });
-        } else if (registeredRoute && registeredRoute.methods.includes('POST')) {
-            this.logger.info(`[OneBot V11] ✅ POST route successfully registered with methods: ${registeredRoute.methods.join(', ')}`);
-        } else {
-            this.logger.warn(`[OneBot V11] ⚠️  No route found after registration!`);
-        }
     }
 
     /**

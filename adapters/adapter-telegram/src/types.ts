@@ -4,10 +4,24 @@ import type { Update } from 'grammy/types';
  * 基于 Telegram Bot API 官方文档
  */
 
+/**
+ * 代理配置
+ */
+export interface ProxyConfig {
+    /** 代理服务器地址，如 http://127.0.0.1:7890 或 socks5://127.0.0.1:1080 */
+    url: string;
+    /** 代理用户名（可选） */
+    username?: string;
+    /** 代理密码（可选） */
+    password?: string;
+}
+
 // 配置类型
 export interface TelegramConfig {
     account_id: string;
     token: string;           // Bot Token
+    /** 代理配置（用于访问 Telegram API） */
+    proxy?: ProxyConfig;
     webhook?: {
         url?: string;        // Webhook URL
         secret_token?: string; // Webhook 密钥

@@ -702,6 +702,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             intents: config.intents,
             partials: config.partials,
             presence: config.presence,
+            proxy: config.proxy,
         };
 
         const bot = new DiscordBot(discordConfig);

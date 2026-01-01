@@ -9,6 +9,18 @@ import type {
 } from 'discord.js';
 
 /**
+ * 代理配置
+ */
+export interface ProxyConfig {
+    /** 代理服务器地址，如 http://127.0.0.1:7890 或 socks5://127.0.0.1:1080 */
+    url: string;
+    /** 代理用户名（可选） */
+    username?: string;
+    /** 代理密码（可选） */
+    password?: string;
+}
+
+/**
  * Discord 配置类型
  */
 export interface DiscordConfig {
@@ -16,6 +28,8 @@ export interface DiscordConfig {
     account_id: string;
     /** Discord Bot Token */
     token: string;
+    /** 代理配置（用于访问 Discord API） */
+    proxy?: ProxyConfig;
     /** Gateway Intents - 可选，默认包含常用intents */
     intents?: (keyof typeof GatewayIntentBits)[];
     /** Partials - 可选，用于接收部分消息等 */
