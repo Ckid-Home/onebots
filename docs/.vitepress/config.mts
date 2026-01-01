@@ -250,16 +250,27 @@ export default withMermaid(defineConfig({
     
     vite: {
         optimizeDeps: {
-            include: ['dayjs', 'element-plus', 'mermaid'],
+            include: ['dayjs', 'element-plus', 'mermaid', 'd3-sankey'],
             esbuildOptions: {
                 target: 'esnext'
             }
         },
         ssr: {
-            noExternal: ['dayjs']
+            noExternal: ['dayjs', 'mermaid', 'd3-sankey']
         },
         resolve: {
             dedupe: ['dayjs']
+        },
+        build: {
+            rollupOptions: {
+                onwarn(warning, warn) {
+                    // Ignore d3-sankey resolution warning as it's handled at runtime
+                    if (warning.code === 'UNRESOLVED_IMPORT' && warning.exporter?.includes('d3-sankey')) {
+                        return
+                    }
+                    warn(warning)
+                }
+            }
         }
     },
 

@@ -26,10 +26,13 @@ importers:
         version: 8.18.1
       '@vitest/coverage-v8':
         specifier: ^1.6.1
-        version: 1.6.1(vitest@1.6.1)
+        version: 1.6.1(vitest@1.6.1(@types/node@22.19.1)(@vitest/ui@1.6.1)(sass@1.94.2))
       '@vitest/ui':
         specifier: ^1.6.1
         version: 1.6.1(vitest@1.6.1)
+      d3-sankey:
+        specifier: ^0.12.3
+        version: 0.12.3
       koa-static:
         specifier: ^5.0.0
         version: 5.0.0
@@ -298,6 +301,10 @@ importers:
         version: 2.0.2
 
   docs:
+    dependencies:
+      d3-sankey:
+        specifier: ^0.12.3
+        version: 0.12.3
     devDependencies:
       dayjs:
         specifier: ^1.11.19
@@ -5624,7 +5631,7 @@ snapshots:
       vite: 5.4.21(@types/node@22.19.1)(sass@1.94.2)
       vue: 3.5.26(typescript@5.9.3)
 
-  '@vitest/coverage-v8@1.6.1(vitest@1.6.1)':
+  '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@22.19.1)(@vitest/ui@1.6.1)(sass@1.94.2))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3

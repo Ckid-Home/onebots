@@ -3,7 +3,9 @@ import DefaultTheme from 'vitepress/theme'
 import './custom.css'
 import ElementUI from 'element-plus'
 import {EnhanceAppContext, useRoute} from "vitepress";
-import svgPanZoom from 'svg-pan-zoom'
+
+// Dynamically imported to avoid SSR issues (window is not defined)
+let svgPanZoom: ((svg: SVGElement | HTMLElement | string, options?: any) => any) | null = null
 
 export default {
     extends:DefaultTheme,
@@ -76,14 +78,16 @@ export default {
             // 延迟初始化灯箱内的 pan-zoom
             setTimeout(() => {
                 try {
-                    svgPanZoom(clonedSvg, {
-                        zoomEnabled: true,
-                        controlIconsEnabled: true,
-                        fit: true,
-                        center: true,
-                        minZoom: 0.1,
-                        maxZoom: 20
-                    })
+                    if (svgPanZoom) {
+                        svgPanZoom(clonedSvg, {
+                            zoomEnabled: true,
+                            controlIconsEnabled: true,
+                            fit: true,
+                            center: true,
+                            minZoom: 0.1,
+                            maxZoom: 20
+                        })
+                    }
                 } catch (e) {
                     console.warn('Lightbox pan-zoom init failed', e)
                 }
@@ -124,16 +128,18 @@ export default {
 
             // 初始化 pan-zoom
             try {
-                svgPanZoom(svg, {
-                    zoomEnabled: true,
-                    controlIconsEnabled: true,
-                    fit: true,
-                    center: true,
-                    minZoom: 0.1,
-                    maxZoom: 10,
-                    zoomScaleSensitivity: 0.3
-                })
-                svg.setAttribute('data-pan-zoom-initialized', 'true')
+                if (svgPanZoom) {
+                    svgPanZoom(svg, {
+                        zoomEnabled: true,
+                        controlIconsEnabled: true,
+                        fit: true,
+                        center: true,
+                        minZoom: 0.1,
+                        maxZoom: 10,
+                        zoomScaleSensitivity: 0.3
+                    })
+                    svg.setAttribute('data-pan-zoom-initialized', 'true')
+                }
             } catch (e) {
                 // 忽略初始化错误（可能是 SVG 还没准备好）
             }
@@ -143,7 +149,11 @@ export default {
             document.querySelectorAll('.mermaid svg').forEach((el) => initSvg(el as SVGElement))
         }
 
-        onMounted(() => {
+        onMounted(async () => {
+            // Dynamically import svg-pan-zoom only on client side
+            const module = await import('svg-pan-zoom')
+            svgPanZoom = module.default
+            
             createLightbox()
             
             // 立即检查
