@@ -41,6 +41,7 @@ export default withMermaid(defineConfig({
                             { text: "Kook", link: "/platform/kook" },
                             { text: "Telegram", link: "/platform/telegram" },
                             { text: "飞书", link: "/platform/feishu" },
+                            { text: "Line", link: "/platform/line" },
                             { text: "Slack", link: "/platform/slack" },
                             { text: "企业微信", link: "/platform/wecom" },
                             { text: "Microsoft Teams", link: "/platform/teams" }
@@ -91,6 +92,7 @@ export default withMermaid(defineConfig({
                         { text: "Kook", link: "/platform/kook" },
                         { text: "Telegram", link: "/platform/telegram" },
                         { text: "飞书", link: "/platform/feishu" },
+                        { text: "Line", link: "/platform/line" },
                         { text: "Slack", link: "/platform/slack" },
                         { text: "企业微信", link: "/platform/wecom" },
                         { text: "Microsoft Teams", link: "/platform/teams" }
@@ -155,6 +157,7 @@ export default withMermaid(defineConfig({
                             { text: "Kook", link: "/en/platform/kook" },
                             { text: "Telegram", link: "/en/platform/telegram" },
                             { text: "Feishu", link: "/en/platform/feishu" },
+                            { text: "Line", link: "/en/platform/line" },
                             { text: "Slack", link: "/en/platform/slack" },
                             { text: "WeCom", link: "/en/platform/wecom" },
                             { text: "Microsoft Teams", link: "/en/platform/teams" }
@@ -205,6 +208,7 @@ export default withMermaid(defineConfig({
                         { text: "Kook", link: "/en/platform/kook" },
                         { text: "Telegram", link: "/en/platform/telegram" },
                         { text: "Feishu", link: "/en/platform/feishu" },
+                        { text: "Line", link: "/en/platform/line" },
                         { text: "Slack", link: "/en/platform/slack" },
                         { text: "WeCom", link: "/en/platform/wecom" },
                         { text: "Microsoft Teams", link: "/en/platform/teams" }
