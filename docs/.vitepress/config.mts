@@ -21,7 +21,6 @@ export default withMermaid(defineConfig({
             themeConfig: {
                 nav: [
                     { text: "开始", link: "/guide/start", activeMatch: "/guide/" },
-                    { text: "架构", link: "/guide/architecture" },
                     {
                         text: "配置",
                         items: [
@@ -36,11 +35,13 @@ export default withMermaid(defineConfig({
                         items: [
                             { text: "微信公众号", link: "/platform/wechat" },
                             { text: "QQ机器人", link: "/platform/qq" },
+                            { text: "ICQQ", link: "/platform/icqq" },
                             { text: "钉钉机器人", link: "/platform/dingtalk" },
                             { text: "Discord", link: "/platform/discord" },
                             { text: "Kook", link: "/platform/kook" },
                             { text: "Telegram", link: "/platform/telegram" },
                             { text: "飞书", link: "/platform/feishu" },
+                            { text: "Line", link: "/platform/line" },
                             { text: "Slack", link: "/platform/slack" },
                             { text: "企业微信", link: "/platform/wecom" },
                             { text: "Microsoft Teams", link: "/platform/teams" }
@@ -86,11 +87,13 @@ export default withMermaid(defineConfig({
                     "/platform/": [
                         { text: "微信公众号", link: "/platform/wechat" },
                         { text: "QQ机器人", link: "/platform/qq" },
+                        { text: "ICQQ", link: "/platform/icqq" },
                         { text: "Discord", link: "/platform/discord" },
                         { text: "钉钉机器人", link: "/platform/dingtalk" },
                         { text: "Kook", link: "/platform/kook" },
                         { text: "Telegram", link: "/platform/telegram" },
                         { text: "飞书", link: "/platform/feishu" },
+                        { text: "Line", link: "/platform/line" },
                         { text: "Slack", link: "/platform/slack" },
                         { text: "企业微信", link: "/platform/wecom" },
                         { text: "Microsoft Teams", link: "/platform/teams" }
@@ -150,11 +153,13 @@ export default withMermaid(defineConfig({
                         items: [
                             { text: "WeChat", link: "/en/platform/wechat" },
                             { text: "QQ", link: "/en/platform/qq" },
+                            { text: "ICQQ", link: "/en/platform/icqq" },
                             { text: "DingTalk", link: "/en/platform/dingtalk" },
                             { text: "Discord", link: "/en/platform/discord" },
                             { text: "Kook", link: "/en/platform/kook" },
                             { text: "Telegram", link: "/en/platform/telegram" },
                             { text: "Feishu", link: "/en/platform/feishu" },
+                            { text: "Line", link: "/en/platform/line" },
                             { text: "Slack", link: "/en/platform/slack" },
                             { text: "WeCom", link: "/en/platform/wecom" },
                             { text: "Microsoft Teams", link: "/en/platform/teams" }
@@ -200,11 +205,13 @@ export default withMermaid(defineConfig({
                     "/en/platform/": [
                         { text: "WeChat", link: "/en/platform/wechat" },
                         { text: "QQ", link: "/en/platform/qq" },
+                        { text: "ICQQ", link: "/en/platform/icqq" },
                         { text: "Discord", link: "/en/platform/discord" },
                         { text: "DingTalk", link: "/en/platform/dingtalk" },
                         { text: "Kook", link: "/en/platform/kook" },
                         { text: "Telegram", link: "/en/platform/telegram" },
                         { text: "Feishu", link: "/en/platform/feishu" },
+                        { text: "Line", link: "/en/platform/line" },
                         { text: "Slack", link: "/en/platform/slack" },
                         { text: "WeCom", link: "/en/platform/wecom" },
                         { text: "Microsoft Teams", link: "/en/platform/teams" }
@@ -250,16 +257,27 @@ export default withMermaid(defineConfig({
     
     vite: {
         optimizeDeps: {
-            include: ['dayjs', 'element-plus', 'mermaid'],
+            include: ['dayjs', 'element-plus', 'mermaid', 'd3-sankey'],
             esbuildOptions: {
                 target: 'esnext'
             }
         },
         ssr: {
-            noExternal: ['dayjs']
+            noExternal: ['dayjs', 'mermaid', 'd3-sankey']
         },
         resolve: {
             dedupe: ['dayjs']
+        },
+        build: {
+            rollupOptions: {
+                onwarn(warning, warn) {
+                    // Ignore d3-sankey resolution warning as it's handled at runtime
+                    if (warning.code === 'UNRESOLVED_IMPORT' && warning.exporter?.includes('d3-sankey')) {
+                        return
+                    }
+                    warn(warning)
+                }
+            }
         }
     },
 

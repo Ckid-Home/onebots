@@ -1,5 +1,5 @@
-// 导出类型
-export type { FeishuConfig } from './types.js';
+// 导出类型和常量
+export { FeishuEndpoint, type FeishuConfig, type FeishuEndpointType } from './types.js';
 export * from './adapter.js';
 export * from './bot.js';
 

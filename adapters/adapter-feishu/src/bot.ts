@@ -1,74 +1,114 @@
 /**
  * 飞书 Bot 客户端
- * 基于飞书开放平台 API
+ * 基于飞书开放平台 API，使用 fetch 实现
  */
 import { EventEmitter } from 'events';
-import axios, { AxiosInstance, AxiosRequestHeaders } from 'axios';
 import type { RouterContext, Next } from 'onebots';
-import type { 
-    FeishuConfig, 
-    FeishuTokenResponse, 
-    FeishuSendMessageRequest,
-    FeishuSendMessageResponse,
-    FeishuEvent,
-    FeishuUser,
-    FeishuChat
+import { 
+    FeishuEndpoint,
+    type FeishuConfig, 
+    type FeishuTokenResponse, 
+    type FeishuSendMessageRequest,
+    type FeishuSendMessageResponse,
+    type FeishuEvent,
+    type FeishuUser,
+    type FeishuChat
 } from './types.js';
+
+/**
+ * HTTP 请求选项
+ */
+interface RequestOptions {
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    headers?: Record<string, string>;
+    body?: any;
+    params?: Record<string, string | number | boolean>;
+    skipAuth?: boolean;
+}
 
 export class FeishuBot extends EventEmitter {
     private config: FeishuConfig;
-    private http: AxiosInstance;
-    private appAccessToken: string = '';
     private tenantAccessToken: string = '';
     private tokenExpireTime: number = 0;
     private me: FeishuUser | null = null;
+    /** 当前使用的 API 端点 */
+    readonly endpoint: string;
 
     constructor(config: FeishuConfig) {
         super();
         this.config = config;
-        
-        // 创建 HTTP 客户端
-        this.http = axios.create({
-            baseURL: 'https://open.feishu.cn/open-apis',
-            timeout: 30000,
-        });
-
-        // 设置请求拦截器，自动添加 token
-        this.http.interceptors.request.use(async (config) => {
-            if (config.url?.includes('/auth/v3/tenant_access_token') || 
-                config.url?.includes('/auth/v3/app_access_token')) {
-                return config;
-            }
-            
-            // 自动获取并添加 token
-            const token = await this.getTenantAccessToken();
-            config.headers = config.headers || {} as AxiosRequestHeaders;
-            config.headers['Authorization'] = `Bearer ${token}`;
-            return config;
-        });
+        // 使用配置的端点，默认为飞书（国内版）
+        this.endpoint = config.endpoint || FeishuEndpoint.FEISHU;
     }
 
     /**
-     * 获取应用访问令牌
+     * 发送 HTTP 请求
      */
-    async getAppAccessToken(): Promise<string> {
-        if (this.appAccessToken && Date.now() < this.tokenExpireTime) {
-            return this.appAccessToken;
+    private async request<T = any>(path: string, options: RequestOptions = {}): Promise<T> {
+        const { method = 'GET', headers = {}, body, params, skipAuth = false } = options;
+        
+        // 构建 URL
+        let url = `${this.endpoint}${path}`;
+        if (params) {
+            const searchParams = new URLSearchParams();
+            for (const [key, value] of Object.entries(params)) {
+                searchParams.append(key, String(value));
+            }
+            url += `?${searchParams.toString()}`;
         }
 
-        const response = await this.http.post<FeishuTokenResponse>('/auth/v3/app_access_token/internal', {
-            app_id: this.config.app_id,
-            app_secret: this.config.app_secret,
+        // 构建请求头
+        const requestHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...headers,
+        };
+
+        // 添加认证 token（除了获取 token 的请求）
+        if (!skipAuth) {
+            const token = await this.getTenantAccessToken();
+            requestHeaders['Authorization'] = `Bearer ${token}`;
+        }
+
+        // 发送请求
+        const response = await fetch(url, {
+            method,
+            headers: requestHeaders,
+            body: body ? JSON.stringify(body) : undefined,
         });
 
-        if (response.data.code !== 0) {
-            throw new Error(`获取应用访问令牌失败: ${response.data.msg}`);
-        }
+        return response.json();
+    }
 
-        this.appAccessToken = response.data.app_access_token || '';
-        this.tokenExpireTime = Date.now() + (response.data.expire - 60) * 1000; // 提前60秒刷新
+    /**
+     * GET 请求
+     */
+    async get<T = any>(path: string, params?: Record<string, string | number | boolean>): Promise<{ data: T }> {
+        const data = await this.request<T>(path, { params });
+        return { data };
+    }
 
-        return this.appAccessToken;
+    /**
+     * POST 请求
+     */
+    async post<T = any>(path: string, body?: any, params?: Record<string, string | number | boolean>): Promise<{ data: T }> {
+        const data = await this.request<T>(path, { method: 'POST', body, params });
+        return { data };
+    }
+
+    /**
+     * PUT 请求
+     */
+    async put<T = any>(path: string, body?: any): Promise<{ data: T }> {
+        const data = await this.request<T>(path, { method: 'PUT', body });
+        return { data };
+    }
+
+    /**
+     * DELETE 请求
+     */
+    async delete<T = any>(path: string): Promise<{ data: T }> {
+        const data = await this.request<T>(path, { method: 'DELETE' });
+        return { data };
     }
 
     /**
@@ -79,17 +119,21 @@ export class FeishuBot extends EventEmitter {
             return this.tenantAccessToken;
         }
 
-        const response = await this.http.post<FeishuTokenResponse>('/auth/v3/tenant_access_token/internal', {
-            app_id: this.config.app_id,
-            app_secret: this.config.app_secret,
+        const data = await this.request<FeishuTokenResponse>('/auth/v3/tenant_access_token/internal', {
+            method: 'POST',
+            body: {
+                app_id: this.config.app_id,
+                app_secret: this.config.app_secret,
+            },
+            skipAuth: true,
         });
 
-        if (response.data.code !== 0) {
-            throw new Error(`获取租户访问令牌失败: ${response.data.msg}`);
+        if (data.code !== 0) {
+            throw new Error(`获取租户访问令牌失败: ${data.msg}`);
         }
 
-        this.tenantAccessToken = response.data.tenant_access_token || '';
-        this.tokenExpireTime = Date.now() + (response.data.expire - 60) * 1000; // 提前60秒刷新
+        this.tenantAccessToken = data.tenant_access_token || '';
+        this.tokenExpireTime = Date.now() + (data.expire - 60) * 1000; // 提前60秒刷新
 
         return this.tenantAccessToken;
     }
@@ -157,11 +201,7 @@ export class FeishuBot extends EventEmitter {
      * 获取 Bot 信息
      */
     async getBotInfo(): Promise<FeishuUser> {
-        const response = await this.http.get('/im/v1/bots', {
-            params: {
-                page_size: 1,
-            },
-        });
+        const response = await this.get<any>('/im/v1/bots', { page_size: 1 });
 
         if (response.data.code !== 0) {
             throw new Error(`获取 Bot 信息失败: ${response.data.msg}`);
@@ -186,10 +226,8 @@ export class FeishuBot extends EventEmitter {
             content: typeof content === 'string' ? JSON.stringify({ text: content }) : JSON.stringify(content),
         };
 
-        const response = await this.http.post<FeishuSendMessageResponse>('/im/v1/messages', request, {
-            params: {
-                receive_id_type: receiveIdType,
-            },
+        const response = await this.post<FeishuSendMessageResponse>('/im/v1/messages', request, {
+            receive_id_type: receiveIdType,
         });
 
         if (response.data.code !== 0) {
@@ -203,10 +241,8 @@ export class FeishuBot extends EventEmitter {
      * 获取用户信息
      */
     async getUserInfo(userId: string, userIdType: 'open_id' | 'user_id' | 'union_id' = 'open_id'): Promise<FeishuUser> {
-        const response = await this.http.get(`/contact/v3/users/${userId}`, {
-            params: {
-                user_id_type: userIdType,
-            },
+        const response = await this.get<any>(`/contact/v3/users/${userId}`, {
+            user_id_type: userIdType,
         });
 
         if (response.data.code !== 0) {
@@ -220,7 +256,7 @@ export class FeishuBot extends EventEmitter {
      * 获取群组信息
      */
     async getChatInfo(chatId: string): Promise<FeishuChat> {
-        const response = await this.http.get(`/im/v1/chats/${chatId}`);
+        const response = await this.get<any>(`/im/v1/chats/${chatId}`);
 
         if (response.data.code !== 0) {
             throw new Error(`获取群组信息失败: ${response.data.msg}`);
@@ -233,7 +269,7 @@ export class FeishuBot extends EventEmitter {
      * 获取群组成员列表
      */
     async getChatMembers(chatId: string): Promise<FeishuUser[]> {
-        const response = await this.http.get(`/im/v1/chats/${chatId}/members`);
+        const response = await this.get<any>(`/im/v1/chats/${chatId}/members`);
 
         if (response.data.code !== 0) {
             throw new Error(`获取群组成员列表失败: ${response.data.msg}`);
@@ -243,10 +279,9 @@ export class FeishuBot extends EventEmitter {
     }
 
     /**
-     * 获取 HTTP 客户端实例（用于高级用法）
+     * 获取 HTTP 客户端实例（返回 this 以便链式调用）
      */
-    getHttpClient(): AxiosInstance {
-        return this.http;
+    getHttpClient(): FeishuBot {
+        return this;
     }
 }
-

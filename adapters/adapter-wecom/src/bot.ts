@@ -1,9 +1,8 @@
 /**
  * 企业微信 Bot 客户端
- * 基于企业微信开放平台 API
+ * 基于企业微信开放平台 API，使用 fetch 实现
  */
 import { EventEmitter } from 'events';
-import axios, { AxiosInstance, AxiosRequestHeaders } from 'axios';
 import type { RouterContext, Next } from 'onebots';
 import type { 
     WeComConfig, 
@@ -15,9 +14,21 @@ import type {
     WeComDepartment
 } from './types.js';
 
+const WECOM_API_BASE = 'https://qyapi.weixin.qq.com';
+
+/**
+ * HTTP 请求选项
+ */
+interface RequestOptions {
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    headers?: Record<string, string>;
+    body?: any;
+    params?: Record<string, string | number | boolean>;
+    skipAuth?: boolean;
+}
+
 export class WeComBot extends EventEmitter {
     private config: WeComConfig;
-    private http: AxiosInstance;
     private accessToken: string = '';
     private tokenExpireTime: number = 0;
     private me: WeComUser | null = null;
@@ -25,25 +36,60 @@ export class WeComBot extends EventEmitter {
     constructor(config: WeComConfig) {
         super();
         this.config = config;
+    }
+
+    /**
+     * 发送 HTTP 请求
+     */
+    private async request<T = any>(path: string, options: RequestOptions = {}): Promise<T> {
+        const { method = 'GET', headers = {}, body, params, skipAuth = false } = options;
         
-        // 创建 HTTP 客户端
-        this.http = axios.create({
-            baseURL: 'https://qyapi.weixin.qq.com',
-            timeout: 30000,
+        // 构建 URL
+        const url = new URL(`${WECOM_API_BASE}${path}`);
+        if (params) {
+            for (const [key, value] of Object.entries(params)) {
+                if (value !== undefined) {
+                    url.searchParams.append(key, String(value));
+                }
+            }
+        }
+
+        // 自动添加 token（除了获取 token 的请求）
+        if (!skipAuth && !path.includes('/gettoken')) {
+            const token = await this.getAccessToken();
+            url.searchParams.append('access_token', token);
+        }
+
+        // 构建请求头
+        const requestHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...headers,
+        };
+
+        // 发送请求
+        const response = await fetch(url.toString(), {
+            method,
+            headers: requestHeaders,
+            body: body ? JSON.stringify(body) : undefined,
         });
 
-        // 设置请求拦截器，自动添加 token
-        this.http.interceptors.request.use(async (config) => {
-            if (config.url?.includes('/gettoken')) {
-                return config;
-            }
-            
-            // 自动获取并添加 token
-            const token = await this.getAccessToken();
-            config.params = config.params || {};
-            config.params.access_token = token;
-            return config;
-        });
+        return response.json();
+    }
+
+    /**
+     * GET 请求
+     */
+    async get<T = any>(path: string, params?: Record<string, string | number | boolean>): Promise<{ data: T }> {
+        const data = await this.request<T>(path, { params });
+        return { data };
+    }
+
+    /**
+     * POST 请求
+     */
+    async post<T = any>(path: string, body?: any, params?: Record<string, string | number | boolean>): Promise<{ data: T }> {
+        const data = await this.request<T>(path, { method: 'POST', body, params });
+        return { data };
     }
 
     /**
@@ -54,19 +100,20 @@ export class WeComBot extends EventEmitter {
             return this.accessToken;
         }
 
-        const response = await this.http.get<WeComTokenResponse>('/cgi-bin/gettoken', {
+        const data = await this.request<WeComTokenResponse>('/cgi-bin/gettoken', {
             params: {
                 corpid: this.config.corp_id,
                 corpsecret: this.config.corp_secret,
             },
+            skipAuth: true,
         });
 
-        if (response.data.errcode !== 0) {
-            throw new Error(`获取访问令牌失败: ${response.data.errmsg}`);
+        if (data.errcode !== 0) {
+            throw new Error(`获取访问令牌失败: ${data.errmsg}`);
         }
 
-        this.accessToken = response.data.access_token || '';
-        this.tokenExpireTime = Date.now() + ((response.data.expires_in || 7200) - 60) * 1000; // 提前60秒刷新
+        this.accessToken = data.access_token || '';
+        this.tokenExpireTime = Date.now() + ((data.expires_in || 7200) - 60) * 1000; // 提前60秒刷新
 
         return this.accessToken;
     }
@@ -134,7 +181,7 @@ export class WeComBot extends EventEmitter {
      * 发送应用消息
      */
     async sendMessage(request: WeComSendMessageRequest): Promise<WeComSendMessageResponse> {
-        const response = await this.http.post<WeComSendMessageResponse>('/cgi-bin/message/send', {
+        const response = await this.post<WeComSendMessageResponse>('/cgi-bin/message/send', {
             ...request,
             agentid: parseInt(this.config.agent_id),
         });
@@ -150,11 +197,7 @@ export class WeComBot extends EventEmitter {
      * 获取用户信息
      */
     async getUserInfo(userId: string): Promise<WeComUser> {
-        const response = await this.http.get('/cgi-bin/user/get', {
-            params: {
-                userid: userId,
-            },
-        });
+        const response = await this.get<any>('/cgi-bin/user/get', { userid: userId });
 
         if (response.data.errcode !== 0) {
             throw new Error(`获取用户信息失败: ${response.data.errmsg}`);
@@ -167,11 +210,12 @@ export class WeComBot extends EventEmitter {
      * 获取部门列表
      */
     async getDepartmentList(departmentId?: number): Promise<WeComDepartment[]> {
-        const response = await this.http.get('/cgi-bin/department/list', {
-            params: {
-                id: departmentId,
-            },
-        });
+        const params: Record<string, string | number | boolean> = {};
+        if (departmentId !== undefined) {
+            params.id = departmentId;
+        }
+        
+        const response = await this.get<any>('/cgi-bin/department/list', params);
 
         if (response.data.errcode !== 0) {
             throw new Error(`获取部门列表失败: ${response.data.errmsg}`);
@@ -184,11 +228,9 @@ export class WeComBot extends EventEmitter {
      * 获取部门成员列表
      */
     async getDepartmentMembers(departmentId: number, fetchChild?: boolean): Promise<WeComUser[]> {
-        const response = await this.http.get('/cgi-bin/user/list', {
-            params: {
-                department_id: departmentId,
-                fetch_child: fetchChild ? 1 : 0,
-            },
+        const response = await this.get<any>('/cgi-bin/user/list', {
+            department_id: departmentId,
+            fetch_child: fetchChild ? 1 : 0,
         });
 
         if (response.data.errcode !== 0) {
@@ -199,10 +241,9 @@ export class WeComBot extends EventEmitter {
     }
 
     /**
-     * 获取 HTTP 客户端实例（用于高级用法）
+     * 获取 HTTP 客户端实例（返回 this 以便链式调用）
      */
-    getHttpClient(): AxiosInstance {
-        return this.http;
+    getHttpClient(): WeComBot {
+        return this;
     }
 }
-

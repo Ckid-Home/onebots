@@ -1,6 +1,6 @@
 # 飞书适配器
 
-飞书适配器已完全实现，支持通过飞书开放平台 Bot API 接入 onebots 服务。
+飞书适配器已完全实现，支持通过飞书开放平台 Bot API 接入 onebots 服务。同时支持**飞书（国内版）**和 **Lark（国际版）**。
 
 ## 状态
 
@@ -25,6 +25,10 @@
 - ✅ **事件订阅**
   - Webhook 事件订阅
   - 自动 Token 管理（应用访问令牌和租户访问令牌）
+- ✅ **多端点支持**
+  - 飞书（国内版）
+  - Lark（国际版）
+  - 自定义端点（私有化部署）
 
 ## 安装
 
@@ -39,9 +43,8 @@ pnpm add @onebots/adapter-feishu
 在 `config.yaml` 中配置飞书账号：
 
 ```yaml
-# 飞书机器人账号配置
-feishu.your_bot_id:
-  # 飞书平台配置
+# 飞书机器人账号配置（国内版，默认）
+feishu.feishu_bot:
   app_id: 'your_app_id'  # 应用 App ID，必填
   app_secret: 'your_app_secret'  # 应用 App Secret，必填
   encrypt_key: 'your_encrypt_key'  # 可选，事件加密密钥
@@ -50,28 +53,81 @@ feishu.your_bot_id:
   # OneBot V11 协议配置
   onebot.v11:
     access_token: 'your_v11_token'
+
+# Lark 机器人账号配置（国际版）
+feishu.lark_bot:
+  app_id: 'your_app_id'
+  app_secret: 'your_app_secret'
+  endpoint: 'https://open.larksuite.com/open-apis'  # Lark 端点
   
-  # OneBot V12 协议配置
-  onebot.v12:
-    access_token: 'your_v12_token'
+  # OneBot V11 协议配置
+  onebot.v11:
+    access_token: 'your_v11_token'
 ```
 
 ### 配置项说明
 
 | 配置项 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| `app_id` | string | 是 | 飞书应用 App ID |
-| `app_secret` | string | 是 | 飞书应用 App Secret |
+| `app_id` | string | 是 | 飞书/Lark 应用 App ID |
+| `app_secret` | string | 是 | 飞书/Lark 应用 App Secret |
 | `encrypt_key` | string | 否 | 事件加密密钥 |
 | `verification_token` | string | 否 | 事件验证 Token |
+| `endpoint` | string | 否 | API 端点，默认为飞书国内版 |
+
+### 端点配置
+
+| 端点 | URL | 说明 |
+|------|-----|------|
+| 飞书（默认） | `https://open.feishu.cn/open-apis` | 国内版 |
+| Lark | `https://open.larksuite.com/open-apis` | 国际版 |
+
+### TypeScript 配置
+
+使用 TypeScript 时，可以导入端点常量：
+
+```typescript
+import { FeishuEndpoint } from '@onebots/adapter-feishu';
+
+// 飞书（国内版）- endpoint 可省略
+{
+  account_id: 'feishu_bot',
+  app_id: 'cli_xxx',
+  app_secret: 'xxx',
+}
+
+// Lark（国际版）
+{
+  account_id: 'lark_bot',
+  app_id: 'cli_xxx',
+  app_secret: 'xxx',
+  endpoint: FeishuEndpoint.LARK,
+}
+
+// 私有化部署
+{
+  account_id: 'private_bot',
+  app_id: 'cli_xxx',
+  app_secret: 'xxx',
+  endpoint: 'https://your-private-feishu.com/open-apis',
+}
+```
 
 ## 获取应用凭证
+
+### 飞书（国内版）
 
 1. 访问 [飞书开放平台](https://open.feishu.cn/)
 2. 创建企业自建应用
 3. 获取 `App ID` 和 `App Secret`
 4. 配置事件订阅 URL（Webhook）：`http://your-server:port/feishu/{account_id}/webhook`
 5. 配置应用权限（消息收发、通讯录等）
+
+### Lark（国际版）
+
+1. 访问 [Lark Developer](https://open.larksuite.com/)
+2. 创建应用并获取凭证
+3. 配置方式与飞书相同，只需在配置中设置 `endpoint` 为 Lark 端点
 
 ## 使用示例
 

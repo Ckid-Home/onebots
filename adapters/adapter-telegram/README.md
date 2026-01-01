@@ -1,6 +1,6 @@
 # @onebots/adapter-telegram
 
-onebots Telegram 适配器
+onebots Telegram 适配器，支持代理访问。
 
 ## 安装
 
@@ -17,6 +17,13 @@ pnpm add @onebots/adapter-telegram grammy
 ```yaml
 telegram.your_bot_id:
   token: "YOUR_BOT_TOKEN"
+  
+  # 代理配置（可选，用于访问 Telegram API）
+  proxy:
+    url: "http://127.0.0.1:7890"  # 或 socks5://127.0.0.1:1080
+    # username: "user"  # 可选
+    # password: "pass"  # 可选
+  
   # 轮询模式（默认）
   polling:
     enabled: true
@@ -28,6 +35,18 @@ telegram.your_bot_id:
   #   secret_token: "your_secret_token"
   #   allowed_updates: ["message", "callback_query"]
 ```
+
+### 代理配置说明
+
+| 配置项 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| `proxy.url` | string | 是 | 代理服务器地址 |
+| `proxy.username` | string | 否 | 代理用户名 |
+| `proxy.password` | string | 否 | 代理密码 |
+
+支持的代理类型：
+- HTTP 代理：`http://host:port`
+- HTTPS 代理：`https://host:port`
 
 ## 使用
 
@@ -45,6 +64,7 @@ onebots -r telegram
 - ✅ 群组管理（获取信息、踢出成员等）
 - ✅ Inline Keyboard 支持（通过 Callback Query）
 - ✅ 命令处理（/command）
+- ✅ **代理支持**（HTTP/HTTPS）
 
 ## 获取 Bot Token
 
@@ -57,5 +77,5 @@ onebots -r telegram
 
 - [Telegram Bot API 文档](https://core.telegram.org/bots/api)
 - [grammy 文档](https://grammy.dev/)
-- [onebots 文档](https://onebots.js.org/)
+- [onebots 文档](https://onebots.pages.dev/)
 

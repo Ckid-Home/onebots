@@ -1,9 +1,8 @@
 /**
  * 钉钉 Bot 客户端
- * 基于钉钉开放平台 API
+ * 基于钉钉开放平台 API，使用 fetch 实现
  */
 import { EventEmitter } from 'events';
-import axios, { AxiosInstance, AxiosRequestHeaders } from 'axios';
 import type { RouterContext, Next } from 'onebots';
 import type { 
     DingTalkConfig, 
@@ -17,10 +16,21 @@ import type {
     DingTalkWebhookResponse
 } from './types.js';
 
+const DINGTALK_API_BASE = 'https://oapi.dingtalk.com';
+
+/**
+ * HTTP 请求选项
+ */
+interface RequestOptions {
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    headers?: Record<string, string>;
+    body?: any;
+    params?: Record<string, string | number | boolean>;
+    skipAuth?: boolean;
+}
+
 export class DingTalkBot extends EventEmitter {
     private config: DingTalkConfig;
-    private http: AxiosInstance;
-    private webhookHttp?: AxiosInstance;
     private accessToken: string = '';
     private tokenExpireTime: number = 0;
     private me: DingTalkUser | null = null;
@@ -36,35 +46,58 @@ export class DingTalkBot extends EventEmitter {
         } else {
             this.mode = 'internal';
         }
+    }
+
+    /**
+     * 发送 HTTP 请求
+     */
+    private async request<T = any>(url: string, options: RequestOptions = {}): Promise<T> {
+        const { method = 'GET', headers = {}, body, params, skipAuth = false } = options;
         
-        // 创建 HTTP 客户端（企业内部应用）
-        this.http = axios.create({
-            baseURL: 'https://oapi.dingtalk.com',
-            timeout: 30000,
+        // 构建 URL
+        const urlObj = new URL(url);
+        if (params) {
+            for (const [key, value] of Object.entries(params)) {
+                urlObj.searchParams.append(key, String(value));
+            }
+        }
+
+        // 企业内部应用模式自动添加 token
+        if (this.mode === 'internal' && !skipAuth && !url.includes('/gettoken')) {
+            const token = await this.getAccessToken();
+            urlObj.searchParams.append('access_token', token);
+        }
+
+        // 构建请求头
+        const requestHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...headers,
+        };
+
+        // 发送请求
+        const response = await fetch(urlObj.toString(), {
+            method,
+            headers: requestHeaders,
+            body: body ? JSON.stringify(body) : undefined,
         });
 
-        // 创建 Webhook HTTP 客户端（自定义机器人）
-        if (this.mode === 'webhook' && config.webhook_url) {
-            this.webhookHttp = axios.create({
-                baseURL: config.webhook_url,
-                timeout: 30000,
-            });
-        }
+        return response.json();
+    }
 
-        // 设置请求拦截器，自动添加 token（仅企业内部应用）
-        if (this.mode === 'internal') {
-            this.http.interceptors.request.use(async (config) => {
-                if (config.url?.includes('/gettoken')) {
-                    return config;
-                }
-                
-                // 自动获取并添加 token
-                const token = await this.getAccessToken();
-                config.params = config.params || {};
-                config.params.access_token = token;
-                return config;
-            });
-        }
+    /**
+     * GET 请求
+     */
+    async get<T = any>(path: string, params?: Record<string, string | number | boolean>): Promise<{ data: T }> {
+        const data = await this.request<T>(`${DINGTALK_API_BASE}${path}`, { params });
+        return { data };
+    }
+
+    /**
+     * POST 请求
+     */
+    async post<T = any>(path: string, body?: any, params?: Record<string, string | number | boolean>): Promise<{ data: T }> {
+        const data = await this.request<T>(`${DINGTALK_API_BASE}${path}`, { method: 'POST', body, params });
+        return { data };
     }
 
     /**
@@ -80,19 +113,20 @@ export class DingTalkBot extends EventEmitter {
             return this.accessToken;
         }
 
-        const response = await this.http.get<DingTalkTokenResponse>('/gettoken', {
+        const data = await this.request<DingTalkTokenResponse>(`${DINGTALK_API_BASE}/gettoken`, {
             params: {
-                appkey: this.config.app_key,
-                appsecret: this.config.app_secret,
+                appkey: this.config.app_key || '',
+                appsecret: this.config.app_secret || '',
             },
+            skipAuth: true,
         });
 
-        if (response.data.errcode !== 0) {
-            throw new Error(`获取访问令牌失败: ${response.data.errmsg}`);
+        if (data.errcode !== 0) {
+            throw new Error(`获取访问令牌失败: ${data.errmsg}`);
         }
 
-        this.accessToken = response.data.access_token || '';
-        this.tokenExpireTime = Date.now() + ((response.data.expires_in || 7200) - 60) * 1000; // 提前60秒刷新
+        this.accessToken = data.access_token || '';
+        this.tokenExpireTime = Date.now() + ((data.expires_in || 7200) - 60) * 1000; // 提前60秒刷新
 
         return this.accessToken;
     }
@@ -196,7 +230,7 @@ export class DingTalkBot extends EventEmitter {
      * 发送消息（企业内部应用）
      */
     async sendMessageInternal(request: DingTalkSendMessageRequest): Promise<DingTalkSendMessageResponse> {
-        const response = await this.http.post<DingTalkSendMessageResponse>('/topapi/message/corpconversation/asyncsend_v2', {
+        const response = await this.post<DingTalkSendMessageResponse>('/topapi/message/corpconversation/asyncsend_v2', {
             agent_id: this.config.agent_id || request.agent_id,
             userid_list: request.userid_list,
             dept_id_list: request.dept_id_list,
@@ -215,17 +249,23 @@ export class DingTalkBot extends EventEmitter {
      * 发送消息（自定义机器人 Webhook）
      */
     async sendMessageWebhook(message: DingTalkWebhookMessage): Promise<DingTalkWebhookResponse> {
-        if (!this.webhookHttp) {
+        if (!this.config.webhook_url) {
             throw new Error('Webhook URL 未配置');
         }
 
-        const response = await this.webhookHttp.post<DingTalkWebhookResponse>('', message);
+        const response = await fetch(this.config.webhook_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(message),
+        });
 
-        if (response.data.errcode !== 0) {
-            throw new Error(`发送消息失败: ${response.data.errmsg}`);
+        const data = await response.json() as DingTalkWebhookResponse;
+
+        if (data.errcode !== 0) {
+            throw new Error(`发送消息失败: ${data.errmsg}`);
         }
 
-        return response.data;
+        return data;
     }
 
     /**
@@ -299,11 +339,7 @@ export class DingTalkBot extends EventEmitter {
             throw new Error('Webhook 模式不支持获取用户信息');
         }
 
-        const response = await this.http.get('/topapi/v2/user/get', {
-            params: {
-                userid: userId,
-            },
-        });
+        const response = await this.get<any>('/topapi/v2/user/get', { userid: userId });
 
         if (response.data.errcode !== 0) {
             throw new Error(`获取用户信息失败: ${response.data.errmsg}`);
@@ -313,10 +349,10 @@ export class DingTalkBot extends EventEmitter {
     }
 
     /**
-     * 获取 HTTP 客户端实例（用于高级用法）
+     * 获取 HTTP 客户端实例（返回 this 以便链式调用）
      */
-    getHttpClient(): AxiosInstance {
-        return this.http;
+    getHttpClient(): DingTalkBot {
+        return this;
     }
 
     /**
@@ -326,4 +362,3 @@ export class DingTalkBot extends EventEmitter {
         return this.mode;
     }
 }
-

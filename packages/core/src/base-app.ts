@@ -17,7 +17,6 @@ import * as path from "path";
 import { Adapter } from "@/adapter.js";
 import { Protocol } from "@/protocol.js";
 import process from "process";
-import { Dict } from "./types.js";
 import { Account } from "@/account.js";
 import { SqliteDB } from "@/db.js";
 import pkg from "../package.json" with { type: "json" };

@@ -5,22 +5,67 @@
 import { EventEmitter } from 'events';
 import { Bot, Context, InputFile } from 'grammy';
 import type { RouterContext, Next } from 'onebots';
-import type { TelegramConfig } from './types.js';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import type { TelegramConfig, ProxyConfig } from './types.js';
 
 export class TelegramBot extends EventEmitter {
-    private bot: Bot;
+    private bot!: Bot;
     private config: TelegramConfig;
     private me: any = null;
+    private initialized: boolean = false;
+    private proxyAgent: HttpsProxyAgent<string> | null = null;
 
     constructor(config: TelegramConfig) {
         super();
         this.config = config;
-        
-        // 创建 grammy Bot 实例
-        this.bot = new Bot(config.token);
+    }
 
-        // 设置事件监听
+    /**
+     * 初始化 Bot（异步，支持代理配置）
+     */
+    private async initBot(): Promise<void> {
+        if (this.initialized) return;
+        
+        const botConfig: ConstructorParameters<typeof Bot>[1] = {};
+        
+        // 配置代理
+        if (this.config.proxy?.url) {
+            this.proxyAgent = this.createProxyAgent(this.config.proxy);
+            if (this.proxyAgent) {
+                botConfig.client = {
+                    baseFetchConfig: {
+                        agent: this.proxyAgent,
+                    },
+                };
+                console.log(`[Telegram] 已配置代理: ${this.config.proxy.url}`);
+            }
+        }
+        
+        this.bot = new Bot(this.config.token, botConfig);
         this.setupEventHandlers();
+        this.initialized = true;
+    }
+
+    /**
+     * 创建代理 Agent（使用 https-proxy-agent）
+     */
+    private createProxyAgent(proxy: ProxyConfig): HttpsProxyAgent<string> | null {
+        try {
+            const proxyUrl = new URL(proxy.url);
+            
+            // 添加认证信息
+            if (proxy.username) {
+                proxyUrl.username = proxy.username;
+            }
+            if (proxy.password) {
+                proxyUrl.password = proxy.password;
+            }
+
+            return new HttpsProxyAgent(proxyUrl.toString());
+        } catch (error) {
+            console.warn('创建代理 Agent 失败，将直接连接:', error);
+            return null;
+        }
     }
 
     /**
@@ -115,6 +160,9 @@ export class TelegramBot extends EventEmitter {
      */
     async start(): Promise<void> {
         try {
+            // 初始化 Bot（包含代理配置）
+            await this.initBot();
+            
             // 获取 Bot 信息
             this.me = await this.bot.api.getMe();
             

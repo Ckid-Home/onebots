@@ -49,6 +49,8 @@ jobs:
       - name: Install dependencies
         if: steps.check_changesets.outputs.has_changesets == 'true'
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PKG_TOKEN }}
 
       - name: Create Release Pull Request
         if: steps.check_changesets.outputs.has_changesets == 'true'

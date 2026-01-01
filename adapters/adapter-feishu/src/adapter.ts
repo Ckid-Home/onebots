@@ -7,12 +7,29 @@ import { Adapter } from "onebots";
 import { BaseApp } from "onebots";
 import { FeishuBot } from "./bot.js";
 import { CommonEvent } from "onebots";
-import type { FeishuConfig, FeishuEvent } from "./types.js";
+import { FeishuEndpoint, type FeishuConfig, type FeishuEvent } from "./types.js";
 
 export class FeishuAdapter extends Adapter<FeishuBot, "feishu"> {
     constructor(app: BaseApp) {
         super(app, "feishu");
         this.icon = "https://open.feishu.cn/favicon.ico";
+    }
+
+    /**
+     * 根据端点获取对应的图标
+     */
+    private getIconForEndpoint(endpoint: string): string {
+        if (endpoint.includes('larksuite.com')) {
+            return 'https://open.larksuite.com/favicon.ico';
+        }
+        return 'https://open.feishu.cn/favicon.ico';
+    }
+
+    /**
+     * 判断是否为 Lark（国际版）
+     */
+    private isLarkEndpoint(endpoint: string): boolean {
+        return endpoint.includes('larksuite.com');
     }
 
     // ============================================
@@ -339,8 +356,12 @@ export class FeishuAdapter extends Adapter<FeishuBot, "feishu"> {
      * 获取版本信息
      */
     async getVersion(uin: string): Promise<Adapter.VersionInfo> {
+        const account = this.getAccount(uin);
+        const isLark = account ? this.isLarkEndpoint(account.client.endpoint) : false;
+        const platformName = isLark ? 'Lark' : '飞书';
+        
         return {
-            app_name: 'onebots 飞书 Adapter',
+            app_name: `onebots ${platformName} Adapter`,
             app_version: '1.0.0',
             impl: 'feishu',
             version: '1.0.0',
@@ -369,21 +390,27 @@ export class FeishuAdapter extends Adapter<FeishuBot, "feishu"> {
             app_secret: config.app_secret,
             encrypt_key: config.encrypt_key,
             verification_token: config.verification_token,
+            endpoint: config.endpoint,
         };
 
         const bot = new FeishuBot(feishuConfig);
         const account = new Account<'feishu', FeishuBot>(this, bot, config);
+        
+        // 根据端点判断是飞书还是 Lark
+        const isLark = this.isLarkEndpoint(bot.endpoint);
+        const platformName = isLark ? 'Lark' : '飞书';
+        const accountIcon = this.getIconForEndpoint(bot.endpoint);
 
         // Webhook 路由
         this.app.router.post(`${account.path}/webhook`, bot.handleWebhook.bind(bot));
 
         // 监听 Bot 事件
         bot.on('ready', () => {
-            this.logger.info(`飞书 Bot ${config.account_id} 已就绪`);
+            this.logger.info(`${platformName} Bot ${config.account_id} 已就绪 (endpoint: ${bot.endpoint})`);
         });
 
         bot.on('error', (error) => {
-            this.logger.error(`飞书 Bot ${config.account_id} 错误:`, error);
+            this.logger.error(`${platformName} Bot ${config.account_id} 错误:`, error);
         });
 
         // 监听飞书事件
@@ -397,10 +424,10 @@ export class FeishuAdapter extends Adapter<FeishuBot, "feishu"> {
                 await bot.start();
                 account.status = AccountStatus.Online;
                 const me = bot.getCachedMe();
-                account.nickname = me?.name || '飞书 Bot';
-                account.avatar = me?.avatar_url || this.icon;
+                account.nickname = me?.name || `${platformName} Bot`;
+                account.avatar = me?.avatar_url || accountIcon;
             } catch (error) {
-                this.logger.error(`启动飞书 Bot 失败:`, error);
+                this.logger.error(`启动 ${platformName} Bot 失败:`, error);
                 account.status = AccountStatus.OffLine;
             }
         });

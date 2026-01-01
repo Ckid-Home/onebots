@@ -4,8 +4,8 @@ import './custom.css'
 import ElementUI from 'element-plus'
 import {EnhanceAppContext, useRoute} from "vitepress";
 
-// svg-pan-zoom 需要在客户端动态导入，避免 SSR 时 window is not defined 错误
-let svgPanZoom: ((svg: SVGElement, options?: object) => object) | null = null
+// Dynamically imported to avoid SSR issues (window is not defined)
+let svgPanZoom: ((svg: SVGElement | HTMLElement | string, options?: any) => any) | null = null
 
 export default {
     extends:DefaultTheme,
@@ -79,14 +79,14 @@ export default {
             setTimeout(() => {
                 try {
                     if (svgPanZoom) {
-                        svgPanZoom(clonedSvg, {
-                            zoomEnabled: true,
-                            controlIconsEnabled: true,
-                            fit: true,
-                            center: true,
-                            minZoom: 0.1,
-                            maxZoom: 20
-                        })
+                    svgPanZoom(clonedSvg, {
+                        zoomEnabled: true,
+                        controlIconsEnabled: true,
+                        fit: true,
+                        center: true,
+                        minZoom: 0.1,
+                        maxZoom: 20
+                    })
                     }
                 } catch (e) {
                     console.warn('Lightbox pan-zoom init failed', e)
@@ -129,6 +129,7 @@ export default {
             // 初始化 pan-zoom
             if (!svgPanZoom) return
             try {
+                if (svgPanZoom) {
                 svgPanZoom(svg, {
                     zoomEnabled: true,
                     controlIconsEnabled: true,
@@ -139,6 +140,7 @@ export default {
                     zoomScaleSensitivity: 0.3
                 })
                 svg.setAttribute('data-pan-zoom-initialized', 'true')
+                }
             } catch (e) {
                 // 忽略初始化错误（可能是 SVG 还没准备好）
             }
@@ -149,7 +151,7 @@ export default {
         }
 
         onMounted(async () => {
-            // 动态导入 svg-pan-zoom，避免 SSR 时 window is not defined 错误
+            // Dynamically import svg-pan-zoom only on client side
             const module = await import('svg-pan-zoom')
             svgPanZoom = module.default
             
