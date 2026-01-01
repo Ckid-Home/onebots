@@ -7,7 +7,7 @@ on:
       - master
 
 permissions:
-  id-token: write
+  id-token: write  # Required for OIDC
   contents: read
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
@@ -15,102 +15,58 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   release:
     name: Release
-    # 只在 Version PR 合并且包含版本变更时运行
     if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'changeset-release/')
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
-      id-token: write  # 用于 npm OIDC provenance
+      id-token: write  # Required for OIDC
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}  # 用于 git push
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9.0.2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: pnpm install
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_PKG_TOKEN }}
+      - run: pnpm install
 
-      - name: Build packages
-        run: pnpm build
+      - run: pnpm build
 
-      - name: Run tests
-        run: pnpm test
+      - run: pnpm test
         continue-on-error: true
-
-      - name: Generate changelog
-        run: |
-          # 从 CHANGELOG.md 文件提取最新版本的内容
-          if [ -f "CHANGELOG.md" ]; then
-            # 获取第一个版本块（从第一个 ## 到下一个 ##）
-            awk '/^## /{p++} p==1' CHANGELOG.md > RELEASE_NOTES.md
-          else
-            echo "# Release Notes" > RELEASE_NOTES.md
-            echo "" >> RELEASE_NOTES.md
-            echo "See individual package CHANGELOG.md files for details." >> RELEASE_NOTES.md
-          fi
 
       - name: Get version
         id: get_version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(jq -r '.version' package.json)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      # OIDC 可信发布 - Trusted Publishers 已配置: lc-cn/onebots + release.yml
-      - name: Configure npm for OIDC Publishing
-        run: |
-          # 清除 setup-node 创建的 authToken，让 npm 使用 OIDC
-          # 只保留 registry 配置，不设置任何 token
-          cat > ~/.npmrc << 'EOF'
-          registry=https://registry.npmjs.org/
-          EOF
-          echo "📋 .npmrc 配置:"
-          cat ~/.npmrc
-          
-      - name: Publish to npm (OIDC Trusted Publishing)
-        run: |
-          echo "🚀 开始 OIDC 可信发布..."
-          pnpm publish -r --no-git-checks --access public --provenance
-        env:
-          NPM_CONFIG_PROVENANCE: true
+      # OIDC 可信发布 - 无需 TOKEN
+      - run: pnpm publish -r --no-git-checks --access public --provenance
 
       - name: Create git tags
         run: |
-          # 为每个发布的包创建 tag
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
-          # 获取主版本号
-          MAIN_VERSION=$(node -p "require('./package.json').version")
+          MAIN_VERSION=$(jq -r '.version' package.json)
+          git tag -a "v${MAIN_VERSION}" -m "Release v${MAIN_VERSION}" || echo "Tag exists"
           
-          # 创建主版本 tag (用于 GitHub Release)
-          git tag -a "v${MAIN_VERSION}" -m "Release v${MAIN_VERSION}" || echo "Tag v${MAIN_VERSION} already exists"
-          
-          # 从 package.json 获取版本并创建包级别 tag
           for pkg in packages/*/package.json protocols/*/*/package.json adapters/*/package.json; do
             if [ -f "$pkg" ]; then
-              name=$(node -p "require('./$pkg').name")
-              version=$(node -p "require('./$pkg').version")
-              # 跳过 private 包
-              private=$(node -p "require('./$pkg').private || false")
+              name=$(jq -r '.name' "$pkg")
+              version=$(jq -r '.version' "$pkg")
+              private=$(jq -r '.private // false' "$pkg")
               if [ "$private" = "false" ]; then
-                tag="${name}@${version}"
-                git tag -a "$tag" -m "Release $tag" 2>/dev/null || echo "Tag $tag already exists"
+                git tag -a "${name}@${version}" -m "Release ${name}@${version}" 2>/dev/null || true
               fi
             fi
           done
@@ -119,16 +75,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+      - name: Generate changelog
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            awk '/^## /{p++} p==1' CHANGELOG.md > RELEASE_NOTES.md
+          else
+            echo "# Release Notes" > RELEASE_NOTES.md
+            echo "See individual package CHANGELOG.md files for details." >> RELEASE_NOTES.md
+          fi
+
+      - uses: ncipollo/release-action@v1
         with:
           bodyFile: "RELEASE_NOTES.md"
           token: ${{ secrets.GITHUB_TOKEN }}
-          draft: false
-          prerelease: false
           tag: "v${{ steps.get_version.outputs.version }}"
           name: "🚀 OneBots v${{ steps.get_version.outputs.version }}"
           generateReleaseNotes: true
           makeLatest: true
-          allowUpdates: true  # 允许更新已存在的 Release
-          skipIfReleaseExists: false
+          allowUpdates: true
