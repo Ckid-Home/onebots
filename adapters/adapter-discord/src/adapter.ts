@@ -1,27 +1,14 @@
 /**
  * Discord 适配器
- * 继承 Adapter 基类，实现 Discord 平台功能
+ * 轻量版实现，直接封装 Discord API
  */
 import { Account, AdapterRegistry, AccountStatus } from "onebots";
 import { Adapter } from "onebots";
 import { BaseApp } from "onebots";
-import { DiscordBot } from "./bot.js";
+import { DiscordBot, type DiscordMessage, type DiscordMember, type DiscordGuild, type DiscordChannel } from "./bot.js";
 import { CommonEvent, CommonTypes } from "onebots";
 import type { DiscordConfig } from "./types.js";
-import {
-    Message,
-    GuildMember,
-    PartialGuildMember,
-    Guild,
-    Channel,
-    MessageReaction,
-    PartialMessageReaction,
-    User,
-    PartialUser,
-    ChannelType,
-    EmbedBuilder,
-    AttachmentBuilder,
-} from 'discord.js';
+import { ChannelType } from "./types.js";
 
 export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
     constructor(app: BaseApp) {
@@ -48,17 +35,17 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         const channelId = scene_id.string;
 
         // 构建消息内容
-        const { content, embeds, files } = this.buildDiscordMessage(message);
+        const { content, embeds } = this.buildDiscordMessage(message);
 
         try {
-            let sentMessage: Message;
+            let sentMessage: DiscordMessage;
 
             if (scene_type === "private") {
                 // 私信消息 - scene_id 是用户 ID
-                sentMessage = await bot.sendDM(channelId, { content, embeds, files });
+                sentMessage = await bot.sendDM(channelId, { content, embeds });
             } else if (scene_type === "channel" || scene_type === "group") {
                 // 频道消息 - scene_id 是频道 ID
-                sentMessage = await bot.sendMessage(channelId, { content, embeds, files });
+                sentMessage = await bot.sendMessage(channelId, { content, embeds });
             } else {
                 throw new Error(`不支持的消息类型: ${scene_type}`);
             }
@@ -125,12 +112,8 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         const messages = await bot.getMessageHistory(channelId, limit);
 
-        return messages.map(msg => this.convertMessageToInfo(msg));
+        return [...messages.values()].map(msg => this.convertMessageToInfo(msg));
     }
-
-    // Note: updateMessage is not implemented as Discord requires a channel ID
-    // which is not provided in the standard UpdateMessageParams.
-    // The base class will throw "updateMessage not implemented" error.
 
     // ============================================
     // 用户相关方法
@@ -153,7 +136,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         return {
             user_id: this.createId(user.id),
             user_name: user.username,
-            user_displayname: user.globalName || user.username,
+            user_displayname: user.global_name || user.username,
             avatar: user.displayAvatarURL(),
         };
     }
@@ -173,7 +156,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         return {
             user_id: this.createId(user.id),
             user_name: user.username,
-            user_displayname: user.globalName || user.username,
+            user_displayname: user.global_name || user.username,
             avatar: user.displayAvatarURL(),
         };
     }
@@ -224,11 +207,10 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         const bot = account.client;
         const guilds = bot.getGuilds();
 
-        return guilds.map(guild => ({
+        return [...guilds.values()].map(guild => ({
             group_id: this.createId(guild.id),
             group_name: guild.name,
-            member_count: guild.memberCount,
-            max_member_count: guild.maximumMembers,
+            member_count: guild.member_count,
         }));
     }
 
@@ -247,8 +229,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         return {
             group_id: this.createId(guild.id),
             group_name: guild.name,
-            member_count: guild.memberCount,
-            max_member_count: guild.maximumMembers,
+            member_count: guild.member_count,
         };
     }
 
@@ -262,8 +243,10 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         const bot = account.client;
         const guildId = params.group_id.string;
 
-        const guild = await bot.getGuild(guildId);
-        await guild.leave();
+        // 使用 REST API 离开服务器
+        await bot.getREST().request(`/users/@me/guilds/${guildId}`, {
+            method: 'DELETE',
+        });
     }
 
     /**
@@ -278,11 +261,11 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         const members = await bot.getGuildMembers(guildId);
 
-        return members.map(member => ({
+        return [...members.values()].map(member => ({
             group_id: params.group_id,
-            user_id: this.createId(member.id),
+            user_id: this.createId(member.user.id),
             user_name: member.user.username,
-            card: member.nickname || undefined,
+            card: member.nick || undefined,
             role: this.getMemberRole(member),
         }));
     }
@@ -302,9 +285,9 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         return {
             group_id: params.group_id,
-            user_id: this.createId(member.id),
+            user_id: this.createId(member.user.id),
             user_name: member.user.username,
-            card: member.nickname || undefined,
+            card: member.nick || undefined,
             role: this.getMemberRole(member),
         };
     }
@@ -365,7 +348,6 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         const account = this.getAccount(uin);
         if (!account) throw new Error(`Account ${uin} not found`);
 
-        // 需要频道 ID，这里通过 group_id 获取（假设是频道 ID）
         const bot = account.client;
         const channelId = params.group_id.string;
         const messageId = params.message_id.string;
@@ -409,7 +391,7 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         const bot = account.client;
         const guilds = bot.getGuilds();
 
-        return guilds.map(guild => ({
+        return [...guilds.values()].map(guild => ({
             guild_id: this.createId(guild.id),
             guild_name: guild.name,
             guild_display_name: guild.name,
@@ -431,9 +413,9 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         return {
             guild_id: params.guild_id,
-            user_id: this.createId(member.id),
+            user_id: this.createId(member.user.id),
             user_name: member.user.username,
-            nickname: member.nickname || undefined,
+            nickname: member.nick || undefined,
             role: this.getMemberRole(member),
         };
     }
@@ -456,9 +438,9 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         return {
             channel_id: this.createId(channel.id),
-            channel_name: 'name' in channel ? channel.name || '' : '',
+            channel_name: channel.name || '',
             channel_type: channel.type,
-            parent_id: 'parentId' in channel && channel.parentId ? this.createId(channel.parentId) : undefined,
+            parent_id: channel.parent_id ? this.createId(channel.parent_id) : undefined,
         };
     }
 
@@ -478,14 +460,12 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         const channels = await bot.getGuildChannels(guildId);
 
-        return [...channels.values()]
-            .filter(channel => channel !== null)
-            .map(channel => ({
-                channel_id: this.createId(channel!.id),
-                channel_name: channel!.name,
-                channel_type: channel!.type,
-                parent_id: channel!.parentId ? this.createId(channel!.parentId) : undefined,
-            }));
+        return [...channels.values()].map(channel => ({
+            channel_id: this.createId(channel.id),
+            channel_name: channel.name || '',
+            channel_type: channel.type,
+            parent_id: channel.parent_id ? this.createId(channel.parent_id) : undefined,
+        }));
     }
 
     /**
@@ -504,9 +484,9 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         return {
             channel_id: this.createId(channel.id),
-            channel_name: channel.name,
+            channel_name: channel.name || '',
             channel_type: channel.type,
-            parent_id: channel.parentId ? this.createId(channel.parentId) : undefined,
+            parent_id: channel.parent_id ? this.createId(channel.parent_id) : undefined,
         };
     }
 
@@ -556,15 +536,15 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         // 获取频道所属的服务器
         const channel = await bot.getChannel(channelId);
-        if (!channel || !('guildId' in channel) || !channel.guildId) {
+        if (!channel || !channel.guild_id) {
             throw new Error(`频道 ${channelId} 不属于任何服务器`);
         }
 
-        const member = await bot.getGuildMember(channel.guildId, userId);
+        const member = await bot.getGuildMember(channel.guild_id, userId);
 
         return {
             channel_id: params.channel_id,
-            user_id: this.createId(member.id),
+            user_id: this.createId(member.user.id),
             user_name: member.user.username,
             role: this.getMemberRole(member),
         };
@@ -582,15 +562,15 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         // 获取频道所属的服务器
         const channel = await bot.getChannel(channelId);
-        if (!channel || !('guildId' in channel) || !channel.guildId) {
+        if (!channel || !channel.guild_id) {
             throw new Error(`频道 ${channelId} 不属于任何服务器`);
         }
 
-        const members = await bot.getGuildMembers(channel.guildId);
+        const members = await bot.getGuildMembers(channel.guild_id);
 
-        return members.map(member => ({
+        return [...members.values()].map(member => ({
             channel_id: params.channel_id,
-            user_id: this.createId(member.id),
+            user_id: this.createId(member.user.id),
             user_name: member.user.username,
             role: this.getMemberRole(member),
         }));
@@ -609,11 +589,11 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         // 获取频道所属的服务器
         const channel = await bot.getChannel(channelId);
-        if (!channel || !('guildId' in channel) || !channel.guildId) {
+        if (!channel || !channel.guild_id) {
             throw new Error(`频道 ${channelId} 不属于任何服务器`);
         }
 
-        await bot.kickMember(channel.guildId, userId);
+        await bot.kickMember(channel.guild_id, userId);
     }
 
     /**
@@ -629,15 +609,15 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
         // 获取频道所属的服务器
         const channel = await bot.getChannel(channelId);
-        if (!channel || !('guildId' in channel) || !channel.guildId) {
+        if (!channel || !channel.guild_id) {
             throw new Error(`频道 ${channelId} 不属于任何服务器`);
         }
 
         if (params.mute) {
             // Discord 超时最长 28 天
-            await bot.timeoutMember(channel.guildId, userId, 28 * 24 * 60 * 60);
+            await bot.timeoutMember(channel.guild_id, userId, 28 * 24 * 60 * 60);
         } else {
-            await bot.removeTimeout(channel.guildId, userId);
+            await bot.removeTimeout(channel.guild_id, userId);
         }
     }
 
@@ -670,8 +650,8 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         return {
             app_name: 'onebots-discord',
             app_version: '1.0.0',
-            impl: 'discord.js',
-            version: '14.x',
+            impl: 'discord-lite',
+            version: '1.0.0',
         };
     }
 
@@ -700,7 +680,6 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             account_id: config.account_id,
             token: config.token,
             intents: config.intents,
-            partials: config.partials,
             presence: config.presence,
             proxy: config.proxy,
         };
@@ -720,19 +699,15 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             this.logger.error(`Discord Bot 错误:`, error);
         });
 
-        bot.on('warn', (warning) => {
-            this.logger.warn(`Discord Bot 警告:`, warning);
-        });
-
         // 监听消息事件
-        bot.on('messageCreate', (message: Message) => {
+        bot.on('messageCreate', (message: DiscordMessage) => {
             // 忽略机器人自己的消息
             if (message.author.bot) return;
 
             // 打印消息接收日志
             const content = message.content || '';
             const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
-            const channelType = message.channel.type === 1 ? '私聊' : message.channel.type === 0 ? '频道' : '群组';
+            const channelType = message.channel.type === ChannelType.DM ? '私聊' : message.channel.type === ChannelType.GuildText ? '频道' : '群组';
             this.logger.info(
                 `[DISCORD] 收到${channelType}消息 | 消息ID: ${message.id} | 频道: ${message.channel.id} | ` +
                 `发送者: ${message.author.username}(${message.author.id}) | 内容: ${contentPreview}`
@@ -750,32 +725,32 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             }
 
             // 附件（图片、文件等）
-            for (const attachment of message.attachments.values()) {
-                if (attachment.contentType?.startsWith('image/')) {
+            for (const attachment of message.attachments || []) {
+                if (attachment.content_type?.startsWith('image/')) {
                     messageSegments.push({
                         type: 'image',
                         data: {
                             file: attachment.id,
                             url: attachment.url,
-                            filename: attachment.name,
+                            filename: attachment.filename,
                         }
                     });
-                } else if (attachment.contentType?.startsWith('audio/')) {
+                } else if (attachment.content_type?.startsWith('audio/')) {
                     messageSegments.push({
                         type: 'voice',
                         data: {
                             file: attachment.id,
                             url: attachment.url,
-                            filename: attachment.name,
+                            filename: attachment.filename,
                         }
                     });
-                } else if (attachment.contentType?.startsWith('video/')) {
+                } else if (attachment.content_type?.startsWith('video/')) {
                     messageSegments.push({
                         type: 'video',
                         data: {
                             file: attachment.id,
                             url: attachment.url,
-                            filename: attachment.name,
+                            filename: attachment.filename,
                         }
                     });
                 } else {
@@ -784,14 +759,14 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
                         data: {
                             file: attachment.id,
                             url: attachment.url,
-                            filename: attachment.name,
+                            filename: attachment.filename,
                         }
                     });
                 }
             }
 
             // @提及
-            for (const mention of message.mentions.users.values()) {
+            for (const mention of message.mentions || []) {
                 messageSegments.push({
                     type: 'at',
                     data: {
@@ -843,8 +818,8 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
         });
 
         // 监听成员加入事件
-        bot.on('guildMemberAdd', (member: GuildMember) => {
-            this.logger.info(`成员加入: ${member.user.username} -> ${member.guild.name}`);
+        bot.on('guildMemberAdd', (member: DiscordMember & { guild: DiscordGuild }) => {
+            this.logger.info(`成员加入: ${member.user.username} -> ${member.guild?.name}`);
 
             const commonEvent: CommonEvent.Notice = {
                 id: this.createId(Date.now().toString()),
@@ -854,22 +829,22 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
                 type: 'notice',
                 notice_type: 'group_increase',
                 user: {
-                    id: this.createId(member.id),
+                    id: this.createId(member.user.id),
                     name: member.user.username,
                     avatar: member.user.displayAvatarURL(),
                 },
-                group: {
+                group: member.guild ? {
                     id: this.createId(member.guild.id),
                     name: member.guild.name,
-                },
+                } : undefined,
             };
 
             account.dispatch(commonEvent);
         });
 
         // 监听成员离开事件
-        bot.on('guildMemberRemove', (member: GuildMember | PartialGuildMember) => {
-            this.logger.info(`成员离开: ${member.user?.username} <- ${member.guild.name}`);
+        bot.on('guildMemberRemove', (member: DiscordMember & { guild: DiscordGuild }) => {
+            this.logger.info(`成员离开: ${member.user?.username} <- ${member.guild?.name}`);
 
             const commonEvent: CommonEvent.Notice = {
                 id: this.createId(Date.now().toString()),
@@ -879,70 +854,14 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
                 type: 'notice',
                 notice_type: 'group_decrease',
                 user: {
-                    id: this.createId(member.id),
+                    id: this.createId(member.user?.id || 'unknown'),
                     name: member.user?.username || 'Unknown',
-                    avatar: member.user?.displayAvatarURL(),
+                    avatar: member.user?.displayAvatarURL?.(),
                 },
-                group: {
+                group: member.guild ? {
                     id: this.createId(member.guild.id),
                     name: member.guild.name,
-                },
-            };
-
-            account.dispatch(commonEvent);
-        });
-
-        // 监听消息反应添加事件
-        bot.on('messageReactionAdd', async (reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) => {
-            this.logger.debug(`消息反应添加: ${reaction.emoji.name} by ${user.username}`);
-
-            // 获取完整消息
-            if (reaction.partial) {
-                try {
-                    await reaction.fetch();
-                } catch (error) {
-                    this.logger.error('无法获取完整反应信息:', error);
-                    return;
-                }
-            }
-
-            const commonEvent: CommonEvent.Notice = {
-                id: this.createId(Date.now().toString()),
-                timestamp: Date.now(),
-                platform: 'discord',
-                bot_id: this.createId(config.account_id),
-                type: 'notice',
-                notice_type: 'custom',
-                sub_type: 'reaction_add',
-                user: {
-                    id: this.createId(user.id),
-                    name: user.username || 'Unknown',
-                },
-                message_id: this.createId(reaction.message.id),
-                emoji: reaction.emoji.name || reaction.emoji.id,
-            };
-
-            account.dispatch(commonEvent);
-        });
-
-        // 监听消息反应移除事件
-        bot.on('messageReactionRemove', async (reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser) => {
-            this.logger.debug(`消息反应移除: ${reaction.emoji.name} by ${user.username}`);
-
-            const commonEvent: CommonEvent.Notice = {
-                id: this.createId(Date.now().toString()),
-                timestamp: Date.now(),
-                platform: 'discord',
-                bot_id: this.createId(config.account_id),
-                type: 'notice',
-                notice_type: 'custom',
-                sub_type: 'reaction_remove',
-                user: {
-                    id: this.createId(user.id),
-                    name: user.username || 'Unknown',
-                },
-                message_id: this.createId(reaction.message.id),
-                emoji: reaction.emoji.name || reaction.emoji.id,
+                } : undefined,
             };
 
             account.dispatch(commonEvent);
@@ -975,12 +894,10 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
      */
     private buildDiscordMessage(message: CommonTypes.Segment[]): {
         content: string;
-        embeds: EmbedBuilder[];
-        files: AttachmentBuilder[];
+        embeds: any[];
     } {
         let content = '';
-        const embeds: EmbedBuilder[] = [];
-        const files: AttachmentBuilder[] = [];
+        const embeds: any[] = [];
 
         for (const seg of message) {
             switch (seg.type) {
@@ -998,63 +915,23 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
 
                 case 'image':
                     if (seg.data.url) {
-                        files.push(new AttachmentBuilder(seg.data.url, {
-                            name: seg.data.filename || 'image.png'
-                        }));
-                    } else if (seg.data.file) {
-                        // 假设 file 是本地路径或 base64
-                        files.push(new AttachmentBuilder(seg.data.file, {
-                            name: seg.data.filename || 'image.png'
-                        }));
-                    }
-                    break;
-
-                case 'voice':
-                case 'record':
-                    if (seg.data.url) {
-                        files.push(new AttachmentBuilder(seg.data.url, {
-                            name: seg.data.filename || 'audio.mp3'
-                        }));
-                    } else if (seg.data.file) {
-                        files.push(new AttachmentBuilder(seg.data.file, {
-                            name: seg.data.filename || 'audio.mp3'
-                        }));
-                    }
-                    break;
-
-                case 'video':
-                    if (seg.data.url) {
-                        files.push(new AttachmentBuilder(seg.data.url, {
-                            name: seg.data.filename || 'video.mp4'
-                        }));
-                    } else if (seg.data.file) {
-                        files.push(new AttachmentBuilder(seg.data.file, {
-                            name: seg.data.filename || 'video.mp4'
-                        }));
-                    }
-                    break;
-
-                case 'file':
-                    if (seg.data.url) {
-                        files.push(new AttachmentBuilder(seg.data.url, {
-                            name: seg.data.filename || 'file'
-                        }));
-                    } else if (seg.data.file) {
-                        files.push(new AttachmentBuilder(seg.data.file, {
-                            name: seg.data.filename || 'file'
-                        }));
+                        // 轻量版：将图片作为 Embed 发送
+                        embeds.push({
+                            image: { url: seg.data.url },
+                        });
                     }
                     break;
 
                 case 'share':
                     // 使用 Embed 展示分享链接
-                    const shareEmbed = new EmbedBuilder()
-                        .setTitle(seg.data.title || '分享链接')
-                        .setURL(seg.data.url)
-                        .setDescription(seg.data.content || '');
+                    const shareEmbed: any = {
+                        title: seg.data.title || '分享链接',
+                        url: seg.data.url,
+                        description: seg.data.content || '',
+                    };
                     
                     if (seg.data.image) {
-                        shareEmbed.setImage(seg.data.image);
+                        shareEmbed.image = { url: seg.data.image };
                     }
                     
                     embeds.push(shareEmbed);
@@ -1079,13 +956,13 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             }
         }
 
-        return { content, embeds, files };
+        return { content, embeds };
     }
 
     /**
      * 转换消息为 MessageInfo
      */
-    private convertMessageToInfo(message: Message): Adapter.MessageInfo {
+    private convertMessageToInfo(message: DiscordMessage): Adapter.MessageInfo {
         const segments: CommonTypes.Segment[] = [];
 
         if (message.content) {
@@ -1095,8 +972,8 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             });
         }
 
-        for (const attachment of message.attachments.values()) {
-            if (attachment.contentType?.startsWith('image/')) {
+        for (const attachment of message.attachments || []) {
+            if (attachment.content_type?.startsWith('image/')) {
                 segments.push({
                     type: 'image',
                     data: { file: attachment.id, url: attachment.url }
@@ -1123,9 +1000,9 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
             sender: {
                 scene_type: sceneType,
                 sender_id: this.createId(message.author.id),
-                scene_id: this.createId(message.channelId),
+                scene_id: this.createId(message.channel.id),
                 sender_name: message.author.username,
-                scene_name: 'name' in message.channel ? message.channel.name || '' : 'DM',
+                scene_name: 'DM',
             },
             message: segments,
         };
@@ -1134,11 +1011,9 @@ export class DiscordAdapter extends Adapter<DiscordBot, "discord"> {
     /**
      * 获取成员角色
      */
-    private getMemberRole(member: GuildMember): 'owner' | 'admin' | 'member' {
-        if (member.guild.ownerId === member.id) {
-            return 'owner';
-        }
-        if (member.permissions.has('Administrator')) {
+    private getMemberRole(member: DiscordMember): 'owner' | 'admin' | 'member' {
+        // 轻量版简化处理：根据角色数量判断
+        if (member.roles && member.roles.length > 2) {
             return 'admin';
         }
         return 'member';
@@ -1153,10 +1028,10 @@ declare module "onebots" {
     }
 }
 
-AdapterRegistry.register('discord', DiscordAdapter,{
+AdapterRegistry.register('discord', DiscordAdapter, {
     name: 'discord',
     displayName: 'Discord官方机器人',
-    description: 'Discord官方机器人适配器，支持频道、群聊和私聊',
+    description: 'Discord官方机器人适配器（轻量版），支持频道、群聊和私聊',
     icon: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png',
     homepage: 'https://discord.com/',
     author: '凉菜',

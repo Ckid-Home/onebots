@@ -1,10 +1,20 @@
 {
   "name": "@onebots/adapter-discord",
   "version": "1.0.0",
-  "description": "onebots Discord 适配器",
+  "description": "onebots Discord 适配器（轻量版，支持 Node.js 和 Cloudflare Workers）",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lite": {
+      "types": "./lib/lite/index.d.ts",
+      "default": "./lib/lite/index.js"
+    }
+  },
   "scripts": {
     "build": "rm -f *.tsbuildinfo && tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "clean": "rm -rf lib *.tsbuildinfo"
@@ -12,7 +22,10 @@
   "keywords": [
     "onebots",
     "discord",
-    "adapter"
+    "adapter",
+    "cloudflare-workers",
+    "serverless",
+    "lightweight"
   ],
   "author": "凉菜",
   "license": "MIT",
@@ -31,10 +44,19 @@
   "peerDependencies": {
     "onebots": "workspace:*"
   },
+  "peerDependenciesMeta": {
+    "ws": {
+      "optional": true
+    },
+    "https-proxy-agent": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "@types/node": "^22.7.3",
-    "discord.js": "^14.16.3",
-    "global-agent": "^3.0.0",
-    "undici": "^7.0.0"
+    "@types/node": "^22.7.3"
+  },
+  "optionalDependencies": {
+    "ws": "^8.18.0",
+    "https-proxy-agent": "^7.0.6"
   }
 }

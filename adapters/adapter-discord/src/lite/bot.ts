@@ -1,12 +1,32 @@
 /**
- * Discord Bot 客户端
- * 轻量版实现，直接封装 Discord API，支持 Node.js 和 Cloudflare Workers
+ * Discord Lite Bot 客户端
+ * 轻量版实现，不依赖 discord.js，支持 Cloudflare Workers
  */
 
 import { EventEmitter } from 'events';
-import { DiscordLite, GatewayIntents, type DiscordLiteOptions } from './lite/index.js';
-import type { DiscordREST } from './lite/rest.js';
-import type { DiscordConfig, ProxyConfig } from './types.js';
+import { DiscordLite, GatewayIntents, type DiscordLiteOptions } from './index.js';
+import type { DiscordREST } from './rest.js';
+
+export interface DiscordLiteBotConfig {
+    /** 账号标识 */
+    account_id: string;
+    /** Discord Bot Token */
+    token: string;
+    /** Application ID (用于 Interactions 模式) */
+    application_id?: string;
+    /** Public Key (用于 Interactions 验证) */
+    public_key?: string;
+    /** 代理配置 */
+    proxy?: {
+        url: string;
+        username?: string;
+        password?: string;
+    };
+    /** 运行模式: gateway (Node.js) 或 interactions (Serverless) */
+    mode?: 'gateway' | 'interactions' | 'auto';
+    /** Gateway Intents (数值或字符串数组) */
+    intents?: number | string[];
+}
 
 // Discord API 返回的类型
 export interface DiscordUser {
@@ -16,8 +36,6 @@ export interface DiscordUser {
     global_name?: string | null;
     avatar: string | null;
     bot?: boolean;
-    displayAvatarURL: () => string;
-    tag?: string;
 }
 
 export interface DiscordMessage {
@@ -35,9 +53,6 @@ export interface DiscordMessage {
     embeds: any[];
     pinned: boolean;
     type: number;
-    createdTimestamp: number;
-    channel: { id: string; type: number };
-    guild?: { id: string; name?: string };
 }
 
 export interface DiscordAttachment {
@@ -80,17 +95,17 @@ export interface DiscordMember {
 }
 
 /**
- * Discord Bot
+ * Discord Lite Bot
  * 基于轻量客户端实现，兼容 Node.js 和 Cloudflare Workers
  */
-export class DiscordBot extends EventEmitter {
+export class DiscordLiteBot extends EventEmitter {
     private client: DiscordLite;
-    private config: DiscordConfig;
+    private config: DiscordLiteBotConfig;
     private ready: boolean = false;
     private user: DiscordUser | null = null;
     private guilds: Map<string, DiscordGuild> = new Map();
 
-    constructor(config: DiscordConfig) {
+    constructor(config: DiscordLiteBotConfig) {
         super();
         this.config = config;
         
@@ -101,7 +116,9 @@ export class DiscordBot extends EventEmitter {
             token: config.token,
             intents,
             proxy: config.proxy,
-            mode: 'gateway',
+            mode: config.mode,
+            applicationId: config.application_id,
+            publicKey: config.public_key,
         };
 
         this.client = new DiscordLite(clientOptions);
@@ -111,7 +128,11 @@ export class DiscordBot extends EventEmitter {
     /**
      * 解析 intents 配置
      */
-    private parseIntents(intentsConfig?: string[]): number {
+    private parseIntents(intentsConfig?: number | string[]): number {
+        if (typeof intentsConfig === 'number') {
+            return intentsConfig;
+        }
+
         if (!intentsConfig || intentsConfig.length === 0) {
             // 默认 intents
             return (
@@ -121,9 +142,7 @@ export class DiscordBot extends EventEmitter {
                 GatewayIntents.GuildMessageReactions |
                 GatewayIntents.DirectMessages |
                 GatewayIntents.DirectMessageReactions |
-                GatewayIntents.MessageContent |
-                GatewayIntents.GuildVoiceStates |
-                GatewayIntents.GuildPresences
+                GatewayIntents.MessageContent
             );
         }
 
@@ -163,8 +182,8 @@ export class DiscordBot extends EventEmitter {
     private setupEventListeners(): void {
         this.client.on('ready', (user) => {
             this.ready = true;
-            this.user = this.wrapUser(user);
-            this.emit('ready', this.user);
+            this.user = user;
+            this.emit('ready', this.wrapUser(user));
         });
 
         this.client.on('messageCreate', (message) => {
@@ -190,11 +209,11 @@ export class DiscordBot extends EventEmitter {
         });
 
         this.client.on('guildMemberAdd', (member) => {
-            this.emit('guildMemberAdd', this.wrapMember(member));
+            this.emit('guildMemberAdd', member);
         });
 
         this.client.on('guildMemberRemove', (member) => {
-            this.emit('guildMemberRemove', this.wrapMember(member));
+            this.emit('guildMemberRemove', member);
         });
 
         this.client.on('interactionCreate', (interaction) => {
@@ -216,7 +235,7 @@ export class DiscordBot extends EventEmitter {
     // ============================================
 
     /**
-     * 启动 Bot
+     * 启动 Bot (Gateway 模式)
      */
     async start(): Promise<void> {
         try {
@@ -234,6 +253,13 @@ export class DiscordBot extends EventEmitter {
         this.ready = false;
         this.client.stop();
         this.emit('stopped');
+    }
+
+    /**
+     * 处理 HTTP 请求 (Interactions 模式)
+     */
+    async handleRequest(request: Request): Promise<Response> {
+        return this.client.handleRequest(request);
     }
 
     /**
@@ -360,7 +386,7 @@ export class DiscordBot extends EventEmitter {
      * 获取机器人信息
      */
     getBotUser(): DiscordUser | null {
-        return this.user;
+        return this.user ? this.wrapUser(this.user) : null;
     }
 
     /**
@@ -375,8 +401,7 @@ export class DiscordBot extends EventEmitter {
      * 获取成员信息
      */
     async getMember(guildId: string, userId: string): Promise<DiscordMember> {
-        const result = await this.getREST().getGuildMember(guildId, userId);
-        return this.wrapMember(result);
+        return this.getREST().getGuildMember(guildId, userId);
     }
 
     // ============================================
@@ -408,7 +433,7 @@ export class DiscordBot extends EventEmitter {
         const members = await this.getREST().getGuildMembers(guildId, query as any);
         const map = new Map<string, DiscordMember>();
         for (const member of members) {
-            map.set(member.user.id, this.wrapMember(member));
+            map.set(member.user.id, member);
         }
         return map;
     }
@@ -417,8 +442,7 @@ export class DiscordBot extends EventEmitter {
      * 获取服务器成员信息
      */
     async getGuildMember(guildId: string, userId: string): Promise<DiscordMember> {
-        const result = await this.getREST().getGuildMember(guildId, userId);
-        return this.wrapMember(result);
+        return this.getREST().getGuildMember(guildId, userId);
     }
 
     /**
@@ -455,33 +479,30 @@ export class DiscordBot extends EventEmitter {
      */
     async timeoutMember(guildId: string, userId: string, duration: number, _reason?: string): Promise<DiscordMember> {
         const until = new Date(Date.now() + duration * 1000).toISOString();
-        const result = await this.getREST().request(`/guilds/${guildId}/members/${userId}`, {
+        return this.getREST().request(`/guilds/${guildId}/members/${userId}`, {
             method: 'PATCH',
             body: { communication_disabled_until: until },
         });
-        return this.wrapMember(result);
     }
 
     /**
      * 解除禁言
      */
     async removeTimeout(guildId: string, userId: string, _reason?: string): Promise<DiscordMember> {
-        const result = await this.getREST().request(`/guilds/${guildId}/members/${userId}`, {
+        return this.getREST().request(`/guilds/${guildId}/members/${userId}`, {
             method: 'PATCH',
             body: { communication_disabled_until: null },
         });
-        return this.wrapMember(result);
     }
 
     /**
      * 修改成员昵称
      */
     async setMemberNickname(guildId: string, userId: string, nickname: string | null, _reason?: string): Promise<DiscordMember> {
-        const result = await this.getREST().request(`/guilds/${guildId}/members/${userId}`, {
+        return this.getREST().request(`/guilds/${guildId}/members/${userId}`, {
             method: 'PATCH',
             body: { nick: nickname },
         });
-        return this.wrapMember(result);
     }
 
     /**
@@ -649,9 +670,16 @@ export class DiscordBot extends EventEmitter {
     }
 
     /**
-     * 包装用户对象
+     * 获取当前运行模式
      */
-    private wrapUser(user: any): DiscordUser {
+    getMode(): 'gateway' | 'interactions' {
+        return this.client.getMode();
+    }
+
+    /**
+     * 包装用户对象（添加辅助方法）
+     */
+    private wrapUser(user: any): DiscordUser & { displayAvatarURL: () => string; tag?: string } {
         return {
             ...user,
             global_name: user.global_name || user.globalName,
@@ -667,19 +695,13 @@ export class DiscordBot extends EventEmitter {
     }
 
     /**
-     * 包装成员对象
-     */
-    private wrapMember(member: any): DiscordMember {
-        return {
-            ...member,
-            user: this.wrapUser(member.user),
-        };
-    }
-
-    /**
      * 包装消息对象
      */
-    private wrapMessage(message: any): DiscordMessage {
+    private wrapMessage(message: any): DiscordMessage & {
+        createdTimestamp: number;
+        channel: { id: string; type: number };
+        guild?: { id: string; name?: string };
+    } {
         return {
             ...message,
             createdTimestamp: new Date(message.timestamp).getTime(),
@@ -689,3 +711,4 @@ export class DiscordBot extends EventEmitter {
         };
     }
 }
+

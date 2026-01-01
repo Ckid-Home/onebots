@@ -12,7 +12,7 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 
 // 从环境变量或命令行参数获取配置
-const platform = process.env.PLATFORM || 'telegram';
+const platform = process.env.PLATFORM || 'discord';
 const accountId = process.env.ACCOUNT_ID || 'zhin';
 const protocol = process.env.PROTOCOL || 'onebot';
 const version = process.env.VERSION || 'v11';
