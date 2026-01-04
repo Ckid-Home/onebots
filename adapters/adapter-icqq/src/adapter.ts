@@ -2,6 +2,7 @@
  * ICQQ 适配器
  * 继承 Adapter 基类，实现 ICQQ 平台功能
  */
+import { Buffer } from "node:buffer";
 import { Account, AdapterRegistry, AccountStatus } from "onebots";
 import { Adapter } from "onebots";
 import { BaseApp } from "onebots";
@@ -530,7 +531,14 @@ export class ICQQAdapter extends Adapter<ICQQBot, "icqq"> {
             } else if (seg.type === 'image') {
                 const file = seg.data.url || seg.data.file;
                 if (file) {
-                    result.push(segment.image(file));
+                    // Handle base64:// prefix
+                    if (typeof file === 'string' && file.startsWith('base64://')) {
+                        const base64Data = file.replace(/^base64:\/\//, '');
+                        const buffer = Buffer.from(base64Data, 'base64');
+                        result.push(segment.image(buffer));
+                    } else {
+                        result.push(segment.image(file));
+                    }
                 }
             } else if (seg.type === 'face') {
                 const id = seg.data.id;
@@ -540,12 +548,26 @@ export class ICQQAdapter extends Adapter<ICQQBot, "icqq"> {
             } else if (seg.type === 'record' || seg.type === 'audio') {
                 const file = seg.data.url || seg.data.file;
                 if (file) {
-                    result.push(segment.record(file));
+                    // Handle base64:// prefix
+                    if (typeof file === 'string' && file.startsWith('base64://')) {
+                        const base64Data = file.replace(/^base64:\/\//, '');
+                        const buffer = Buffer.from(base64Data, 'base64');
+                        result.push(segment.record(buffer));
+                    } else {
+                        result.push(segment.record(file));
+                    }
                 }
             } else if (seg.type === 'video') {
                 const file = seg.data.url || seg.data.file;
                 if (file) {
-                    result.push(segment.video(file));
+                    // Handle base64:// prefix
+                    if (typeof file === 'string' && file.startsWith('base64://')) {
+                        const base64Data = file.replace(/^base64:\/\//, '');
+                        const buffer = Buffer.from(base64Data, 'base64');
+                        result.push(segment.video(buffer));
+                    } else {
+                        result.push(segment.video(file));
+                    }
                 }
             } else if (seg.type === 'reply') {
                 const id = seg.data.id;
