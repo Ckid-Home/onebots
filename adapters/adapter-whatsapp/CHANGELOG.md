@@ -1,0 +1,20 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2024-01-XX
+
+### Added
+
+- 初始版本发布
+- 支持 WhatsApp Business API
+- 支持消息发送与接收
+- 支持文本、图片、视频、音频、文档、位置等消息类型
+- 支持 Webhook 事件处理
+- 支持消息状态跟踪
+- 支持媒体文件下载
+- 支持代理配置
+

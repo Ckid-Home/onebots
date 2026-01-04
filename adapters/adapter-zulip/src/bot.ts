@@ -1,0 +1,364 @@
+/**
+ * Zulip Bot 客户端
+ * 基于 Zulip REST API 和 WebSocket API
+ */
+import { EventEmitter } from 'events';
+import axios, { AxiosInstance } from 'axios';
+import WebSocket from 'ws';
+import { createRequire } from 'module';
+import type {
+    ZulipConfig,
+    ZulipSendMessageParams,
+    ZulipAPIResponse,
+    ZulipWebSocketEvent,
+    ZulipMessageEvent,
+    ProxyConfig,
+} from './types.js';
+
+const require = createRequire(import.meta.url);
+
+export class ZulipBot extends EventEmitter {
+    private config: ZulipConfig;
+    private apiClient: AxiosInstance;
+    private ws: WebSocket | null = null;
+    private wsReconnectTimer?: NodeJS.Timeout;
+    private reconnectAttempts: number = 0;
+    private isConnected: boolean = false;
+    private agent: any = null;
+    private initialized: boolean = false;
+
+    constructor(config: ZulipConfig) {
+        super();
+        this.config = config;
+        this.apiClient = this.createAPIClient();
+    }
+
+    /**
+     * 创建 API 客户端
+     */
+    private createAPIClient(): AxiosInstance {
+        const baseURL = `${this.config.serverUrl}/api/v1`;
+
+        // Zulip 使用 HTTP Basic Auth
+        const auth = Buffer.from(`${this.config.email}:${this.config.apiKey}`).toString('base64');
+
+        const client = axios.create({
+            baseURL,
+            headers: {
+                'Authorization': `Basic ${auth}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+
+        return client;
+    }
+
+    /**
+     * 初始化代理 Agent
+     */
+    private async initAgent(): Promise<void> {
+        if (this.initialized) return;
+        this.initialized = true;
+
+        if (!this.config.proxy?.url) return;
+
+        try {
+            const proxyUrl = this.buildProxyUrl(this.config.proxy);
+            const { HttpsProxyAgent } = await import('https-proxy-agent');
+            this.agent = new HttpsProxyAgent(proxyUrl);
+            console.log(`[Zulip] 已配置代理: ${proxyUrl.replace(/:[^:@]+@/, ':***@')}`);
+        } catch (error) {
+            console.warn('[Zulip] 创建代理失败，将直接连接:', error);
+        }
+    }
+
+    /**
+     * 构建代理 URL
+     */
+    private buildProxyUrl(proxy: ProxyConfig): string {
+        let url = proxy.url;
+        if (proxy.username && proxy.password) {
+            const protocol = url.split('://')[0];
+            const rest = url.split('://')[1];
+            url = `${protocol}://${proxy.username}:${proxy.password}@${rest}`;
+        }
+        return url;
+    }
+
+    /**
+     * 启动 Bot（初始化连接）
+     */
+    async start(): Promise<void> {
+        await this.initAgent();
+
+        // 验证 REST API 连接
+        try {
+            const response = await this.apiClient.get('/users/me', {
+                httpsAgent: this.agent,
+            });
+            console.log(`[Zulip] REST API 连接成功，用户: ${response.data.email}`);
+        } catch (error: any) {
+            console.error('[Zulip] REST API 连接失败:', error.response?.data || error.message);
+            throw error;
+        }
+
+        // 启动 WebSocket 连接
+        if (this.config.websocket?.enabled !== false) {
+            await this.connectWebSocket();
+        }
+
+        this.emit('ready');
+    }
+
+    /**
+     * 连接 WebSocket
+     */
+    private async connectWebSocket(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                // 获取 WebSocket URL
+                const wsUrl = this.config.serverUrl.replace(/^http/, 'ws') + '/api/v1/events';
+                const auth = Buffer.from(`${this.config.email}:${this.config.apiKey}`).toString('base64');
+
+                const wsOptions: any = {
+                    headers: {
+                        'Authorization': `Basic ${auth}`,
+                    },
+                };
+
+                if (this.agent) {
+                    wsOptions.agent = this.agent;
+                }
+
+                this.ws = new WebSocket(wsUrl, wsOptions);
+
+                this.ws.on('open', () => {
+                    console.log('[Zulip] WebSocket 连接成功');
+                    this.isConnected = true;
+                    this.reconnectAttempts = 0;
+                    resolve();
+                });
+
+                this.ws.on('message', (data: WebSocket.Data) => {
+                    try {
+                        const event = JSON.parse(data.toString()) as ZulipWebSocketEvent;
+                        this.handleWebSocketEvent(event);
+                    } catch (error) {
+                        console.error('[Zulip] 解析 WebSocket 消息失败:', error);
+                    }
+                });
+
+                this.ws.on('error', (error) => {
+                    console.error('[Zulip] WebSocket 错误:', error);
+                    this.isConnected = false;
+                    if (this.reconnectAttempts === 0) {
+                        reject(error);
+                    }
+                });
+
+                this.ws.on('close', () => {
+                    console.log('[Zulip] WebSocket 连接已关闭');
+                    this.isConnected = false;
+                    this.scheduleReconnect();
+                });
+
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * 处理 WebSocket 事件
+     */
+    private handleWebSocketEvent(event: ZulipWebSocketEvent): void {
+        if (event.type === 'message') {
+            this.emit('message', event as ZulipMessageEvent);
+        } else if (event.type === 'update_message') {
+            this.emit('update_message', event);
+        } else if (event.type === 'delete_message') {
+            this.emit('delete_message', event);
+        } else if (event.type === 'reaction') {
+            this.emit('reaction', event);
+        } else if (event.type === 'heartbeat') {
+            // 心跳，无需处理
+        } else {
+            this.emit('event', event);
+        }
+    }
+
+    /**
+     * 安排重连
+     */
+    private scheduleReconnect(): void {
+        if (this.config.websocket?.enabled === false) return;
+
+        const maxAttempts = this.config.websocket?.maxReconnectAttempts || 10;
+        if (this.reconnectAttempts >= maxAttempts) {
+            console.error('[Zulip] 达到最大重连次数，停止重连');
+            return;
+        }
+
+        this.reconnectAttempts++;
+        const interval = this.config.websocket?.reconnectInterval || 3000;
+
+        this.wsReconnectTimer = setTimeout(async () => {
+            console.log(`[Zulip] 尝试重连 (${this.reconnectAttempts}/${maxAttempts})...`);
+            try {
+                await this.connectWebSocket();
+            } catch (error) {
+                console.error('[Zulip] 重连失败:', error);
+            }
+        }, interval);
+    }
+
+    /**
+     * 发送消息
+     */
+    async sendMessage(params: ZulipSendMessageParams): Promise<ZulipAPIResponse> {
+        await this.initAgent();
+
+        const formData = new URLSearchParams();
+        formData.append('type', params.type);
+        formData.append('content', params.content);
+
+        if (params.type === 'stream') {
+            if (params.to) {
+                formData.append('to', params.to);
+            }
+            if (params.topic) {
+                formData.append('topic', params.topic);
+            }
+        } else if (params.type === 'private') {
+            if (params.to_emails) {
+                formData.append('to', JSON.stringify(params.to_emails));
+            }
+        }
+
+        if (params.client) {
+            formData.append('client', params.client);
+        }
+
+        try {
+            const response = await this.apiClient.post('/messages', formData.toString(), {
+                httpsAgent: this.agent,
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[Zulip] 发送消息失败:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * 更新消息
+     */
+    async updateMessage(messageId: number, content: string, topic?: string): Promise<ZulipAPIResponse> {
+        await this.initAgent();
+
+        const formData = new URLSearchParams();
+        formData.append('message_id', messageId.toString());
+        formData.append('content', content);
+        // topic 参数是可选的，用于更新流消息的话题
+        if (topic) {
+            formData.append('topic', topic);
+        }
+
+        try {
+            const response = await this.apiClient.patch('/messages/' + messageId, formData.toString(), {
+                httpsAgent: this.agent,
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[Zulip] 更新消息失败:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * 删除消息
+     */
+    async deleteMessage(messageId: number): Promise<ZulipAPIResponse> {
+        await this.initAgent();
+
+        try {
+            const response = await this.apiClient.delete('/messages/' + messageId, {
+                httpsAgent: this.agent,
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[Zulip] 删除消息失败:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * 获取流列表
+     */
+    async getStreams(): Promise<any> {
+        await this.initAgent();
+
+        try {
+            const response = await this.apiClient.get('/streams', {
+                httpsAgent: this.agent,
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[Zulip] 获取流列表失败:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * 获取用户信息
+     */
+    async getUserInfo(userId: number): Promise<any> {
+        await this.initAgent();
+
+        try {
+            const response = await this.apiClient.get(`/users/${userId}`, {
+                httpsAgent: this.agent,
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[Zulip] 获取用户信息失败:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * 获取当前用户信息
+     */
+    async getMe(): Promise<any> {
+        await this.initAgent();
+
+        try {
+            const response = await this.apiClient.get('/users/me', {
+                httpsAgent: this.agent,
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[Zulip] 获取当前用户信息失败:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * 停止 Bot
+     */
+    async stop(): Promise<void> {
+        if (this.wsReconnectTimer) {
+            clearTimeout(this.wsReconnectTimer);
+            this.wsReconnectTimer = undefined;
+        }
+
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
+
+        this.isConnected = false;
+        this.emit('stop');
+    }
+}
+

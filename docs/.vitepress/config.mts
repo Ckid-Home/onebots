@@ -44,7 +44,10 @@ export default withMermaid(defineConfig({
                             { text: "Line", link: "/platform/line" },
                             { text: "Slack", link: "/platform/slack" },
                             { text: "企业微信", link: "/platform/wecom" },
-                            { text: "Microsoft Teams", link: "/platform/teams" }
+                            { text: "Microsoft Teams", link: "/platform/teams" },
+                            { text: "邮件", link: "/platform/email" },
+                            { text: "WhatsApp", link: "/platform/whatsapp" },
+                            { text: "Zulip", link: "/platform/zulip" }
                         ]
                     },
                     {
@@ -96,7 +99,10 @@ export default withMermaid(defineConfig({
                         { text: "Line", link: "/platform/line" },
                         { text: "Slack", link: "/platform/slack" },
                         { text: "企业微信", link: "/platform/wecom" },
-                        { text: "Microsoft Teams", link: "/platform/teams" }
+                        { text: "Microsoft Teams", link: "/platform/teams" },
+                        { text: "邮件", link: "/platform/email" },
+                        { text: "WhatsApp", link: "/platform/whatsapp" },
+                        { text: "Zulip", link: "/platform/zulip" }
                     ],
                     "/protocol/": [
                         { text: "OneBot V11", link: "/protocol/onebot-v11" },
@@ -162,7 +168,10 @@ export default withMermaid(defineConfig({
                             { text: "Line", link: "/en/platform/line" },
                             { text: "Slack", link: "/en/platform/slack" },
                             { text: "WeCom", link: "/en/platform/wecom" },
-                            { text: "Microsoft Teams", link: "/en/platform/teams" }
+                            { text: "Microsoft Teams", link: "/en/platform/teams" },
+                            { text: "Email", link: "/en/platform/email" },
+                            { text: "WhatsApp", link: "/en/platform/whatsapp" },
+                            { text: "Zulip", link: "/en/platform/zulip" }
                         ]
                     },
                     {
@@ -214,7 +223,10 @@ export default withMermaid(defineConfig({
                         { text: "Line", link: "/en/platform/line" },
                         { text: "Slack", link: "/en/platform/slack" },
                         { text: "WeCom", link: "/en/platform/wecom" },
-                        { text: "Microsoft Teams", link: "/en/platform/teams" }
+                        { text: "Microsoft Teams", link: "/en/platform/teams" },
+                        { text: "Email", link: "/en/platform/email" },
+                        { text: "WhatsApp", link: "/en/platform/whatsapp" },
+                        { text: "Zulip", link: "/en/platform/zulip" }
                     ],
                     "/en/protocol/": [
                         { text: "OneBot V11", link: "/en/protocol/onebot-v11" },

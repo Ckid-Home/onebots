@@ -1,6 +1,6 @@
 <div align="center">
     <h1>OneBots - 多平台多协议机器人应用框架</h1>
-    <p>使用 TypeScript 实现的多平台多协议机器人应用框架，支持 QQ、ICQQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams、Line 等 12+ 平台</p>
+    <p>使用 TypeScript 实现的多平台多协议机器人应用框架，支持 QQ、ICQQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams、Line、Email、WhatsApp、Zulip 等 15+ 平台</p>
 
 [![Build Package](https://github.com/icqqjs/onebots/actions/workflows/release.yml/badge.svg?branch=master&event=push)](https://github.com/icqqjs/onebots/actions/workflows/release.yml) 
 [![Build Docs](https://github.com/lc-cn/onebots/actions/workflows/deploy_docs.yml/badge.svg)](https://github.com/lc-cn/onebots/actions/workflows/deploy_docs.yml)
@@ -33,7 +33,7 @@ OneBots 是一个基于 TypeScript 开发的多平台、多协议机器人应用
 
 ### ✨ 核心特性
 
-- 🎯 **多平台支持** - 支持 QQ、ICQQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams、Line 等 12+ 平台
+- 🎯 **多平台支持** - 支持 QQ、ICQQ、微信、钉钉、飞书、企业微信、Telegram、Slack、Discord、Kook、Microsoft Teams、Line、Email、WhatsApp、Zulip 等 15+ 平台
 - 📡 **多协议支持** - 支持 OneBot V11/V12、Satori、Milky 等协议
 - 🔌 **插件化架构** - 适配器和协议可动态加载
 - 🏗️ **模块化设计** - 清晰的代码结构，易于扩展和维护
@@ -65,6 +65,9 @@ onebots/
 │   ├── adapter-wecom/          # @onebots/adapter-wecom - 企业微信适配器
 │   ├── adapter-teams/          # @onebots/adapter-teams - Microsoft Teams适配器
 │   ├── adapter-line/           # @onebots/adapter-line - Line适配器
+│   ├── adapter-email/          # @onebots/adapter-email - 邮件适配器
+│   ├── adapter-whatsapp/       # @onebots/adapter-whatsapp - WhatsApp适配器
+│   ├── adapter-zulip/           # @onebots/adapter-zulip - Zulip适配器
 │   └── adapter-icqq/           # @onebots/adapter-icqq - ICQQ适配器（私有包）
 ├── protocols/                   # 协议包
 │   ├── onebot-v11/
@@ -91,7 +94,7 @@ onebots/
 - `@onebots/core` - 核心抽象层，提供适配器、协议、账号等基础接口
 - `onebots` - 主应用包，提供命令行工具和完整应用功能
 - `@onebots/web` - Web 管理界面
-- `@onebots/adapter-*` - 各平台适配器（qq、kook、wechat、discord、telegram、feishu、dingtalk、slack、wecom、teams、line、icqq）
+- `@onebots/adapter-*` - 各平台适配器（qq、kook、wechat、discord、telegram、feishu、dingtalk、slack、wecom、teams、line、email、whatsapp、zulip、icqq）
 - `@onebots/protocol-*` - 各协议实现（onebot-v11、onebot-v12、satori-v1、milky-v1）
 
 #### 客户端SDK包（`imhelper` / `@imhelper/*`）
@@ -186,6 +189,36 @@ npm install @onebots/adapter-wechat
 
 # Discord适配器
 npm install @onebots/adapter-discord
+
+# Telegram适配器
+npm install @onebots/adapter-telegram
+
+# 飞书适配器
+npm install @onebots/adapter-feishu
+
+# 钉钉适配器
+npm install @onebots/adapter-dingtalk
+
+# Slack适配器
+npm install @onebots/adapter-slack
+
+# 企业微信适配器
+npm install @onebots/adapter-wecom
+
+# Microsoft Teams适配器
+npm install @onebots/adapter-teams
+
+# Line适配器
+npm install @onebots/adapter-line
+
+# 邮件适配器
+npm install @onebots/adapter-email
+
+# WhatsApp适配器
+npm install @onebots/adapter-whatsapp
+
+# Zulip适配器
+npm install @onebots/adapter-zulip
 ```
 
 #### 3. 创建配置文件
@@ -314,6 +347,9 @@ await helper.sendPrivateMessage('123456', 'Hello!');
 - ✅ **企业微信** - 通过 `@onebots/adapter-wecom`
 - ✅ **Microsoft Teams** - 通过 `@onebots/adapter-teams`
 - ✅ **Line** - 通过 `@onebots/adapter-line`
+- ✅ **邮件** - 通过 `@onebots/adapter-email`
+- ✅ **WhatsApp** - 通过 `@onebots/adapter-whatsapp`
+- ✅ **Zulip** - 通过 `@onebots/adapter-zulip`
 
 ## 📡 支持的协议
 
