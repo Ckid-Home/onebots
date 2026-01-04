@@ -518,14 +518,17 @@ export class ICQQAdapter extends Adapter<ICQQBot, "icqq"> {
         if (typeof file === 'string' && file.startsWith('base64://')) {
             const base64Data = file.replace(/^base64:\/\//, '');
             
+            // Strip whitespace (RFC 4648 allows whitespace in base64)
+            const cleanedData = base64Data.replace(/\s/g, '');
+            
             // Validate base64 format (basic validation)
-            if (!/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
-                this.logger.warn(`Invalid base64 data format: ${base64Data.substring(0, 50)}...`);
+            if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleanedData)) {
+                this.logger.warn(`Invalid base64 data format (length: ${cleanedData.length})`);
                 return file; // Return original if invalid
             }
             
             try {
-                return Buffer.from(base64Data, 'base64');
+                return Buffer.from(cleanedData, 'base64');
             } catch (error) {
                 this.logger.error(`Failed to convert base64 to Buffer:`, error);
                 return file; // Return original on error
