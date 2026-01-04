@@ -511,6 +511,30 @@ export class ICQQAdapter extends Adapter<ICQQBot, "icqq"> {
     // ============================================
 
     /**
+     * 处理 base64:// 前缀的文件数据
+     * 如果是 base64 格式，转换为 Buffer；否则返回原始数据
+     */
+    private processFileData(file: string | any): string | Buffer | any {
+        if (typeof file === 'string' && file.startsWith('base64://')) {
+            const base64Data = file.replace(/^base64:\/\//, '');
+            
+            // Validate base64 format (basic validation)
+            if (!/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                this.logger.warn(`Invalid base64 data format: ${base64Data.substring(0, 50)}...`);
+                return file; // Return original if invalid
+            }
+            
+            try {
+                return Buffer.from(base64Data, 'base64');
+            } catch (error) {
+                this.logger.error(`Failed to convert base64 to Buffer:`, error);
+                return file; // Return original on error
+            }
+        }
+        return file;
+    }
+
+    /**
      * 构建 ICQQ 消息
      */
     private buildICQQMessage(message: CommonTypes.Segment[]): any[] {
@@ -531,14 +555,7 @@ export class ICQQAdapter extends Adapter<ICQQBot, "icqq"> {
             } else if (seg.type === 'image') {
                 const file = seg.data.url || seg.data.file;
                 if (file) {
-                    // Handle base64:// prefix
-                    if (typeof file === 'string' && file.startsWith('base64://')) {
-                        const base64Data = file.replace(/^base64:\/\//, '');
-                        const buffer = Buffer.from(base64Data, 'base64');
-                        result.push(segment.image(buffer));
-                    } else {
-                        result.push(segment.image(file));
-                    }
+                    result.push(segment.image(this.processFileData(file)));
                 }
             } else if (seg.type === 'face') {
                 const id = seg.data.id;
@@ -548,26 +565,12 @@ export class ICQQAdapter extends Adapter<ICQQBot, "icqq"> {
             } else if (seg.type === 'record' || seg.type === 'audio') {
                 const file = seg.data.url || seg.data.file;
                 if (file) {
-                    // Handle base64:// prefix
-                    if (typeof file === 'string' && file.startsWith('base64://')) {
-                        const base64Data = file.replace(/^base64:\/\//, '');
-                        const buffer = Buffer.from(base64Data, 'base64');
-                        result.push(segment.record(buffer));
-                    } else {
-                        result.push(segment.record(file));
-                    }
+                    result.push(segment.record(this.processFileData(file)));
                 }
             } else if (seg.type === 'video') {
                 const file = seg.data.url || seg.data.file;
                 if (file) {
-                    // Handle base64:// prefix
-                    if (typeof file === 'string' && file.startsWith('base64://')) {
-                        const base64Data = file.replace(/^base64:\/\//, '');
-                        const buffer = Buffer.from(base64Data, 'base64');
-                        result.push(segment.video(buffer));
-                    } else {
-                        result.push(segment.video(file));
-                    }
+                    result.push(segment.video(this.processFileData(file)));
                 }
             } else if (seg.type === 'reply') {
                 const id = seg.data.id;
